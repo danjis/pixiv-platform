@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: file-service-test
+
+# 阿里云 OSS 配置（测试环境）
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: test-access-key-id
+    access-key-secret: test-access-key-secret
+    bucket-name: test-bucket
+    thumbnail:
+      width: 300
+      height: 300
+      quality: 0.8
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.pixiv.file: DEBUG

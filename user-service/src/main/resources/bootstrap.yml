@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: user-service
+  
+  profiles:
+    active: dev
+  
+  cloud:
+    # Nacos 服务注册与发现配置
+    nacos:
+      discovery:
+        server-addr: 47.120.61.152:8848
+        namespace: dev
+        username: nacos
+        password: nacos
+        # 服务注册配置
+        service: ${spring.application.name}
+        ip: localhost
+        port: 8081
+        # 健康检查配置
+        heart-beat-interval: 5000
+        heart-beat-timeout: 15000
+        # 元数据
+        metadata:
+          version: 1.0.0
+          description: 用户服务 - 用户认证、授权、个人信息管理、画师申请
+      
+      # Nacos 配置中心配置
+      config:
+        server-addr: 47.120.61.152:8848
+        namespace: dev
+        username: nacos
+        password: nacos
+        # 配置文件格式
+        file-extension: yml
+        # 共享配置（从 Nacos 加载）
+        shared-configs:
+          - data-id: shared-mysql.yml
+            group: DEFAULT_GROUP
+            refresh: true
+          - data-id: shared-redis.yml
+            group: DEFAULT_GROUP
+            refresh: true
+          - data-id: shared-rabbitmq.yml
+            group: DEFAULT_GROUP
+            refresh: true
+          - data-id: shared-logging.yml
+            group: DEFAULT_GROUP
+            refresh: true
+        extension-configs:
+          - data-id: ${spring.application.name}-${spring.profiles.active}.yml
+            group: DEFAULT_GROUP
+            refresh: true

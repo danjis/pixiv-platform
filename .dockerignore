@@ -1,0 +1,14 @@
+target/
+!target/*.jar
+.git
+.gitignore
+*.md
+.idea
+*.iml
+logs/
+node_modules/
+frontend/
+ai-service/
+docker/
+nacos-configs/
+checkstyle.xml

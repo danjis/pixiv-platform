@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清理本地存储</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #409eff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #66b1ff;
+        }
+        .success {
+            color: #67c23a;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>清理本地存储</h1>
+        <p>如果遇到登录或数据加载问题，点击下面的按钮清理本地存储数据。</p>
+        <button onclick="clearStorage()">清理存储</button>
+        <p class="success" id="success">✓ 存储已清理，请返回首页</p>
+    </div>
+
+    <script>
+        function clearStorage() {
+            // 清理 localStorage
+            localStorage.clear();
+            
+            // 清理 sessionStorage
+            sessionStorage.clear();
+            
+            // 显示成功消息
+            document.getElementById('success').style.display = 'block';
+            
+            // 3 秒后跳转到首页
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: artwork-service
+  
+  profiles:
+    active: dev
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 生产环境使用 validate，不自动创建表
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  # Jackson 配置
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+  # Sentinel 配置
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8080  # Sentinel 控制台地址（可选）
+      eager: true
+
+# 服务器配置
+server:
+  port: 8082
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+
+# Actuator 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Swagger 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# Feign 配置
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000        # 连接超时时间（毫秒）
+        readTimeout: 10000          # 读取超时时间（毫秒）
+  sentinel:
+    enabled: true                   # 启用 Sentinel 熔断
+  circuitbreaker:
+    enabled: true                   # 启用熔断器（降级功能）
+
+# 日志配置（统一格式由 logback-spring.xml 管理）
+logging:
+  level:
+    com.pixiv.artwork: DEBUG
+
+# 服务间调用配置
+service:
+  internal:
+    token: pixiv-internal-service-secret-token-2024  # 内部服务认证 token（生产环境应使用环境变量）

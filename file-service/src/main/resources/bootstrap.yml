@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: file-service
+  
+  profiles:
+    active: dev
+  
+  cloud:
+    # Nacos 服务注册与发现配置
+    nacos:
+      discovery:
+        server-addr: 47.120.61.152:8848
+        namespace: dev
+        username: nacos
+        password: nacos
+        # 服务注册配置
+        service: ${spring.application.name}
+        ip: localhost
+        port: 8085
+        # 健康检查配置
+        heart-beat-interval: 5000
+        heart-beat-timeout: 15000
+        # 元数据
+        metadata:
+          version: 1.0.0
+          description: 文件服务 - 文件上传、图片处理、OSS 存储
+      
+      # Nacos 配置中心配置
+      config:
+        server-addr: 47.120.61.152:8848
+        namespace: dev
+        username: nacos
+        password: nacos
+        # 配置文件格式
+        file-extension: yml
+        # 共享配置
+        shared-configs:
+          - data-id: shared-logging.yml
+            group: DEFAULT_GROUP
+            refresh: true
+        # 扩展配置（服务专属配置）
+        extension-configs:
+          - data-id: ${spring.application.name}-${spring.profiles.active}.yml
+            group: DEFAULT_GROUP
+            refresh: true

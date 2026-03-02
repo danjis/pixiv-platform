@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: notification-service
+  
+  profiles:
+    active: dev
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 生产环境使用 validate，不自动创建表
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  # Jackson 配置
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+  # 邮件配置（示例，实际使用时需要配置真实的邮件服务器）
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: noreply@pixiv-platform.com
+    password: your-email-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# 服务器配置
+server:
+  port: 8084
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+
+# Actuator 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Swagger 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# Feign 配置
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+
+# 日志配置（统一格式由 logback-spring.xml 管理）
+logging:
+  level:
+    com.pixiv.notification: DEBUG

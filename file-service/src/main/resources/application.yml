@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: file-service
+  
+  profiles:
+    active: dev
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB      # 单个文件最大 10MB
+      max-request-size: 20MB   # 请求最大 20MB
+
+  # Jackson 配置
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+# 服务器配置
+server:
+  port: 8085
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+
+# Actuator 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Swagger 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# 阿里云 OSS 配置（示例，实际使用时需要配置真实的 OSS 信息）
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: your-access-key-id
+    access-key-secret: your-access-key-secret
+    bucket-name: pixiv-platform
+    # 缩略图配置
+    thumbnail:
+      width: 300
+      height: 300
+      quality: 0.8
+
+# 日志配置（统一格式由 logback-spring.xml 管理）
+logging:
+  level:
+    com.pixiv.file: DEBUG
