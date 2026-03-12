@@ -6,6 +6,7 @@ import com.pixiv.artwork.entity.Artwork;
 import com.pixiv.artwork.entity.ArtworkStatus;
 import com.pixiv.artwork.entity.Comment;
 import com.pixiv.artwork.feign.UserServiceClient;
+import com.pixiv.artwork.feign.MembershipServiceClient;
 import com.pixiv.artwork.repository.ArtworkRepository;
 import com.pixiv.artwork.repository.CommentRepository;
 import com.pixiv.common.dto.PageResult;
@@ -45,6 +46,9 @@ public class CommentService {
 
     @Autowired
     private UserServiceClient userServiceClient;
+
+    @Autowired
+    private MembershipServiceClient membershipServiceClient;
 
     @Autowired
     private RankingService rankingService;
@@ -353,6 +357,40 @@ public class CommentService {
                 dto.setUsername("未知用户");
                 dto.setAvatarUrl(null);
             }
+        }
+
+        // 批量获取会员等级信息（用于 VIP 徽章和评论高亮）
+        enrichWithMembershipLevel(dtos, userIds);
+    }
+
+    /**
+     * 批量填充用户会员等级
+     */
+    private void enrichWithMembershipLevel(List<CommentDTO> dtos, List<Long> userIds) {
+        Map<Long, String> membershipMap = new HashMap<>();
+        for (Long userId : userIds) {
+            try {
+                Result<Map<String, Object>> result = membershipServiceClient.getMembership(userId);
+                if (result != null && result.isSuccess() && result.getData() != null) {
+                    Map<String, Object> data = result.getData();
+                    String level = (String) data.get("level");
+                    boolean expired = data.get("expired") != null && (Boolean) data.get("expired");
+                    if (level != null && !expired) {
+                        membershipMap.put(userId, level);
+                    } else {
+                        membershipMap.put(userId, "NORMAL");
+                    }
+                } else {
+                    membershipMap.put(userId, "NORMAL");
+                }
+            } catch (Exception e) {
+                logger.debug("获取用户会员等级失败: userId={}", userId);
+                membershipMap.put(userId, "NORMAL");
+            }
+        }
+
+        for (CommentDTO dto : dtos) {
+            dto.setMembershipLevel(membershipMap.getOrDefault(dto.getUserId(), "NORMAL"));
         }
     }
 

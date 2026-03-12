@@ -1,291 +1,260 @@
 <template>
   <div class="dashboard">
-    <h2 class="page-title">数据概览</h2>
-
     <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stat-cards">
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card users">
-          <div class="stat-icon"><el-icon :size="40"><User /></el-icon></div>
-          <div class="stat-info">
-            <div class="stat-value">{{ platformStats.totalUsers || 0 }}</div>
-            <div class="stat-label">总用户数</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card artists">
-          <div class="stat-icon"><el-icon :size="40"><Star /></el-icon></div>
-          <div class="stat-info">
-            <div class="stat-value">{{ platformStats.totalArtists || 0 }}</div>
-            <div class="stat-label">认证画师</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card artworks">
-          <div class="stat-icon"><el-icon :size="40"><Picture /></el-icon></div>
-          <div class="stat-info">
-            <div class="stat-value">{{ artworkStats.publishedCount || 0 }}</div>
-            <div class="stat-label">已发布作品</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card pending">
-          <div class="stat-icon"><el-icon :size="40"><Bell /></el-icon></div>
-          <div class="stat-info">
-            <div class="stat-value">{{ platformStats.pendingApplications || 0 }}</div>
-            <div class="stat-label">待审核申请</div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div class="stat-grid">
+      <div class="stat-card" v-for="item in statCards" :key="item.key">
+        <div class="stat-icon" :style="{ background: item.bg }">
+          <el-icon :size="22" :color="item.color"><component :is="item.icon" /></el-icon>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats[item.key] ?? '—' }}</span>
+          <span class="stat-label">{{ item.label }}</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- 图表区域 -->
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="12">
-        <el-card shadow="hover">
-          <template #header>
-            <span class="card-title">作品状态分布</span>
-          </template>
-          <div ref="artworkPieRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="hover">
-          <template #header>
-            <span class="card-title">平台数据总览</span>
-          </template>
-          <div ref="platformBarRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <!-- 图表区 -->
+    <div class="chart-row">
+      <div class="chart-panel">
+        <h4 class="panel-title">作品状态分布</h4>
+        <div ref="pieChartRef" class="chart-box"></div>
+      </div>
+      <div class="chart-panel">
+        <h4 class="panel-title">平台数据概览</h4>
+        <div ref="barChartRef" class="chart-box"></div>
+      </div>
+    </div>
 
     <!-- 详细统计 -->
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="12">
-        <el-card shadow="hover">
-          <template #header>
-            <span class="card-title">作品统计</span>
-          </template>
-          <div class="detail-stats">
-            <div class="detail-item">
-              <span class="detail-label">总作品数</span>
-              <span class="detail-value">{{ artworkStats.totalArtworks || 0 }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">已发布</span>
-              <el-tag type="success" size="small">{{ artworkStats.publishedCount || 0 }}</el-tag>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">草稿</span>
-              <el-tag type="info" size="small">{{ artworkStats.draftCount || 0 }}</el-tag>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">已删除</span>
-              <el-tag type="danger" size="small">{{ artworkStats.deletedCount || 0 }}</el-tag>
-            </div>
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 class="panel-title">用户统计</h4>
+        <div class="detail-items">
+          <div class="detail-row">
+            <span class="detail-label">总用户数</span>
+            <span class="detail-val">{{ stats.totalUsers ?? 0 }}</span>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="hover">
-          <template #header>
-            <span class="card-title">平台信息</span>
-          </template>
-          <div class="detail-stats">
-            <div class="detail-item">
-              <span class="detail-label">总用户数</span>
-              <span class="detail-value">{{ platformStats.totalUsers || 0 }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">认证画师数</span>
-              <span class="detail-value">{{ platformStats.totalArtists || 0 }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">待审核申请</span>
-              <el-tag type="warning" size="small">{{ platformStats.pendingApplications || 0 }}</el-tag>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">审计日志条数</span>
-              <span class="detail-value">{{ platformStats.totalAuditLogs || 0 }}</span>
-            </div>
+          <div class="detail-row">
+            <span class="detail-label">认证画师</span>
+            <span class="detail-val">{{ stats.totalArtists ?? 0 }}</span>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+          <div class="detail-row">
+            <span class="detail-label">待审核申请</span>
+            <span class="detail-val accent">{{ stats.pendingApplications ?? 0 }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <h4 class="panel-title">作品统计</h4>
+        <div class="detail-items">
+          <div class="detail-row">
+            <span class="detail-label">已发布</span>
+            <span class="detail-val">{{ artworkStats.publishedCount ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">草稿中</span>
+            <span class="detail-val">{{ artworkStats.draftCount ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">已删除</span>
+            <span class="detail-val danger">{{ artworkStats.deletedCount ?? 0 }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <h4 class="panel-title">互动统计</h4>
+        <div class="detail-items">
+          <div class="detail-row">
+            <span class="detail-label">总浏览量</span>
+            <span class="detail-val">{{ artworkStats.totalViews ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">总点赞数</span>
+            <span class="detail-val">{{ artworkStats.totalLikes ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">总收藏数</span>
+            <span class="detail-val">{{ artworkStats.totalFavorites ?? 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 最近审计日志 -->
-    <el-card shadow="hover" style="margin-top: 20px">
-      <template #header>
-        <div class="card-header-row">
-          <span class="card-title">最近操作日志</span>
-          <el-button type="primary" text @click="$router.push('/audit-logs')">查看全部</el-button>
-        </div>
-      </template>
-      <el-table :data="recentLogs" stripe style="width: 100%" v-loading="loadingLogs">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="actionType" label="操作类型" width="200">
-          <template #default="{ row }">
-            <el-tag :type="getActionTagType(row.actionType)" size="small">
-              {{ formatActionType(row.actionType) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column prop="createdAt" label="时间" width="180">
-          <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+    <div class="log-section">
+      <h4 class="panel-title">最近操作日志</h4>
+      <div class="table-wrapper">
+        <el-table :data="recentLogs" size="small">
+          <el-table-column prop="adminId" label="管理员" width="90" />
+          <el-table-column prop="actionType" label="操作" width="180">
+            <template #default="{ row }">
+              <el-tag :type="getActionTagType(row.actionType)" size="small">
+                {{ formatAction(row.actionType) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="description" label="描述" show-overflow-tooltip />
+          <el-table-column prop="createdAt" label="时间" width="170">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { User, Star, Picture, Bell } from '@element-plus/icons-vue'
-import { getPlatformStats, getArtworkStats, getAuditLogs } from '../api/stats'
+import { ref, reactive, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import * as echarts from 'echarts'
+import { User, Picture, Stamp, Suitcase } from '@element-plus/icons-vue'
+import { getPlatformStats, getArtworkStats, getAuditLogs } from '@/api/stats'
 
-const platformStats = reactive({})
-const artworkStats = reactive({})
-const recentLogs = ref([])
-const loadingLogs = ref(false)
-
-// Chart refs
-const artworkPieRef = ref(null)
-const platformBarRef = ref(null)
+const pieChartRef = ref(null)
+const barChartRef = ref(null)
 let pieChart = null
 let barChart = null
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-'
-  const d = new Date(dateStr)
-  return d.toLocaleString('zh-CN')
+const stats = reactive({
+  totalUsers: 0,
+  totalArtists: 0,
+  publishedCount: 0,
+  pendingApplications: 0
+})
+
+const artworkStats = reactive({
+  publishedCount: 0,
+  draftCount: 0,
+  deletedCount: 0,
+  totalViews: 0,
+  totalLikes: 0,
+  totalFavorites: 0
+})
+
+const recentLogs = ref([])
+
+const statCards = [
+  { key: 'totalUsers', label: '总用户', icon: markRaw(User), color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
+  { key: 'totalArtists', label: '认证画师', icon: markRaw(Stamp), color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+  { key: 'publishedCount', label: '发布作品', icon: markRaw(Picture), color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+  { key: 'pendingApplications', label: '待审核', icon: markRaw(Suitcase), color: '#ef4444', bg: 'rgba(239,68,68,0.1)' }
+]
+
+const actionMap = {
+  APPROVE_ARTIST_APPLICATION: '通过画师申请',
+  REJECT_ARTIST_APPLICATION: '拒绝画师申请',
+  DELETE_ARTWORK: '删除作品',
+  DELETE_COMMENT: '删除评论',
+  BAN_USER: '封禁用户',
+  UNBAN_USER: '解封用户'
 }
 
-const actionTypeMap = {
-  'APPROVE_ARTIST_APPLICATION': '通过画师申请',
-  'REJECT_ARTIST_APPLICATION': '拒绝画师申请',
-  'DELETE_ARTWORK': '删除作品',
-  'DELETE_COMMENT': '删除评论',
-  'BAN_USER': '封禁用户',
-  'UNBAN_USER': '解封用户',
-  'OTHER': '其他操作'
-}
+function formatAction(type) { return actionMap[type] || type }
+function formatDate(str) { return str ? new Date(str).toLocaleString('zh-CN') : '' }
 
-const formatActionType = (type) => actionTypeMap[type] || type
-
-const getActionTagType = (type) => {
+function getActionTagType(type) {
   if (type?.includes('APPROVE')) return 'success'
   if (type?.includes('REJECT') || type?.includes('DELETE') || type?.includes('BAN')) return 'danger'
   if (type?.includes('UNBAN')) return 'warning'
   return 'info'
 }
 
-const loadData = async () => {
-  try {
-    const [pRes, aRes] = await Promise.all([
-      getPlatformStats(),
-      getArtworkStats()
-    ])
-    Object.assign(platformStats, pRes.data || {})
-    Object.assign(artworkStats, aRes.data || {})
-
-    // 渲染图表
-    await nextTick()
-    renderArtworkPie()
-    renderPlatformBar()
-  } catch (e) {
-    console.error('加载统计数据失败:', e)
+function initCharts() {
+  // 饼图
+  if (pieChartRef.value) {
+    pieChart = echarts.init(pieChartRef.value)
+    pieChart.setOption({
+      tooltip: { trigger: 'item', backgroundColor: '#fff', borderColor: '#e2e8f0', borderWidth: 1, textStyle: { color: '#334155', fontSize: 13 } },
+      legend: { bottom: 0, textStyle: { color: '#64748b', fontSize: 12 } },
+      color: ['#6366f1', '#94a3b8', '#ef4444'],
+      series: [{
+        type: 'pie',
+        radius: ['42%', '70%'],
+        center: ['50%', '45%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 3 },
+        label: { show: false },
+        emphasis: { label: { show: true, fontSize: 14, fontWeight: '600' } },
+        data: [
+          { value: artworkStats.publishedCount, name: '已发布' },
+          { value: artworkStats.draftCount, name: '草稿' },
+          { value: artworkStats.deletedCount, name: '已删除' }
+        ]
+      }]
+    })
   }
 
-  loadingLogs.value = true
-  try {
-    const logRes = await getAuditLogs({ page: 1, size: 10 })
-    recentLogs.value = logRes.data?.records || logRes.data?.items || logRes.data?.content || []
-  } catch (e) {
-    console.error('加载审计日志失败:', e)
-  } finally {
-    loadingLogs.value = false
+  // 柱状图
+  if (barChartRef.value) {
+    barChart = echarts.init(barChartRef.value)
+    barChart.setOption({
+      tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#e2e8f0', borderWidth: 1, textStyle: { color: '#334155', fontSize: 13 } },
+      grid: { left: 50, right: 20, top: 20, bottom: 36 },
+      xAxis: {
+        type: 'category',
+        data: ['用户', '画师', '作品', '浏览', '点赞', '收藏'],
+        axisLine: { lineStyle: { color: '#e2e8f0' } },
+        axisTick: { show: false },
+        axisLabel: { color: '#64748b', fontSize: 12 }
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 11 }
+      },
+      series: [{
+        type: 'bar',
+        barWidth: 28,
+        itemStyle: {
+          borderRadius: [6, 6, 0, 0],
+          color: (params) => {
+            const colors = ['#6366f1', '#818cf8', '#a5b4fc', '#10b981', '#f59e0b', '#f97316']
+            return colors[params.dataIndex] || '#6366f1'
+          }
+        },
+        data: [
+          stats.totalUsers,
+          stats.totalArtists,
+          artworkStats.publishedCount,
+          artworkStats.totalViews,
+          artworkStats.totalLikes,
+          artworkStats.totalFavorites
+        ]
+      }]
+    })
   }
 }
 
-function renderArtworkPie() {
-  if (!artworkPieRef.value) return
-  pieChart = echarts.init(artworkPieRef.value)
-  pieChart.setOption({
-    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-    legend: { bottom: 0, textStyle: { fontSize: 12 } },
-    color: ['#67c23a', '#909399', '#f56c6c'],
-    series: [{
-      type: 'pie',
-      radius: ['40%', '70%'],
-      center: ['50%', '45%'],
-      avoidLabelOverlap: false,
-      itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
-      label: { show: false, position: 'center' },
-      emphasis: {
-        label: { show: true, fontSize: 18, fontWeight: 'bold' }
-      },
-      labelLine: { show: false },
-      data: [
-        { value: artworkStats.publishedCount || 0, name: '已发布' },
-        { value: artworkStats.draftCount || 0, name: '草稿' },
-        { value: artworkStats.deletedCount || 0, name: '已删除' }
-      ]
-    }]
-  })
-}
-
-function renderPlatformBar() {
-  if (!platformBarRef.value) return
-  barChart = echarts.init(platformBarRef.value)
-  barChart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 60, right: 20, top: 20, bottom: 40 },
-    xAxis: {
-      type: 'category',
-      data: ['总用户', '认证画师', '已发布作品', '待审核申请'],
-      axisLabel: { fontSize: 12 }
-    },
-    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed' } } },
-    series: [{
-      type: 'bar',
-      barWidth: 36,
-      itemStyle: {
-        borderRadius: [6, 6, 0, 0],
-        color: (params) => {
-          const colors = [
-            new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#667eea' }, { offset: 1, color: '#764ba2' }]),
-            new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#f093fb' }, { offset: 1, color: '#f5576c' }]),
-            new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#4facfe' }, { offset: 1, color: '#00f2fe' }]),
-            new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#fa709a' }, { offset: 1, color: '#fee140' }])
-          ]
-          return colors[params.dataIndex]
-        }
-      },
-      data: [
-        platformStats.totalUsers || 0,
-        platformStats.totalArtists || 0,
-        artworkStats.publishedCount || 0,
-        platformStats.pendingApplications || 0
-      ]
-    }]
-  })
-}
-
-// 窗口 resize 时自适应
 function handleResize() {
   pieChart?.resize()
   barChart?.resize()
 }
 
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  try {
+    const [platformRes, artworkRes, logRes] = await Promise.all([
+      getPlatformStats(),
+      getArtworkStats(),
+      getAuditLogs({ page: 1, size: 8 })
+    ])
+
+    if (platformRes.code === 200 && platformRes.data) {
+      Object.assign(stats, platformRes.data)
+    }
+    if (artworkRes.code === 200 && artworkRes.data) {
+      Object.assign(artworkStats, artworkRes.data)
+      stats.publishedCount = artworkRes.data.publishedCount || 0
+    }
+    if (logRes.data) {
+      const d = logRes.data
+      recentLogs.value = d.records || d.items || d.content || []
+    }
+  } catch (e) {
+    console.error('加载仪表盘数据失败:', e)
+  }
+
+  initCharts()
   window.addEventListener('resize', handleResize)
 })
 
@@ -297,100 +266,144 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.page-title {
-  margin: 0 0 20px 0;
-  color: #303133;
-  font-size: 22px;
+.dashboard {
+  width: 100%;
 }
 
-.stat-cards .stat-card {
-  display: flex;
-  align-items: center;
-  padding: 10px;
+/* 统计卡片 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
 }
 
-.stat-card :deep(.el-card__body) {
+.stat-card {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 20px;
+  gap: 16px;
+  padding: 22px 20px;
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .stat-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  flex-shrink: 0;
 }
 
-.stat-card.users .stat-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
-.stat-card.artists .stat-icon { background: linear-gradient(135deg, #f093fb, #f5576c); }
-.stat-card.artworks .stat-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-.stat-card.pending .stat-icon { background: linear-gradient(135deg, #fa709a, #fee140); }
-
-.stat-info {
-  flex: 1;
+.stat-body {
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  color: #303133;
+  color: var(--c-text);
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #909399;
-  margin-top: 4px;
+  font-size: 13px;
+  color: var(--c-text-muted);
+  margin-top: 2px;
 }
 
-.card-title {
-  font-size: 16px;
+/* 图表 */
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.chart-panel {
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.panel-title {
+  font-size: 15px;
   font-weight: 600;
-  color: #303133;
+  color: var(--c-text);
+  margin-bottom: 16px;
 }
 
-.card-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.chart-box {
+  height: 280px;
 }
 
-.detail-stats {
+/* 详细统计 */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.detail-card {
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.detail-items {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.detail-item {
+.detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.detail-item:last-child {
-  border-bottom: none;
 }
 
 .detail-label {
-  color: #606266;
-  font-size: 14px;
+  font-size: 13px;
+  color: var(--c-text-secondary);
 }
 
-.detail-value {
-  color: #303133;
-  font-weight: 600;
-  font-size: 16px;
+.detail-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
 }
 
-.chart-container {
-  width: 100%;
-  height: 280px;
+.detail-val.accent {
+  color: var(--c-primary);
+}
+
+.detail-val.danger {
+  color: var(--c-danger);
+}
+
+/* 日志 */
+.log-section {
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.log-section .table-wrapper {
+  box-shadow: none;
 }
 </style>

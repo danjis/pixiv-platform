@@ -3,14 +3,18 @@ package com.pixiv.commission.service;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
+import com.alipay.api.request.AlipayFundTransUniTransferRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.request.AlipayTradeRefundRequest;
+import com.alipay.api.response.AlipayFundTransUniTransferResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.pixiv.commission.config.AlipayConfig;
 import com.pixiv.commission.dto.PaymentOrderDTO;
 import com.pixiv.commission.entity.*;
+import com.pixiv.commission.feign.MembershipClient;
+import com.pixiv.commission.feign.UserServiceClient;
 import com.pixiv.commission.repository.CommissionRepository;
 import com.pixiv.commission.repository.PaymentOrderRepository;
 import org.slf4j.Logger;
@@ -20,12 +24,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 /**
  * 支付服务
@@ -49,19 +58,26 @@ public class PaymentService {
     @Autowired
     private CommissionRepository commissionRepository;
 
-    /**
-     * 创建支付订单并生成支付宝支付页面 HTML
-     *
-     * @param userId       当前用户 ID（付款方）
-     * @param commissionId 约稿 ID
-     * @param paymentType  支付类型（DEPOSIT / FINAL_PAYMENT）
-     * @return 支付宝的支付页面 HTML 表单
-     */
+    @Autowired
+    private CouponService couponService;
+
+    @Autowired
+    private MembershipPaymentService membershipPaymentService;
+
+    @Autowired
+    private MembershipClient membershipClient;
+
+    @Autowired
+    private UserServiceClient userServiceClient;
+
+    /** 平台服务费率（5%） */
+    private static final BigDecimal PLATFORM_FEE_RATE = new BigDecimal("0.05");
+
     /** 订单超时时间（分钟） */
     private static final int ORDER_TIMEOUT_MINUTES = 30;
 
     @Transactional
-    public String createPayment(Long userId, Long commissionId, PaymentType paymentType) {
+    public String createPayment(Long userId, Long commissionId, PaymentType paymentType, Long userCouponId) {
         // 查找约稿
         Commission commission = commissionRepository.findById(commissionId)
                 .orElseThrow(() -> new IllegalArgumentException("约稿不存在: " + commissionId));
@@ -93,7 +109,64 @@ public class PaymentService {
         }
 
         // 计算支付金额
-        BigDecimal amount = calculateAmount(commission, paymentType);
+        BigDecimal originalAmount = calculateAmount(commission, paymentType);
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        BigDecimal actualAmount = originalAmount;
+        Long appliedUserCouponId = null;
+
+        // 定金不可使用优惠券，优惠券仅限尾款
+        if (userCouponId != null && paymentType == PaymentType.DEPOSIT) {
+            throw new IllegalArgumentException("定金支付不可使用优惠券，优惠券仅在支付尾款时可用");
+        }
+
+        // 如果用户选择了优惠券，计算折扣
+        if (userCouponId != null) {
+            try {
+                discountAmount = couponService.useCoupon(userId, userCouponId, commissionId, originalAmount);
+                actualAmount = originalAmount.subtract(discountAmount);
+                // 确保实际支付金额不低于 0.01
+                if (actualAmount.compareTo(new BigDecimal("0.01")) < 0) {
+                    actualAmount = new BigDecimal("0.01");
+                }
+                appliedUserCouponId = userCouponId;
+                logger.info("使用优惠券: userCouponId={}, discount={}, original={}, actual={}",
+                        userCouponId, discountAmount, originalAmount, actualAmount);
+            } catch (Exception e) {
+                logger.warn("优惠券使用失败，将以原价支付: {}", e.getMessage());
+                discountAmount = BigDecimal.ZERO;
+                actualAmount = originalAmount;
+            }
+        }
+
+        // 计算平台服务费（VIP/SVIP享折扣）
+        BigDecimal platformFee = actualAmount.multiply(PLATFORM_FEE_RATE).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal feeDiscount = BigDecimal.ZERO;
+        try {
+            var memberResult = membershipClient.getMembership(userId);
+            if (memberResult != null && memberResult.isSuccess() && memberResult.getData() != null) {
+                String level = (String) memberResult.getData().get("level");
+                boolean expired = memberResult.getData().get("expired") != null
+                        && (Boolean) memberResult.getData().get("expired");
+                if (!expired) {
+                    if ("SVIP".equals(level)) {
+                        // SVIP 9折手续费 → 减免10%的费用
+                        feeDiscount = platformFee.multiply(new BigDecimal("0.10")).setScale(2, RoundingMode.HALF_UP);
+                    } else if ("VIP".equals(level)) {
+                        // VIP 95折手续费 → 减免5%的费用
+                        feeDiscount = platformFee.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("获取会员等级失败，不享受手续费折扣: userId={}", userId);
+        }
+
+        BigDecimal actualFee = platformFee.subtract(feeDiscount);
+        actualAmount = actualAmount.add(actualFee);
+        // 确保实际支付金额不低于 0.01
+        if (actualAmount.compareTo(new BigDecimal("0.01")) < 0) {
+            actualAmount = new BigDecimal("0.01");
+        }
 
         // 生成订单号
         String orderNo = generateOrderNo();
@@ -109,7 +182,12 @@ public class PaymentService {
                 .commissionId(commissionId)
                 .payerId(userId)
                 .payeeId(commission.getArtistId())
-                .amount(amount)
+                .amount(actualAmount)
+                .originalAmount(appliedUserCouponId != null ? originalAmount : null)
+                .discountAmount(appliedUserCouponId != null ? discountAmount : null)
+                .userCouponId(appliedUserCouponId)
+                .platformFee(actualFee)
+                .feeDiscount(feeDiscount.compareTo(BigDecimal.ZERO) > 0 ? feeDiscount : null)
                 .paymentType(paymentType)
                 .status(PaymentStatus.PENDING)
                 .subject(subject)
@@ -117,8 +195,8 @@ public class PaymentService {
 
         paymentOrderRepository.save(paymentOrder);
 
-        logger.info("创建支付订单: orderNo={}, commission={}, type={}, amount={}",
-                orderNo, commissionId, paymentType, amount);
+        logger.info("创建支付订单: orderNo={}, commission={}, type={}, amount={}, discount={}, fee={}, feeDiscount={}",
+                orderNo, commissionId, paymentType, actualAmount, discountAmount, actualFee, feeDiscount);
 
         return generateAlipayForm(paymentOrder);
     }
@@ -242,14 +320,27 @@ public class PaymentService {
 
         // 5. 判断交易状态
         if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
-            // 更新支付订单
+            // 更新约稿/会员状态（先升级再标记PAID，保证原子性）
+            if (paymentOrder.getPaymentType() == PaymentType.MEMBERSHIP) {
+                // 会员支付：先调用会员升级逻辑，成功后再标记PAID
+                try {
+                    membershipPaymentService.handleMembershipPaymentSuccess(paymentOrder);
+                } catch (Exception e) {
+                    logger.error("会员升级失败，支付宝将重试通知: orderNo={}", outTradeNo, e);
+                    return "failure"; // 返回failure让支付宝重新通知
+                }
+            }
+
+            // 升级成功后再标记为PAID
             paymentOrder.setStatus(PaymentStatus.PAID);
             paymentOrder.setAlipayTradeNo(tradeNo);
             paymentOrder.setPaidAt(LocalDateTime.now());
             paymentOrderRepository.save(paymentOrder);
 
-            // 更新约稿状态
-            updateCommissionAfterPayment(paymentOrder);
+            // 约稿支付：更新约稿状态
+            if (paymentOrder.getPaymentType() != PaymentType.MEMBERSHIP) {
+                updateCommissionAfterPayment(paymentOrder);
+            }
 
             logger.info("支付成功: orderNo={}, commissionId={}, type={}",
                     outTradeNo, paymentOrder.getCommissionId(), paymentOrder.getPaymentType());
@@ -281,13 +372,16 @@ public class PaymentService {
                     logger.info("主动查询支付宝: orderNo={}, tradeStatus={}", orderNo, tradeStatus);
 
                     if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
+                        // 先处理业务逻辑（会员升级/约稿状态），成功后再标记PAID
+                        if (order.getPaymentType() == PaymentType.MEMBERSHIP) {
+                            membershipPaymentService.handleMembershipPaymentSuccess(order);
+                        } else {
+                            updateCommissionAfterPayment(order);
+                        }
                         order.setStatus(PaymentStatus.PAID);
                         order.setAlipayTradeNo(response.getTradeNo());
                         order.setPaidAt(LocalDateTime.now());
                         paymentOrderRepository.save(order);
-
-                        // 同步更新约稿状态
-                        updateCommissionAfterPayment(order);
                         logger.info("主动查询确认支付成功: orderNo={}", orderNo);
                     }
                 } else {
@@ -321,18 +415,31 @@ public class PaymentService {
 
     /**
      * 退款（取消约稿时使用）
+     * 根据退款规则选择性退款：
+     * - 委托方取消：定金不退，尾款退
+     * - 画师取消：定金和尾款都退
      *
-     * @param commissionId 约稿 ID
-     * @param reason       退款原因
+     * @param commissionId  约稿 ID
+     * @param reason        退款原因
+     * @param refundDeposit 是否退定金
      */
     @Transactional
-    public void refundPayment(Long commissionId, String reason) {
+    public void refundPayment(Long commissionId, String reason, boolean refundDeposit) {
         List<PaymentOrder> paidOrders = paymentOrderRepository.findByCommissionId(commissionId)
                 .stream()
                 .filter(o -> o.getStatus() == PaymentStatus.PAID)
                 .collect(Collectors.toList());
 
+        // 获取约稿信息用于钱包操作
+        Commission commission = commissionRepository.findById(commissionId).orElse(null);
+
         for (PaymentOrder order : paidOrders) {
+            // 根据规则判断是否退款此笔支付
+            if (order.getPaymentType() == PaymentType.DEPOSIT && !refundDeposit) {
+                logger.info("根据退款规则，定金不予退还: orderNo={}, amount={}", order.getOrderNo(), order.getAmount());
+                continue;
+            }
+
             try {
                 AlipayTradeRefundRequest refundRequest = new AlipayTradeRefundRequest();
                 refundRequest.setBizContent("{" +
@@ -347,7 +454,24 @@ public class PaymentService {
                     order.setRefundedAt(LocalDateTime.now());
                     order.setRefundReason(reason);
                     paymentOrderRepository.save(order);
-                    logger.info("退款成功: orderNo={}, amount={}", order.getOrderNo(), order.getAmount());
+                    logger.info("退款成功: orderNo={}, type={}, amount={}", order.getOrderNo(), order.getPaymentType(),
+                            order.getAmount());
+
+                    // 退定金时，取消画师钱包的冻结金额（资金退给委托方，不入画师可用余额）
+                    if (order.getPaymentType() == PaymentType.DEPOSIT && commission != null) {
+                        try {
+                            java.util.Map<String, Object> cancelBody = new java.util.LinkedHashMap<>();
+                            cancelBody.put("userId", commission.getArtistId());
+                            cancelBody.put("amount", commission.getDepositAmount());
+                            cancelBody.put("commissionId", commissionId);
+                            cancelBody.put("description", "约稿「" + commission.getTitle() + "」定金退款，取消冻结");
+                            userServiceClient.cancelWalletFreeze(cancelBody);
+                            logger.info("取消冻结成功: artistId={}, amount={}", commission.getArtistId(),
+                                    commission.getDepositAmount());
+                        } catch (Exception e) {
+                            logger.error("取消冻结失败: commissionId={}", commissionId, e);
+                        }
+                    }
                 } else {
                     logger.error("退款失败: orderNo={}, code={}, msg={}",
                             order.getOrderNo(), response.getCode(), response.getMsg());
@@ -355,6 +479,51 @@ public class PaymentService {
             } catch (AlipayApiException e) {
                 logger.error("调用退款API失败: orderNo={}", order.getOrderNo(), e);
             }
+        }
+    }
+
+    /**
+     * 退款 - 兼容旧调用（默认退所有）
+     */
+    @Transactional
+    public void refundPayment(Long commissionId, String reason) {
+        refundPayment(commissionId, reason, true);
+    }
+
+    /**
+     * 管理员指定退款单笔支付
+     */
+    @Transactional
+    public void refundSinglePayment(Long paymentId, String reason) {
+        PaymentOrder order = paymentOrderRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("支付记录不存在: " + paymentId));
+
+        if (order.getStatus() != PaymentStatus.PAID) {
+            throw new IllegalArgumentException("该支付记录状态不是已支付，无法退款（当前: " + order.getStatus() + "）");
+        }
+
+        try {
+            AlipayTradeRefundRequest refundRequest = new AlipayTradeRefundRequest();
+            refundRequest.setBizContent("{" +
+                    "\"out_trade_no\":\"" + order.getOrderNo() + "\"," +
+                    "\"refund_amount\":\"" + order.getAmount().toPlainString() + "\"," +
+                    "\"refund_reason\":\"" + (reason != null ? reason : "管理员操作退款") + "\"" +
+                    "}");
+
+            AlipayTradeRefundResponse response = alipayClient.execute(refundRequest);
+            if (response.isSuccess()) {
+                order.setStatus(PaymentStatus.REFUNDED);
+                order.setRefundedAt(LocalDateTime.now());
+                order.setRefundReason(reason);
+                paymentOrderRepository.save(order);
+                logger.info("管理员退款成功: paymentId={}, orderNo={}, type={}, amount={}",
+                        paymentId, order.getOrderNo(), order.getPaymentType(), order.getAmount());
+            } else {
+                throw new RuntimeException("支付宝退款失败: " + response.getMsg());
+            }
+        } catch (AlipayApiException e) {
+            logger.error("调用退款API失败: paymentId={}", paymentId, e);
+            throw new RuntimeException("退款接口调用失败: " + e.getMessage());
         }
     }
 
@@ -390,6 +559,42 @@ public class PaymentService {
         }
     }
 
+    /**
+     * 获取所有支付记录（管理端）
+     */
+    public List<PaymentOrderDTO> getAllPayments(int page, int size) {
+        Page<PaymentOrder> orderPage = paymentOrderRepository.findAll(
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return orderPage.getContent().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 获取所有约稿列表（管理端）
+     */
+    public List<Map<String, Object>> getAllCommissions(int page, int size) {
+        Page<Commission> commissionPage = commissionRepository.findAll(
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return commissionPage.getContent().stream()
+                .map(c -> {
+                    Map<String, Object> map = new java.util.LinkedHashMap<>();
+                    map.put("id", c.getId());
+                    map.put("title", c.getTitle());
+                    map.put("clientId", c.getClientId());
+                    map.put("artistId", c.getArtistId());
+                    map.put("status", c.getStatus().name());
+                    map.put("totalAmount", c.getTotalAmount());
+                    map.put("depositAmount", c.getDepositAmount());
+                    map.put("depositPaid", c.getDepositPaid());
+                    map.put("finalPaid", c.getFinalPaid());
+                    map.put("createdAt", c.getCreatedAt());
+                    map.put("updatedAt", c.getUpdatedAt());
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
     private void updateCommissionAfterPayment(PaymentOrder paymentOrder) {
         Commission commission = commissionRepository.findById(paymentOrder.getCommissionId())
                 .orElse(null);
@@ -401,11 +606,85 @@ public class PaymentService {
             commission.setStatus(CommissionStatus.DEPOSIT_PAID);
             commissionRepository.save(commission);
             logger.info("约稿状态更新: {} → DEPOSIT_PAID", commission.getId());
+
+            // 冻结定金金额到画师钱包（仅定金本身，不含手续费）
+            try {
+                java.util.Map<String, Object> freezeBody = new java.util.LinkedHashMap<>();
+                freezeBody.put("userId", commission.getArtistId());
+                freezeBody.put("amount", commission.getDepositAmount());
+                freezeBody.put("commissionId", commission.getId());
+                freezeBody.put("description", "约稿「" + commission.getTitle() + "」定金冻结");
+                userServiceClient.freezeWalletAmount(freezeBody);
+                logger.info("冻结定金成功: artistId={}, amount={}", commission.getArtistId(), commission.getDepositAmount());
+            } catch (Exception e) {
+                logger.error("冻结定金失败: commissionId={}", commission.getId(), e);
+            }
         } else if (paymentOrder.getPaymentType() == PaymentType.FINAL_PAYMENT) {
             commission.setFinalPaid(true);
             commission.setStatus(CommissionStatus.COMPLETED);
             commissionRepository.save(commission);
             logger.info("约稿状态更新: {} → COMPLETED", commission.getId());
+
+            // 解冻定金 + 尾款入账（画师收到全额，不受优惠券影响）
+            BigDecimal depositAmount = commission.getDepositAmount();
+            BigDecimal finalAmount = commission.getTotalAmount().subtract(depositAmount);
+
+            try {
+                // 1. 解冻定金 → 可用余额
+                java.util.Map<String, Object> unfreezeBody = new java.util.LinkedHashMap<>();
+                unfreezeBody.put("userId", commission.getArtistId());
+                unfreezeBody.put("amount", depositAmount);
+                unfreezeBody.put("commissionId", commission.getId());
+                unfreezeBody.put("description", "约稿「" + commission.getTitle() + "」定金解冻");
+                userServiceClient.unfreezeWalletAmount(unfreezeBody);
+                logger.info("解冻定金成功: artistId={}, amount={}", commission.getArtistId(), depositAmount);
+
+                // 2. 尾款入账（画师收到完整尾款，优惠券减免由平台承担）
+                java.util.Map<String, Object> incomeBody = new java.util.LinkedHashMap<>();
+                incomeBody.put("userId", commission.getArtistId());
+                incomeBody.put("amount", finalAmount);
+                incomeBody.put("commissionId", commission.getId());
+                incomeBody.put("orderNo", paymentOrder.getOrderNo());
+                incomeBody.put("description", "约稿「" + commission.getTitle() + "」尾款入账");
+                userServiceClient.addWalletIncome(incomeBody);
+                logger.info("尾款入账成功: artistId={}, amount={}", commission.getArtistId(), finalAmount);
+            } catch (Exception e) {
+                logger.error("钱包操作失败: commissionId={}", commission.getId(), e);
+            }
+        }
+    }
+
+    /**
+     * 转账到支付宝账户（提现打款）
+     */
+    public String transferToAlipayAccount(String outBizNo, BigDecimal amount, String alipayAccount, String alipayName) {
+        try {
+            AlipayFundTransUniTransferRequest request = new AlipayFundTransUniTransferRequest();
+            request.setBizContent("{" +
+                    "\"out_biz_no\":\"" + outBizNo + "\"," +
+                    "\"trans_amount\":\"" + amount.setScale(2, RoundingMode.HALF_UP).toPlainString() + "\"," +
+                    "\"product_code\":\"TRANS_ACCOUNT_NO_PWD\"," +
+                    "\"biz_scene\":\"DIRECT_TRANSFER\"," +
+                    "\"payee_info\":{" +
+                    "\"identity\":\"" + alipayAccount + "\"," +
+                    "\"identity_type\":\"ALIPAY_LOGON_ID\"," +
+                    "\"name\":\"" + alipayName + "\"" +
+                    "}" +
+                    "}");
+
+            AlipayFundTransUniTransferResponse response = alipayClient.execute(request);
+            if (response.isSuccess()) {
+                logger.info("支付宝转账成功: outBizNo={}, amount={}, alipayAccount={}, orderId={}",
+                        outBizNo, amount, alipayAccount, response.getOrderId());
+                return response.getOrderId();
+            } else {
+                logger.error("支付宝转账失败: outBizNo={}, code={}, msg={}, subMsg={}",
+                        outBizNo, response.getCode(), response.getMsg(), response.getSubMsg());
+                throw new RuntimeException("支付宝转账失败: " + response.getSubMsg());
+            }
+        } catch (AlipayApiException e) {
+            logger.error("调用支付宝转账API异常: outBizNo={}", outBizNo, e);
+            throw new RuntimeException("支付宝转账接口调用失败: " + e.getMessage());
         }
     }
 
@@ -434,6 +713,11 @@ public class PaymentService {
                 .paidAt(order.getPaidAt())
                 .createdAt(order.getCreatedAt())
                 .expireAt(expireAt)
+                .userCouponId(order.getUserCouponId())
+                .originalAmount(order.getOriginalAmount())
+                .discountAmount(order.getDiscountAmount())
+                .platformFee(order.getPlatformFee())
+                .feeDiscount(order.getFeeDiscount())
                 .build();
     }
 }

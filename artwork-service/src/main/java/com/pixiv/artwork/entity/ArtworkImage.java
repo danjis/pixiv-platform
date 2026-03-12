@@ -24,6 +24,9 @@ public class ArtworkImage {
     @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
 
+    @Column(name = "original_image_url", length = 500)
+    private String originalImageUrl;
+
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
@@ -62,6 +65,14 @@ public class ArtworkImage {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getOriginalImageUrl() {
+        return originalImageUrl;
+    }
+
+    public void setOriginalImageUrl(String originalImageUrl) {
+        this.originalImageUrl = originalImageUrl;
     }
 
     public String getThumbnailUrl() {

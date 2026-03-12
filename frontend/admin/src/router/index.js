@@ -40,13 +40,53 @@ const routes = [
         path: 'audit-logs',
         name: 'AuditLogs',
         component: () => import('../views/AuditLogsView.vue')
+      },
+      {
+        path: 'coupons',
+        name: 'Coupons',
+        component: () => import('../views/CouponsView.vue')
+      },
+      {
+        path: 'comments',
+        name: 'Comments',
+        component: () => import('../views/CommentsView.vue')
+      },
+      {
+        path: 'commissions',
+        name: 'AdminCommissions',
+        component: () => import('../views/CommissionsView.vue')
+      },
+      {
+        path: 'payments',
+        name: 'Payments',
+        component: () => import('../views/PaymentsView.vue')
+      },
+      {
+        path: 'finance',
+        name: 'Finance',
+        component: () => import('../views/FinanceView.vue')
+      },
+      {
+        path: 'contests',
+        name: 'Contests',
+        component: () => import('../views/ContestsView.vue')
+      },
+      {
+        path: 'membership',
+        name: 'Membership',
+        component: () => import('../views/MembershipView.vue')
+      },
+      {
+        path: 'feedback',
+        name: 'Feedback',
+        component: () => import('../views/FeedbackView.vue')
       }
     ]
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 

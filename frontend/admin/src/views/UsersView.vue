@@ -1,67 +1,65 @@
 <template>
   <div class="users-page">
-    <h2 class="page-title">用户管理</h2>
+    <div class="page-header-bar">
+      <h2>用户管理</h2>
+    </div>
 
-    <!-- 搜索栏 -->
-    <el-card shadow="never" class="filter-card">
-      <el-row :gutter="16" align="middle">
-        <el-col :span="8">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索用户名或邮箱"
-            clearable
-            @keyup.enter="handleSearch"
-            @clear="handleSearch"
-          >
-            <template #prefix><el-icon><Search /></el-icon></template>
-          </el-input>
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="roleFilter" placeholder="角色筛选" clearable @change="handleSearch">
-            <el-option label="全部" value="" />
-            <el-option label="普通用户" value="USER" />
-            <el-option label="画师" value="ARTIST" />
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-        </el-col>
-      </el-row>
-    </el-card>
+    <!-- 筛选栏 -->
+    <div class="filter-bar">
+      <el-input
+        v-model="keyword"
+        placeholder="搜索用户名或邮箱"
+        clearable
+        style="width: 260px"
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
+      >
+        <template #prefix><el-icon><Search /></el-icon></template>
+      </el-input>
+      <el-select v-model="roleFilter" placeholder="角色筛选" clearable style="width: 140px" @change="handleSearch">
+        <el-option label="普通用户" value="USER" />
+        <el-option label="画师" value="ARTIST" />
+      </el-select>
+      <el-button type="primary" @click="handleSearch">查询</el-button>
+    </div>
 
-    <!-- 用户列表 -->
-    <el-card shadow="never" style="margin-top: 16px">
-      <el-table :data="users" stripe v-loading="loading" style="width: 100%">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="头像" width="80">
+    <!-- 表格 -->
+    <div class="table-wrapper">
+      <el-table :data="users" v-loading="loading">
+        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column label="用户" min-width="200">
           <template #default="{ row }">
-            <el-avatar :size="36" :src="row.avatarUrl">
-              {{ row.username?.charAt(0)?.toUpperCase() }}
-            </el-avatar>
+            <div class="user-cell">
+              <el-avatar :size="32" :src="row.avatarUrl" class="user-avatar">
+                {{ row.username?.charAt(0) }}
+              </el-avatar>
+              <div class="user-info">
+                <span class="user-name">{{ row.username }}</span>
+                <span class="user-email">{{ row.email || '—' }}</span>
+              </div>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column prop="username" label="用户名" width="150" />
-        <el-table-column prop="email" label="邮箱" show-overflow-tooltip />
-        <el-table-column prop="role" label="角色" width="120">
+        <el-table-column label="角色" width="100">
           <template #default="{ row }">
             <el-tag :type="row.role === 'ARTIST' ? 'success' : 'info'" size="small">
               {{ row.role === 'ARTIST' ? '画师' : '用户' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="注册时间" width="180">
+        <el-table-column label="注册时间" width="170">
           <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
+            <span class="text-muted">{{ formatDate(row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="90" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" text size="small" @click="showDetail(row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <div class="pagination-wrapper">
+      <div class="pagination-bar">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -72,22 +70,29 @@
           @size-change="loadUsers"
         />
       </div>
-    </el-card>
+    </div>
 
-    <!-- 用户详情弹窗 -->
-    <el-dialog v-model="detailVisible" title="用户详情" width="500px">
-      <el-descriptions :column="1" border v-if="selectedUser">
-        <el-descriptions-item label="ID">{{ selectedUser.id }}</el-descriptions-item>
-        <el-descriptions-item label="用户名">{{ selectedUser.username }}</el-descriptions-item>
-        <el-descriptions-item label="邮箱">{{ selectedUser.email }}</el-descriptions-item>
-        <el-descriptions-item label="角色">
-          <el-tag :type="selectedUser.role === 'ARTIST' ? 'success' : 'info'" size="small">
-            {{ selectedUser.role === 'ARTIST' ? '画师' : '用户' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="个人简介">{{ selectedUser.bio || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="注册时间">{{ formatDate(selectedUser.createdAt) }}</el-descriptions-item>
-      </el-descriptions>
+    <!-- 详情弹窗 -->
+    <el-dialog v-model="detailVisible" title="用户详情" width="560px" destroy-on-close>
+      <template v-if="currentUser">
+        <div class="user-detail-header">
+          <el-avatar :size="56" :src="currentUser.avatarUrl">
+            {{ currentUser.username?.charAt(0) }}
+          </el-avatar>
+          <div>
+            <h3>{{ currentUser.username }}</h3>
+            <el-tag :type="currentUser.role === 'ARTIST' ? 'success' : 'info'" size="small">
+              {{ currentUser.role === 'ARTIST' ? '画师' : '用户' }}
+            </el-tag>
+          </div>
+        </div>
+        <el-descriptions :column="2" border style="margin-top: 20px">
+          <el-descriptions-item label="用户ID">{{ currentUser.id }}</el-descriptions-item>
+          <el-descriptions-item label="邮箱">{{ currentUser.email || '—' }}</el-descriptions-item>
+          <el-descriptions-item label="注册时间" :span="2">{{ formatDate(currentUser.createdAt) }}</el-descriptions-item>
+          <el-descriptions-item label="个人简介" :span="2">{{ currentUser.bio || '暂无' }}</el-descriptions-item>
+        </el-descriptions>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -95,71 +100,100 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { getUsers } from '../api/user'
+import { getUsers } from '@/api/user'
 
-const users = ref([])
 const loading = ref(false)
-const total = ref(0)
+const users = ref([])
+const keyword = ref('')
+const roleFilter = ref('')
 const currentPage = ref(1)
 const pageSize = ref(20)
-const searchKeyword = ref('')
-const roleFilter = ref('')
+const total = ref(0)
 const detailVisible = ref(false)
-const selectedUser = ref(null)
+const currentUser = ref(null)
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('zh-CN')
+function formatDate(str) {
+  return str ? new Date(str).toLocaleString('zh-CN') : '—'
 }
 
-const loadUsers = async () => {
+function showDetail(row) {
+  currentUser.value = row
+  detailVisible.value = true
+}
+
+async function loadUsers() {
   loading.value = true
   try {
-    const params = {
+    const res = await getUsers({
       page: currentPage.value,
-      size: pageSize.value
+      size: pageSize.value,
+      keyword: keyword.value || undefined,
+      role: roleFilter.value || undefined
+    })
+    if (res.code === 200 && res.data) {
+      users.value = res.data.records || res.data.items || []
+      total.value = res.data.total || 0
     }
-    if (searchKeyword.value) params.keyword = searchKeyword.value
-    if (roleFilter.value) params.role = roleFilter.value
-
-    const res = await getUsers(params)
-    const data = res.data
-    users.value = data?.records || data?.items || data?.content || []
-    total.value = data?.total || data?.totalElements || 0
-  } catch (e) {
-    console.error('加载用户列表失败:', e)
-  } finally {
-    loading.value = false
-  }
+  } catch { /* ignore */ }
+  finally { loading.value = false }
 }
 
-const handleSearch = () => {
+function handleSearch() {
   currentPage.value = 1
   loadUsers()
 }
 
-const showDetail = (user) => {
-  selectedUser.value = user
-  detailVisible.value = true
-}
-
-onMounted(loadUsers)
+onMounted(() => { loadUsers() })
 </script>
 
 <style scoped>
-.page-title {
-  margin: 0 0 20px 0;
-  color: #303133;
-  font-size: 22px;
+.users-page {
+  width: 100%;
 }
 
-.filter-card {
-  margin-bottom: 0;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
+.user-cell {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--c-text);
+  font-size: 13px;
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.text-muted {
+  color: var(--c-text-secondary);
+  font-size: 13px;
+}
+
+.user-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-detail-header h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
 }
 </style>

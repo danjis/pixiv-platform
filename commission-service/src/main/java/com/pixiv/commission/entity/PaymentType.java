@@ -7,5 +7,7 @@ public enum PaymentType {
     /** 定金支付 */
     DEPOSIT,
     /** 尾款支付 */
-    FINAL_PAYMENT
+    FINAL_PAYMENT,
+    /** 会员充值 */
+    MEMBERSHIP
 }

@@ -54,6 +54,9 @@ public class CommissionService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private PaymentService paymentService;
+
     private static final String NOTIFICATION_QUEUE = "notification.create";
 
     // ===================== 创建约稿请求（用户发起） =====================
@@ -105,7 +108,7 @@ public class CommissionService {
         // 通知画师有新的约稿请求
         sendNotification(artistId, "COMMISSION_REQUEST",
                 "您收到了一个新的约稿请求：" + commission.getTitle(),
-                "/commissions/" + commission.getId());
+                "/commission/" + commission.getId());
 
         return toDTO(commission);
     }
@@ -178,7 +181,7 @@ public class CommissionService {
         // 通知委托方画师已报价
         sendNotification(c.getClientId(), "COMMISSION_REQUEST",
                 "您的约稿「" + c.getTitle() + "」已收到画师报价：¥" + request.getTotalAmount(),
-                "/commissions/" + commissionId);
+                "/commission/" + commissionId);
 
         return toDTO(c);
     }
@@ -232,7 +235,7 @@ public class CommissionService {
         // 通知委托方约稿被拒绝
         sendNotification(c.getClientId(), "COMMISSION_REJECTED",
                 "您的约稿「" + c.getTitle() + "」已被画师拒绝" + (reason != null ? "，原因：" + reason : ""),
-                "/commissions/" + commissionId);
+                "/commission/" + commissionId);
 
         return toDTO(c);
     }
@@ -280,7 +283,7 @@ public class CommissionService {
         // 通知委托方作品已交付
         sendNotification(c.getClientId(), "COMMISSION_COMPLETED",
                 "您的约稿「" + c.getTitle() + "」已交付，请查收",
-                "/commissions/" + commissionId);
+                "/commission/" + commissionId);
 
         return toDTO(c);
     }
@@ -307,7 +310,7 @@ public class CommissionService {
         // 通知画师约稿已完成
         sendNotification(c.getArtistId(), "COMMISSION_COMPLETED",
                 "约稿「" + c.getTitle() + "」已完成，尾款已支付",
-                "/commissions/" + commissionId);
+                "/commission/" + commissionId);
 
         return toDTO(c);
     }
@@ -338,6 +341,12 @@ public class CommissionService {
 
     /**
      * 取消约稿 → CANCELLED
+     *
+     * 退款规则（参考pixiv模式）：
+     * 1. 定金支付前取消：无退款问题
+     * 2. 委托方(Client)取消：定金不退（委托方违约），尾款已付则退尾款
+     * 3. 画师(Artist)取消：定金退还（画师违约），尾款已付则退尾款
+     * 4. 已完成的约稿不可取消（如有纠纷需管理员介入）
      */
     @Transactional
     public CommissionDTO cancelCommission(Long userId, Long commissionId, String reason) {
@@ -347,19 +356,95 @@ public class CommissionService {
             throw new BusinessException(ErrorCode.COMMISSION_STATUS_ERROR, "已完成或已取消的约稿无法再取消");
         }
 
-        // 业务规则：定金不退款。约稿取消后，已支付的定金不予退还，
-        // 这是约稿平台的标准商业实践，定金作为画师时间成本的补偿。
+        // 判断取消方角色
+        boolean isClient = userId.equals(c.getClientId());
+        boolean isArtist = userId.equals(c.getArtistId());
+        String cancelRole = isClient ? "CLIENT" : (isArtist ? "ARTIST" : "UNKNOWN");
+
         c.setStatus(CommissionStatus.CANCELLED);
         c.setCancelReason(reason);
+        c.setCancelledBy(userId);
+        c.setCancelledByRole(cancelRole);
         c = commissionRepository.save(c);
 
-        logger.info("约稿已取消: id={}, user={}, reason={}", commissionId, userId, reason);
+        logger.info("约稿已取消: id={}, cancelledBy={}, role={}, reason={}", commissionId, userId, cancelRole, reason);
+
+        // 自动退款逻辑
+        if (c.getDepositPaid() || c.getFinalPaid()) {
+            boolean refundDeposit;
+            String refundReason;
+
+            if (isArtist) {
+                // 画师取消 → 画师违约，退还定金和尾款
+                refundDeposit = true;
+                refundReason = "画师取消约稿，全额退款（画师: " + userId + "，原因: " + (reason != null ? reason : "无") + "）";
+                logger.info("画师取消约稿，触发全额退款: commissionId={}", commissionId);
+            } else {
+                // 委托方取消 → 定金不退，仅退尾款
+                refundDeposit = false;
+                refundReason = "委托方取消约稿，退还尾款（定金不予退还）（原因: " + (reason != null ? reason : "无") + "）";
+                logger.info("委托方取消约稿，定金不退，仅退尾款: commissionId={}", commissionId);
+            }
+
+            try {
+                paymentService.refundPayment(commissionId, refundReason, refundDeposit);
+            } catch (Exception e) {
+                logger.error("自动退款失败: commissionId={}", commissionId, e);
+                // 退款失败不影响取消操作，管理员可后续手动处理
+            }
+        }
 
         // 通知对方约稿已取消
-        Long otherUserId = userId.equals(c.getClientId()) ? c.getArtistId() : c.getClientId();
+        Long otherUserId = isClient ? c.getArtistId() : c.getClientId();
+        String cancellerRole = isClient ? "委托方" : "画师";
+        String refundInfo = "";
+        if (c.getDepositPaid()) {
+            refundInfo = isArtist ? "（定金将退还至您的账户）" : "（定金不予退还）";
+        }
         sendNotification(otherUserId, "COMMISSION_REJECTED",
-                "约稿「" + c.getTitle() + "」已被取消" + (reason != null ? "，原因：" + reason : ""),
-                "/commissions/" + commissionId);
+                "约稿「" + c.getTitle() + "」已被" + cancellerRole + "取消" +
+                        (reason != null ? "，原因：" + reason : "") + refundInfo,
+                "/commission/" + commissionId);
+
+        return toDTO(c);
+    }
+
+    /**
+     * 管理员取消约稿（纠纷处理）
+     * 管理员可以选择是否退还定金
+     */
+    @Transactional
+    public CommissionDTO adminCancelCommission(Long adminId, Long commissionId, String reason, boolean refundDeposit) {
+        Commission c = commissionRepository.findById(commissionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMISSION_NOT_FOUND, "约稿不存在: " + commissionId));
+
+        if (c.getStatus() == CommissionStatus.CANCELLED) {
+            throw new BusinessException(ErrorCode.COMMISSION_STATUS_ERROR, "约稿已取消");
+        }
+
+        c.setStatus(CommissionStatus.CANCELLED);
+        c.setCancelReason("【管理员操作】" + (reason != null ? reason : "管理员取消"));
+        c.setCancelledBy(adminId);
+        c.setCancelledByRole("ADMIN");
+        c = commissionRepository.save(c);
+
+        logger.info("管理员取消约稿: id={}, adminId={}, refundDeposit={}", commissionId, adminId, refundDeposit);
+
+        // 退款处理
+        if (c.getDepositPaid() || c.getFinalPaid()) {
+            try {
+                String refundReason = "管理员取消约稿" + (refundDeposit ? "（含定金退还）" : "（定金不退）") +
+                        "：" + (reason != null ? reason : "无");
+                paymentService.refundPayment(commissionId, refundReason, refundDeposit);
+            } catch (Exception e) {
+                logger.error("管理员退款失败: commissionId={}", commissionId, e);
+            }
+        }
+
+        // 通知双方
+        String msg = "约稿「" + c.getTitle() + "」已被管理员取消" + (reason != null ? "，原因：" + reason : "");
+        sendNotification(c.getClientId(), "COMMISSION_REJECTED", msg, "/commission/" + commissionId);
+        sendNotification(c.getArtistId(), "COMMISSION_REJECTED", msg, "/commission/" + commissionId);
 
         return toDTO(c);
     }
@@ -385,6 +470,31 @@ public class CommissionService {
         message.setCreatedAt(LocalDateTime.now());
         message = commissionMessageRepository.save(message);
         return toMessageDTO(message);
+    }
+
+    // ===================== 删除约稿记录 =====================
+
+    /**
+     * 删除约稿记录（仅限终态：已完成/已取消/已拒绝）
+     */
+    @Transactional
+    public void deleteCommission(Long userId, Long commissionId) {
+        Commission c = findAndCheckAccess(commissionId, userId);
+
+        // 只允许删除终态的约稿
+        if (c.getStatus() != CommissionStatus.COMPLETED
+                && c.getStatus() != CommissionStatus.CANCELLED
+                && c.getStatus() != CommissionStatus.REJECTED) {
+            throw new BusinessException(ErrorCode.COMMISSION_STATUS_ERROR,
+                    "只能删除已完成、已取消或已拒绝的约稿记录");
+        }
+
+        // 删除关联的消息记录
+        commissionMessageRepository.deleteByCommissionId(commissionId);
+        // 删除约稿记录
+        commissionRepository.delete(c);
+
+        logger.info("约稿记录已删除: id={}, user={}", commissionId, userId);
     }
 
     // ===================== Private Helpers =====================
@@ -435,6 +545,8 @@ public class CommissionService {
                 .deliveryNote(c.getDeliveryNote())
                 .deliveredAt(c.getDeliveredAt())
                 .cancelReason(c.getCancelReason())
+                .cancelledBy(c.getCancelledBy())
+                .cancelledByRole(c.getCancelledByRole())
                 .status(c.getStatus())
                 .createdAt(c.getCreatedAt())
                 .updatedAt(c.getUpdatedAt())

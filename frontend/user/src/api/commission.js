@@ -140,3 +140,13 @@ export function sendCommissionMessage(commissionId, data) {
     data
   })
 }
+
+/**
+ * 删除约稿记录（仅限已完成/已取消/已拒绝）
+ */
+export function deleteCommission(commissionId) {
+  return request({
+    url: `/api/commissions/${commissionId}`,
+    method: 'delete'
+  })
+}

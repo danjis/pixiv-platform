@@ -13,163 +13,267 @@
     </div>
 
     <template v-else>
-      <!-- 接稿状态 -->
-      <div class="setting-card">
-        <div class="card-header">
-          <div class="card-title-area">
-            <h3 class="card-title">接稿状态</h3>
-            <p class="card-desc">开启后其他用户可以向你发起约稿</p>
-          </div>
-          <div class="toggle-area">
-            <button
-              class="toggle-btn"
-              :class="{ active: commissionOpen }"
-              @click="toggleCommissionStatus"
-            >
-              <span class="toggle-dot"></span>
-              <span class="toggle-text">{{ commissionOpen ? '接稿中' : '暂停接稿' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 画师简介 -->
-      <div class="setting-card">
-        <div class="card-header">
-          <h3 class="card-title">画师简介</h3>
-        </div>
-        <div class="card-body">
-          <div class="form-group">
-            <label>个人介绍</label>
-            <textarea
-              v-model="form.bio"
-              class="form-textarea"
-              rows="4"
-              placeholder="介绍一下自己，让委托方更了解你的风格和特长..."
-              maxlength="500"
-            ></textarea>
-            <span class="char-count">{{ (form.bio || '').length }}/500</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 擅长风格 -->
-      <div class="setting-card">
-        <div class="card-header">
-          <h3 class="card-title">擅长风格</h3>
-          <p class="card-desc">添加你擅长的创作风格标签，方便委托方找到你</p>
-        </div>
-        <div class="card-body">
-          <div class="tags-area">
-            <span v-for="(tag, i) in form.specialties" :key="i" class="tag">
-              {{ tag }}
-              <button class="tag-remove" @click="removeTag(i)">×</button>
-            </span>
-            <div class="tag-input-wrapper" v-if="form.specialties.length < 10">
-              <input
-                v-model="newTag"
-                class="tag-input"
-                placeholder="输入标签后回车"
-                @keydown.enter.prevent="addTag"
-                maxlength="20"
-              />
+      <!-- 双栏布局 -->
+      <div class="settings-grid">
+        <!-- 左栏 -->
+        <div class="settings-col">
+          <!-- 接稿状态 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <div class="card-title-area">
+                <h3 class="card-title">接稿状态</h3>
+                <p class="card-desc">开启后其他用户可以向你发起约稿</p>
+              </div>
+              <div class="toggle-area">
+                <button
+                  class="toggle-btn"
+                  :class="{ active: commissionOpen }"
+                  @click="toggleCommissionStatus"
+                >
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">{{ commissionOpen ? '接稿中' : '暂停接稿' }}</span>
+                </button>
+              </div>
             </div>
           </div>
-          <div class="tag-presets">
-            <span class="preset-label">推荐：</span>
-            <button
-              v-for="p in presetTags"
-              :key="p"
-              class="preset-btn"
-              :class="{ selected: form.specialties.includes(p) }"
-              @click="togglePresetTag(p)"
-            >
-              {{ p }}
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <!-- 价格区间 -->
-      <div class="setting-card">
-        <div class="card-header">
-          <h3 class="card-title">价格参考</h3>
-          <p class="card-desc">设置你的约稿参考价格，展示在你的个人主页</p>
-        </div>
-        <div class="card-body">
-          <div class="price-row">
-            <div class="form-group half">
-              <label>最低价格 (¥)</label>
-              <input v-model.number="form.minPrice" type="number" class="form-input" placeholder="0" min="0" />
+          <!-- 画师简介 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">画师简介</h3>
             </div>
-            <span class="price-sep">—</span>
-            <div class="form-group half">
-              <label>最高价格 (¥)</label>
-              <input v-model.number="form.maxPrice" type="number" class="form-input" placeholder="0" min="0" />
+            <div class="card-body">
+              <div class="form-group">
+                <label>个人介绍</label>
+                <textarea
+                  v-model="form.bio"
+                  class="form-textarea"
+                  rows="4"
+                  placeholder="介绍一下自己，让委托方更了解你的风格和特长..."
+                  maxlength="500"
+                ></textarea>
+                <span class="char-count">{{ (form.bio || '').length }}/500</span>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- 联系方式 -->
-      <div class="setting-card">
-        <div class="card-header">
-          <h3 class="card-title">联系偏好</h3>
-        </div>
-        <div class="card-body">
-          <div class="form-group">
-            <label>首选联系方式</label>
-            <select v-model="form.contactPreference" class="form-select">
-              <option value="platform">站内私信</option>
-              <option value="email">邮箱</option>
-              <option value="qq">QQ</option>
-              <option value="wechat">微信</option>
-            </select>
+          <!-- 擅长风格 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">擅长风格</h3>
+              <p class="card-desc">添加你擅长的创作风格标签，方便委托方找到你</p>
+            </div>
+            <div class="card-body">
+              <div class="tags-area">
+                <span v-for="(tag, i) in form.specialties" :key="i" class="tag">
+                  {{ tag }}
+                  <button class="tag-remove" @click="removeTag(i)">×</button>
+                </span>
+                <div class="tag-input-wrapper" v-if="form.specialties.length < 10">
+                  <input
+                    v-model="newTag"
+                    class="tag-input"
+                    placeholder="输入标签后回车"
+                    @keydown.enter.prevent="addTag"
+                    maxlength="20"
+                  />
+                </div>
+              </div>
+              <div class="tag-presets">
+                <span class="preset-label">推荐：</span>
+                <button
+                  v-for="p in presetTags"
+                  :key="p"
+                  class="preset-btn"
+                  :class="{ selected: form.specialties.includes(p) }"
+                  @click="togglePresetTag(p)"
+                >
+                  {{ p }}
+                </button>
+              </div>
+            </div>
           </div>
-          <div v-if="form.contactPreference !== 'platform'" class="form-group">
-            <label>{{ contactLabel }}</label>
-            <input v-model="form.contactInfo" class="form-input" :placeholder="contactPlaceholder" />
-          </div>
-        </div>
-      </div>
 
-      <!-- 隐私设置 -->
-      <div class="setting-card">
-        <div class="card-header">
-          <div class="card-title-area">
-            <h3 class="card-title">隐私设置</h3>
-            <p class="card-desc">控制你的主页上哪些信息对其他人可见</p>
+          <!-- 隐私设置 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <div class="card-title-area">
+                <h3 class="card-title">隐私设置</h3>
+                <p class="card-desc">控制你的主页上哪些信息对其他人可见</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="privacy-item">
+                <div class="privacy-info">
+                  <span class="privacy-label">隐藏关注列表</span>
+                  <span class="privacy-desc">开启后，其他用户无法查看你的关注列表</span>
+                </div>
+                <button
+                  class="toggle-btn"
+                  :class="{ active: privacySettings.hideFollowing }"
+                  @click="privacySettings.hideFollowing = !privacySettings.hideFollowing"
+                >
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">{{ privacySettings.hideFollowing ? '已隐藏' : '公开' }}</span>
+                </button>
+              </div>
+              <div class="privacy-item">
+                <div class="privacy-info">
+                  <span class="privacy-label">隐藏收藏列表</span>
+                  <span class="privacy-desc">开启后，其他用户无法查看你的收藏列表</span>
+                </div>
+                <button
+                  class="toggle-btn"
+                  :class="{ active: privacySettings.hideFavorites }"
+                  @click="privacySettings.hideFavorites = !privacySettings.hideFavorites"
+                >
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">{{ privacySettings.hideFavorites ? '已隐藏' : '公开' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 通知偏好 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">通知偏好</h3>
+              <p class="card-desc">约稿相关通知设置</p>
+            </div>
+            <div class="card-body">
+              <div class="privacy-item">
+                <div class="privacy-info">
+                  <span class="privacy-label">新约稿通知</span>
+                  <span class="privacy-desc">收到新的约稿请求时通知我</span>
+                </div>
+                <button class="toggle-btn" :class="{ active: notifications.newCommission }"
+                  @click="notifications.newCommission = !notifications.newCommission">
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">{{ notifications.newCommission ? '开启' : '关闭' }}</span>
+                </button>
+              </div>
+              <div class="privacy-item">
+                <div class="privacy-info">
+                  <span class="privacy-label">消息提醒</span>
+                  <span class="privacy-desc">委托方发来新消息时通知我</span>
+                </div>
+                <button class="toggle-btn" :class="{ active: notifications.message }"
+                  @click="notifications.message = !notifications.message">
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">{{ notifications.message ? '开启' : '关闭' }}</span>
+                </button>
+              </div>
+              <div class="privacy-item">
+                <div class="privacy-info">
+                  <span class="privacy-label">收款通知</span>
+                  <span class="privacy-desc">收到约稿付款时通知我</span>
+                </div>
+                <button class="toggle-btn" :class="{ active: notifications.payment }"
+                  @click="notifications.payment = !notifications.payment">
+                  <span class="toggle-dot"></span>
+                  <span class="toggle-text">{{ notifications.payment ? '开启' : '关闭' }}</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="card-body">
-          <div class="privacy-item">
-            <div class="privacy-info">
-              <span class="privacy-label">隐藏关注列表</span>
-              <span class="privacy-desc">开启后，其他用户无法查看你的关注列表</span>
+
+        <!-- 右栏 -->
+        <div class="settings-col">
+          <!-- 价格区间 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">价格参考</h3>
+              <p class="card-desc">设置你的约稿参考价格，展示在你的个人主页</p>
             </div>
-            <button
-              class="toggle-btn"
-              :class="{ active: privacySettings.hideFollowing }"
-              @click="privacySettings.hideFollowing = !privacySettings.hideFollowing"
-            >
-              <span class="toggle-dot"></span>
-              <span class="toggle-text">{{ privacySettings.hideFollowing ? '已隐藏' : '公开' }}</span>
-            </button>
-          </div>
-          <div class="privacy-item">
-            <div class="privacy-info">
-              <span class="privacy-label">隐藏收藏列表</span>
-              <span class="privacy-desc">开启后，其他用户无法查看你的收藏列表</span>
+            <div class="card-body">
+              <div class="price-row">
+                <div class="form-group half">
+                  <label>最低价格 (¥)</label>
+                  <input v-model.number="form.minPrice" type="number" class="form-input" placeholder="0" min="0" />
+                </div>
+                <span class="price-sep">—</span>
+                <div class="form-group half">
+                  <label>最高价格 (¥)</label>
+                  <input v-model.number="form.maxPrice" type="number" class="form-input" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="price-preview">
+                <div class="preview-label">主页展示效果</div>
+                <div class="preview-box">
+                  <span class="preview-price" v-if="form.minPrice || form.maxPrice">
+                    ¥{{ form.minPrice || 0 }} ~ ¥{{ form.maxPrice || 0 }}
+                  </span>
+                  <span class="preview-empty" v-else>未设置价格范围</span>
+                </div>
+              </div>
             </div>
-            <button
-              class="toggle-btn"
-              :class="{ active: privacySettings.hideFavorites }"
-              @click="privacySettings.hideFavorites = !privacySettings.hideFavorites"
-            >
-              <span class="toggle-dot"></span>
-              <span class="toggle-text">{{ privacySettings.hideFavorites ? '已隐藏' : '公开' }}</span>
-            </button>
           </div>
+
+          <!-- 联系方式 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">联系偏好</h3>
+              <p class="card-desc">委托方在约稿时可看到你的首选联系方式</p>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>首选联系方式</label>
+                <div class="contact-options">
+                  <label v-for="opt in contactOptions" :key="opt.value"
+                    class="contact-option" :class="{ selected: form.contactPreference === opt.value }">
+                    <input type="radio" :value="opt.value" v-model="form.contactPreference" class="hidden-radio" />
+                    <span class="contact-icon">{{ opt.icon }}</span>
+                    <span class="contact-name">{{ opt.label }}</span>
+                  </label>
+                </div>
+              </div>
+              <div v-if="form.contactPreference !== 'platform'" class="form-group">
+                <label>{{ contactLabel }}</label>
+                <input v-model="form.contactInfo" class="form-input" :placeholder="contactPlaceholder" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 约稿偏好 -->
+          <div class="setting-card">
+            <div class="card-header">
+              <h3 class="card-title">约稿偏好</h3>
+              <p class="card-desc">让委托方了解你的创作偏好</p>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>工作日程</label>
+                <select v-model="form.workSchedule" class="form-select">
+                  <option value="fulltime">全职接稿</option>
+                  <option value="parttime">兼职接稿（工作日晚间/周末）</option>
+                  <option value="weekend">仅周末</option>
+                  <option value="flexible">灵活安排</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>平均交付周期</label>
+                <select v-model="form.deliveryTime" class="form-select">
+                  <option value="3days">3 天内</option>
+                  <option value="1week">1 周内</option>
+                  <option value="2weeks">2 周内</option>
+                  <option value="1month">1 个月内</option>
+                  <option value="custom">视复杂度而定</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>接受的作品类型</label>
+                <div class="checkbox-group">
+                  <label v-for="wt in workTypes" :key="wt" class="check-item"
+                    :class="{ checked: form.workTypes.includes(wt) }">
+                    <input type="checkbox" :value="wt" v-model="form.workTypes" class="hidden-radio" />
+                    <span class="check-text">{{ wt }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -187,7 +291,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getCurrentUser, updateProfile, updatePrivacySettings } from '@/api/user'
+import { getCurrentUser, updatePrivacySettings } from '@/api/user'
+import { updateArtistSettings, getArtistSettings } from '@/api/studio'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -203,19 +308,37 @@ const privacySettings = ref({
   hideFavorites: false
 })
 
+const notifications = ref({
+  newCommission: true,
+  message: true,
+  payment: true
+})
+
 const form = ref({
   bio: '',
   specialties: [],
   minPrice: null,
   maxPrice: null,
   contactPreference: 'platform',
-  contactInfo: ''
+  contactInfo: '',
+  workSchedule: 'flexible',
+  deliveryTime: 'custom',
+  workTypes: ['立绘', '头像', '插画']
 })
 
 const presetTags = [
   '日系', '二次元', '写实', '水彩', '油画', '厚涂',
   'Q版', '像素', '立绘', '头像', '场景', '原创',
   '同人', '插画', 'Live2D', '漫画'
+]
+
+const workTypes = ['立绘', '头像', '插画', '漫画', '场景', 'Live2D', '表情包', '封面', 'LOGO']
+
+const contactOptions = [
+  { value: 'platform', label: '站内私信', icon: '💬' },
+  { value: 'email', label: '邮箱', icon: '📧' },
+  { value: 'qq', label: 'QQ', icon: '🐧' },
+  { value: 'wechat', label: '微信', icon: '💚' }
 ]
 
 const contactLabel = computed(() => {
@@ -254,18 +377,31 @@ function toggleCommissionStatus() {
 async function loadSettings() {
   loading.value = true
   try {
-    const res = await getCurrentUser()
-    if (res.code === 200) {
-      const u = res.data
+    // 并行加载用户信息和画师设置
+    const [userRes, artistRes] = await Promise.all([
+      getCurrentUser(),
+      getArtistSettings().catch(() => null)
+    ])
+
+    if (userRes.code === 200) {
+      const u = userRes.data
       form.value.bio = u.bio || ''
-      form.value.specialties = u.specialties || []
-      form.value.minPrice = u.minPrice || null
-      form.value.maxPrice = u.maxPrice || null
-      form.value.contactPreference = u.contactPreference || 'platform'
-      form.value.contactInfo = u.contactInfo || ''
-      commissionOpen.value = u.commissionOpen !== false
       privacySettings.value.hideFollowing = u.hideFollowing || false
       privacySettings.value.hideFavorites = u.hideFavorites || false
+    }
+
+    if (artistRes && artistRes.code === 200) {
+      const a = artistRes.data
+      form.value.specialties = a.specialties || []
+      form.value.minPrice = a.minPrice || null
+      form.value.maxPrice = a.maxPrice || null
+      form.value.contactPreference = a.contactPreference || 'platform'
+      form.value.contactInfo = a.contactInfo || ''
+      commissionOpen.value = a.acceptingCommissions !== false
+      // 如果画师有描述，优先使用
+      if (a.description) {
+        form.value.bio = a.description || form.value.bio
+      }
     }
   } catch {
     ElMessage.error('加载设置失败')
@@ -277,6 +413,7 @@ async function loadSettings() {
 async function handleSave() {
   saving.value = true
   try {
+    // 保存画师设置（包括bio）
     const data = {
       bio: form.value.bio,
       specialties: form.value.specialties,
@@ -286,7 +423,7 @@ async function handleSave() {
       contactInfo: form.value.contactInfo,
       commissionOpen: commissionOpen.value
     }
-    const res = await updateProfile(data)
+    const res = await updateArtistSettings(data)
     if (res.code === 200) {
       // 同时保存隐私设置
       try {
@@ -298,7 +435,7 @@ async function handleSave() {
       ElMessage.success('设置已保存')
       lastSaved.value = new Date().toLocaleTimeString('zh-CN')
       // 更新 store
-      userStore.updateUser(data)
+      userStore.updateUser({ bio: form.value.bio })
     } else {
       ElMessage.error(res.message || '保存失败')
     }
@@ -313,7 +450,7 @@ onMounted(loadSettings)
 </script>
 
 <style scoped>
-.settings-page { max-width: 680px; }
+.settings-page { max-width: 100%; }
 
 .page-header { margin-bottom: 24px; }
 .page-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
@@ -327,6 +464,14 @@ onMounted(loadSettings)
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* 双栏布局 */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
 /* 设置卡片 */
 .setting-card {
   background: #fff;
@@ -334,6 +479,11 @@ onMounted(loadSettings)
   padding: 22px 24px;
   margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f5;
+  transition: box-shadow 0.2s;
+}
+.setting-card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .card-header {
   display: flex;
@@ -446,10 +596,92 @@ onMounted(loadSettings)
   font-size: 18px; color: #ccc; margin-bottom: 20px;
 }
 
+.price-preview {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #f8f9fb;
+  border-radius: 10px;
+  border: 1px dashed #e0e0e0;
+}
+.preview-label {
+  font-size: 11px;
+  color: #bbb;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.preview-box {
+  font-size: 18px;
+  font-weight: 700;
+  color: #00C48C;
+}
+.preview-empty {
+  font-size: 14px;
+  color: #ccc;
+  font-weight: 400;
+}
+
+/* 联系选项卡片 */
+.contact-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.contact-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 2px solid #f0f0f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+.contact-option:hover {
+  border-color: #d0d0d0;
+}
+.contact-option.selected {
+  border-color: #0096FA;
+  background: #f0f7ff;
+}
+.hidden-radio { display: none; }
+.contact-icon { font-size: 20px; }
+.contact-name { font-size: 13px; font-weight: 500; color: #555; }
+.contact-option.selected .contact-name { color: #0096FA; font-weight: 600; }
+
+/* 作品类型 */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.check-item {
+  padding: 5px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #fff;
+}
+.check-item:hover {
+  border-color: #0096FA;
+  color: #0096FA;
+}
+.check-item.checked {
+  border-color: #0096FA;
+  background: #EBF5FF;
+  color: #0096FA;
+  font-weight: 500;
+}
+
 /* 保存 */
 .save-area {
   display: flex; align-items: center; gap: 16px;
   margin-top: 8px; margin-bottom: 40px;
+  justify-content: flex-end;
 }
 .save-btn {
   padding: 12px 36px; border: none; background: #0096FA; color: #fff;
@@ -484,9 +716,11 @@ onMounted(loadSettings)
   color: #999;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+  .settings-grid { grid-template-columns: 1fr; }
   .card-header { flex-direction: column; gap: 12px; }
   .price-row { flex-direction: column; }
   .price-sep { display: none; }
+  .contact-options { grid-template-columns: 1fr; }
 }
 </style>

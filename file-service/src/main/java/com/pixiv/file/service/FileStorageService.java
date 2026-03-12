@@ -94,24 +94,31 @@ public class FileStorageService {
         String extension = FilenameUtils.getExtension(originalFilename);
         String uniqueFileName = generateUniqueFileName(extension);
 
-        // 3. 为原图添加水印
+        // 3. 上传原始图片（无水印，VIP专享）
+        String originalPath = FileConstants.ORIGINAL_PATH_PREFIX + uniqueFileName;
+        String originalImageUrl = uploadToOss(file.getInputStream(), originalPath, file.getContentType(),
+                file.getSize());
+        log.info("原始图片（无水印）上传成功: {}", originalImageUrl);
+
+        // 4. 为原图添加水印
         byte[] watermarkedBytes = addWatermark(file.getInputStream(), extension);
         ByteArrayInputStream watermarkedStream = new ByteArrayInputStream(watermarkedBytes);
 
-        // 4. 上传带水印的原图
+        // 5. 上传带水印的图片
         String imagePath = FileConstants.OSS_PATH_PREFIX + uniqueFileName;
         String imageUrl = uploadToOss(watermarkedStream, imagePath, file.getContentType(), watermarkedBytes.length);
-        log.info("原图（含水印）上传成功: {}", imageUrl);
+        log.info("水印图片上传成功: {}", imageUrl);
 
-        // 5. 生成并上传缩略图（基于带水印的图片）
+        // 6. 生成并上传缩略图（基于带水印的图片）
         String thumbnailPath = FileConstants.THUMBNAIL_PATH_PREFIX + uniqueFileName;
         String thumbnailUrl = createAndUploadThumbnail(file, thumbnailPath);
         log.info("缩略图上传成功: {}", thumbnailUrl);
 
-        // 6. 构建响应
+        // 7. 构建响应
         return UploadResponse.builder()
                 .imageUrl(imageUrl)
                 .thumbnailUrl(thumbnailUrl)
+                .originalImageUrl(originalImageUrl)
                 .fileName(uniqueFileName)
                 .fileSize(file.getSize())
                 .contentType(file.getContentType())

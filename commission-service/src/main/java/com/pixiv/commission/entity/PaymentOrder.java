@@ -78,6 +78,26 @@ public class PaymentOrder {
     @Column(name = "refund_reason", length = 500)
     private String refundReason;
 
+    /** 使用的用户优惠券ID */
+    @Column(name = "user_coupon_id")
+    private Long userCouponId;
+
+    /** 原始金额（优惠前） */
+    @Column(name = "original_amount", precision = 10, scale = 2)
+    private BigDecimal originalAmount;
+
+    /** 优惠券抵扣金额 */
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount;
+
+    /** 平台服务费 */
+    @Column(name = "platform_fee", precision = 10, scale = 2)
+    private BigDecimal platformFee;
+
+    /** 服务费折扣金额（VIP减免） */
+    @Column(name = "fee_discount", precision = 10, scale = 2)
+    private BigDecimal feeDiscount;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

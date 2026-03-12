@@ -47,6 +47,53 @@ export function continuePay(orderNo) {
   })
 }
 
+/**
+ * 获取我的支付订单列表
+ * @param {Object} params - { page, size, status?, paymentType? }
+ */
+export function getMyOrders(params) {
+  return request({
+    url: '/api/payments/my',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 取消待支付订单
+ * @param {string} orderNo
+ */
+export function cancelOrder(orderNo) {
+  return request({
+    url: '/api/payments/cancel',
+    method: 'post',
+    data: { orderNo }
+  })
+}
+
+/**
+ * 删除已关闭/已退款的订单
+ * @param {string} orderNo
+ */
+export function deleteOrder(orderNo) {
+  return request({
+    url: `/api/payments/${orderNo}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 获取可用于指定订单金额的优惠券
+ * @param {number} orderAmount - 订单金额
+ */
+export function getAvailableCouponsForOrder(orderAmount) {
+  return request({
+    url: '/api/coupons/available-for-order',
+    method: 'get',
+    params: { orderAmount }
+  })
+}
+
 // ==================== 约稿方案 API ====================
 
 /**

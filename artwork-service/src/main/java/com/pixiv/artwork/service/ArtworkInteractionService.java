@@ -259,8 +259,11 @@ public class ArtworkInteractionService {
         artworkRepository.save(artwork);
         logger.debug("热度分数已更新: artworkId={}, score={}", artwork.getId(), score);
 
-        // 同步更新排行榜
+        // 同步更新排行榜（热度维度）
         rankingService.updateScore(artwork.getId(), score);
+        // 同步更新多维度排行榜（点赞/收藏/浏览）
+        rankingService.updateMetricScores(artwork.getId(),
+                artwork.getLikeCount(), artwork.getFavoriteCount(), artwork.getViewCount());
     }
 
     /**

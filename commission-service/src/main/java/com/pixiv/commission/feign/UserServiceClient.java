@@ -6,6 +6,8 @@ import com.pixiv.common.dto.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * 用户服务 Feign 客户端
@@ -17,28 +19,27 @@ import org.springframework.web.bind.annotation.PathVariable;
  * 
  * @author Pixiv Platform Team
  */
-@FeignClient(
-    name = "user-service",           // 服务名称（在 Nacos 中注册的名称）
-    path = "/api/users",              // 基础路径
-    fallbackFactory = UserServiceClientFallbackFactory.class  // 降级处理工厂
+@FeignClient(name = "user-service", // 服务名称（在 Nacos 中注册的名称）
+        path = "/api/users", // 基础路径
+        fallbackFactory = UserServiceClientFallbackFactory.class // 降级处理工厂
 )
 public interface UserServiceClient {
 
-    /**
-     * 根据用户 ID 获取用户信息
-     * 
-     * @param userId 用户 ID
-     * @return 用户信息
-     */
     @GetMapping("/{userId}")
     Result<UserDTO> getUserById(@PathVariable("userId") Long userId);
-    
-    /**
-     * 根据用户 ID 获取画师信息
-     * 
-     * @param userId 用户 ID
-     * @return 画师信息
-     */
+
     @GetMapping("/{userId}/artist")
     Result<ArtistDTO> getArtistByUserId(@PathVariable("userId") Long userId);
+
+    @PostMapping("/wallet/freeze")
+    Result<String> freezeWalletAmount(@RequestBody java.util.Map<String, Object> body);
+
+    @PostMapping("/wallet/unfreeze")
+    Result<String> unfreezeWalletAmount(@RequestBody java.util.Map<String, Object> body);
+
+    @PostMapping("/wallet/income")
+    Result<String> addWalletIncome(@RequestBody java.util.Map<String, Object> body);
+
+    @PostMapping("/wallet/cancel-freeze")
+    Result<String> cancelWalletFreeze(@RequestBody java.util.Map<String, Object> body);
 }

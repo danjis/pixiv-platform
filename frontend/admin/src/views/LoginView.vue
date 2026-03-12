@@ -1,48 +1,68 @@
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
-      <template #header>
-        <div class="card-header">
-          <h2>管理员登录</h2>
+  <div class="login-page">
+    <!-- 装饰背景 -->
+    <div class="login-bg">
+      <div class="bg-shape bg-shape-1"></div>
+      <div class="bg-shape bg-shape-2"></div>
+      <div class="bg-shape bg-shape-3"></div>
+    </div>
+
+    <!-- 登录卡片 -->
+    <div class="login-card">
+      <!-- 品牌区 -->
+      <div class="login-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="10" fill="#6366f1"/>
+            <path d="M12 20L18 14L24 20L18 26Z" fill="white" opacity="0.9"/>
+            <path d="M18 14L24 20L30 14L24 8Z" fill="white" opacity="0.6"/>
+          </svg>
         </div>
-      </template>
-      
+        <h1 class="brand-title">Pixiv Admin</h1>
+        <p class="brand-desc">创作平台管理控制台</p>
+      </div>
+
+      <!-- 表单 -->
       <el-form
-        ref="loginFormRef"
+        ref="formRef"
         :model="loginForm"
-        :rules="loginRules"
-        label-width="80px"
+        :rules="rules"
+        class="login-form"
+        @keyup.enter="handleLogin"
       >
-        <el-form-item label="用户名" prop="username">
+        <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
-            placeholder="请输入用户名"
-            clearable
+            placeholder="管理员账号"
+            size="large"
+            :prefix-icon="User"
           />
         </el-form-item>
-        
-        <el-form-item label="密码" prop="password">
+        <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="请输入密码"
+            placeholder="登录密码"
+            size="large"
             show-password
-            @keyup.enter="handleLogin"
+            :prefix-icon="Lock"
           />
         </el-form-item>
-        
         <el-form-item>
           <el-button
             type="primary"
+            size="large"
+            class="login-btn"
             :loading="loading"
-            style="width: 100%"
             @click="handleLogin"
           >
-            登录
+            {{ loading ? '登录中...' : '登 录' }}
           </el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+
+      <p class="login-footer">Pixiv Platform &copy; {{ new Date().getFullYear() }}</p>
+    </div>
   </div>
 </template>
 
@@ -50,54 +70,43 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useAdminStore } from '../stores/admin'
-import { login } from '../api/auth'
+import { User, Lock } from '@element-plus/icons-vue'
+import { login } from '@/api/auth'
+import { useAdminStore } from '@/stores/admin'
 
 const router = useRouter()
 const adminStore = useAdminStore()
-
-const loginFormRef = ref(null)
+const formRef = ref(null)
 const loading = ref(false)
 
-// 登录表单数据
 const loginForm = reactive({
   username: '',
   password: ''
 })
 
-// 表单验证规则
-const loginRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为 6 位', trigger: 'blur' }
-  ]
+const rules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
-// 处理登录
 const handleLogin = async () => {
-  if (!loginFormRef.value) return
-  
-  await loginFormRef.value.validate(async (valid) => {
+  if (!formRef.value) return
+  await formRef.value.validate(async (valid) => {
     if (!valid) return
-    
     loading.value = true
-    
     try {
-      const response = await login(loginForm)
-      
-      // 保存 token 和管理员信息
-      adminStore.setToken(response.data.token)
-      adminStore.setAdminInfo(response.data.admin)
-      
-      ElMessage.success('登录成功')
-      
-      // 跳转到仪表板
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('登录失败:', error)
+      const res = await login(loginForm)
+      if (res.code === 200) {
+        const { token, admin } = res.data
+        localStorage.setItem('admin_token', token)
+        adminStore.setAdminInfo(admin)
+        ElMessage.success('登录成功')
+        router.push('/dashboard')
+      } else {
+        ElMessage.error(res.message || '登录失败')
+      }
+    } catch {
+      ElMessage.error('登录请求失败')
     } finally {
       loading.value = false
     }
@@ -106,24 +115,160 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-container {
+.login-page {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--c-sidebar);
+  overflow: hidden;
 }
 
-.login-card {
+/* 装饰背景 */
+.login-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+}
+
+.bg-shape-1 {
+  width: 500px;
+  height: 500px;
+  background: #6366f1;
+  top: -15%;
+  right: -10%;
+  animation: float-1 20s ease-in-out infinite;
+}
+
+.bg-shape-2 {
   width: 400px;
+  height: 400px;
+  background: #818cf8;
+  bottom: -10%;
+  left: -8%;
+  animation: float-2 25s ease-in-out infinite;
 }
 
-.card-header {
+.bg-shape-3 {
+  width: 300px;
+  height: 300px;
+  background: #a5b4fc;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: float-3 18s ease-in-out infinite;
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-40px, 30px); }
+}
+
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -40px); }
+}
+
+@keyframes float-3 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* 卡片 */
+.login-card {
+  position: relative;
+  width: 400px;
+  padding: 48px 40px 36px;
+  background: var(--c-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+/* 品牌 */
+.login-brand {
   text-align: center;
+  margin-bottom: 36px;
 }
 
-.card-header h2 {
-  margin: 0;
-  color: #303133;
+.brand-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+}
+
+.brand-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.brand-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--c-text);
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.brand-desc {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+/* 表单 */
+.login-form {
+  margin-top: 8px;
+}
+
+.login-form :deep(.el-form-item) {
+  margin-bottom: 22px;
+}
+
+.login-form :deep(.el-input__wrapper) {
+  padding: 4px 14px;
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  box-shadow: 0 0 0 1px var(--c-border) inset !important;
+  transition: all var(--transition-fast);
+}
+
+.login-form :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #c0c4cc inset !important;
+}
+
+.login-form :deep(.el-input__wrapper.is-focus) {
+  background: #fff;
+  box-shadow: 0 0 0 1.5px var(--c-primary) inset !important;
+}
+
+.login-form :deep(.el-input__prefix .el-icon) {
+  color: var(--c-text-muted);
+  font-size: 16px;
+}
+
+.login-btn {
+  width: 100%;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--radius-sm) !important;
+  letter-spacing: 2px;
+}
+
+/* 页脚 */
+.login-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--c-text-muted);
+  margin-top: 28px;
 }
 </style>

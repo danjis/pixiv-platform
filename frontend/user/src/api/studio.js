@@ -42,8 +42,64 @@ export function getArtistCommissions(params = {}) {
  */
 export function updateArtistSettings(data) {
   return request({
-    url: '/api/users/me',
+    url: '/api/users/me/artist-settings',
     method: 'put',
     data
+  })
+}
+
+/**
+ * 获取画师设置
+ */
+export function getArtistSettings() {
+  return request({
+    url: '/api/users/me/artist-settings',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取钱包概览
+ * 返回：totalIncome, availableBalance, frozenAmount, withdrawnAmount, monthIncome
+ */
+export function getWalletOverview() {
+  return request({
+    url: '/api/users/me/wallet',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取钱包交易记录
+ * @param {Object} params - { page, size }
+ */
+export function getWalletTransactions(params = {}) {
+  return request({
+    url: '/api/users/me/wallet/transactions',
+    method: 'get',
+    params: { page: 0, size: 50, ...params }
+  })
+}
+
+/**
+ * 提现
+ * @param {Object} data - { amount, alipayAccount }
+ */
+export function withdrawFromWallet(data) {
+  return request({
+    url: '/api/users/me/wallet/withdraw',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取我的提现记录
+ */
+export function getMyWithdrawals(params) {
+  return request({
+    url: '/api/users/me/wallet/withdrawals',
+    method: 'get',
+    params
   })
 }

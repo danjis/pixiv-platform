@@ -35,6 +35,11 @@ public class CommentDTO {
     private String avatarUrl;
 
     /**
+     * 用户会员等级 (NORMAL/VIP/SVIP)
+     */
+    private String membershipLevel;
+
+    /**
      * 评价内容
      */
     private String content;
@@ -114,6 +119,14 @@ public class CommentDTO {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getMembershipLevel() {
+        return membershipLevel;
+    }
+
+    public void setMembershipLevel(String membershipLevel) {
+        this.membershipLevel = membershipLevel;
     }
 
     public String getContent() {

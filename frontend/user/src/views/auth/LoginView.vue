@@ -32,7 +32,23 @@
           <h2 class="form-title">登录</h2>
           <p class="form-subtitle">欢迎回来</p>
 
+          <!-- 登录方式切换 -->
+          <div class="login-tabs">
+            <button
+              class="login-tab"
+              :class="{ active: loginMode === 'password' }"
+              @click="loginMode = 'password'"
+            >密码登录</button>
+            <button
+              class="login-tab"
+              :class="{ active: loginMode === 'email' }"
+              @click="loginMode = 'email'"
+            >邮箱验证码</button>
+          </div>
+
+          <!-- 密码登录表单 -->
           <el-form
+            v-if="loginMode === 'password'"
             ref="loginFormRef"
             :model="loginForm"
             :rules="rules"
@@ -79,6 +95,65 @@
             </el-form-item>
           </el-form>
 
+          <!-- 邮箱验证码登录表单 -->
+          <el-form
+            v-else
+            ref="emailFormRef"
+            :model="emailForm"
+            :rules="emailRules"
+            class="auth-form"
+            @submit.prevent="handleEmailLogin"
+          >
+            <el-form-item prop="email">
+              <el-input
+                v-model="emailForm.email"
+                placeholder="邮箱地址"
+                size="large"
+                :prefix-icon="Message"
+              />
+            </el-form-item>
+
+            <el-form-item prop="emailCode">
+              <div class="code-input-wrapper">
+                <el-input
+                  v-model="emailForm.emailCode"
+                  placeholder="邮箱验证码"
+                  size="large"
+                  :prefix-icon="Key"
+                  @keyup.enter="handleEmailLogin"
+                />
+                <button
+                  type="button"
+                  class="send-code-btn"
+                  :disabled="codeCooldown > 0 || sendingCode"
+                  @click="handleSendCode"
+                >
+                  <span v-if="sendingCode">发送中...</span>
+                  <span v-else-if="codeCooldown > 0">{{ codeCooldown }}s</span>
+                  <span v-else>获取验证码</span>
+                </button>
+              </div>
+            </el-form-item>
+
+            <el-form-item>
+              <button
+                type="button"
+                class="auth-submit-btn"
+                :class="{ 'is-loading': loading }"
+                :disabled="loading"
+                @click="handleEmailLogin"
+              >
+                <span v-if="!loading">登录</span>
+                <span v-else class="btn-loading">
+                  <svg class="spin-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/>
+                  </svg>
+                  登录中...
+                </span>
+              </button>
+            </el-form-item>
+          </el-form>
+
           <div class="auth-footer">
             <span class="footer-text">还没有账号？</span>
             <router-link to="/register" class="footer-link">立即注册</router-link>
@@ -93,8 +168,8 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
-import { login } from '@/api/auth'
+import { User, Lock, Message, Key } from '@element-plus/icons-vue'
+import { login, loginByEmail, sendEmailCode } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
@@ -102,12 +177,26 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const loginFormRef = ref(null)
+const emailFormRef = ref(null)
 const loading = ref(false)
+const loginMode = ref('password')
 
+// 密码登录表单
 const loginForm = ref({
   usernameOrEmail: '',
   password: ''
 })
+
+// 邮箱验证码登录表单
+const emailForm = ref({
+  email: '',
+  emailCode: ''
+})
+
+// 验证码发送相关
+const codeCooldown = ref(0)
+const sendingCode = ref(false)
+let cooldownTimer = null
 
 const rules = {
   usernameOrEmail: [
@@ -119,6 +208,65 @@ const rules = {
   ]
 }
 
+const emailRules = {
+  email: [
+    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  emailCode: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { len: 6, message: '验证码为 6 位数字', trigger: 'blur' }
+  ]
+}
+
+// 发送验证码
+const handleSendCode = async () => {
+  if (!emailForm.value.email) {
+    ElMessage.warning('请先输入邮箱地址')
+    return
+  }
+  // 简单邮箱格式校验
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(emailForm.value.email)) {
+    ElMessage.warning('请输入正确的邮箱格式')
+    return
+  }
+
+  sendingCode.value = true
+  try {
+    await sendEmailCode(emailForm.value.email)
+    ElMessage.success('验证码已发送到您的邮箱')
+    // 开始倒计时
+    codeCooldown.value = 60
+    cooldownTimer = setInterval(() => {
+      codeCooldown.value--
+      if (codeCooldown.value <= 0) {
+        clearInterval(cooldownTimer)
+        cooldownTimer = null
+      }
+    }, 1000)
+  } catch (error) {
+    console.error('发送验证码失败:', error)
+  } finally {
+    sendingCode.value = false
+  }
+}
+
+// 处理登录成功后的公共逻辑
+const handleLoginSuccess = (response) => {
+  const authData = {
+    token: response.data.accessToken,
+    refreshToken: response.data.refreshToken,
+    user: response.data.user
+  }
+  userStore.setAuth(authData)
+  ElMessage.success('登录成功')
+  setTimeout(() => {
+    const redirect = route.query.redirect || '/artworks'
+    router.push(redirect)
+  }, 300)
+}
+
 const handleLogin = async () => {
   if (!loginFormRef.value) return
 
@@ -127,33 +275,27 @@ const handleLogin = async () => {
       loading.value = true
       try {
         const response = await login(loginForm.value)
-
-        console.log('登录响应:', response)
-
-        const authData = {
-          token: response.data.accessToken,
-          refreshToken: response.data.refreshToken,
-          user: response.data.user
-        }
-
-        console.log('转换后的认证数据:', authData)
-
-        userStore.setAuth(authData)
-
-        console.log('保存后的 store 状态:', {
-          token: userStore.token,
-          user: userStore.user,
-          isAuthenticated: userStore.isAuthenticated
-        })
-
-        ElMessage.success('登录成功')
-
-        await new Promise(resolve => setTimeout(resolve, 300))
-
-        const redirect = route.query.redirect || '/artworks'
-        router.push(redirect)
+        handleLoginSuccess(response)
       } catch (error) {
         console.error('登录失败:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+  })
+}
+
+const handleEmailLogin = async () => {
+  if (!emailFormRef.value) return
+
+  await emailFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        const response = await loginByEmail(emailForm.value)
+        handleLoginSuccess(response)
+      } catch (error) {
+        console.error('邮箱登录失败:', error)
       } finally {
         loading.value = false
       }
@@ -276,7 +418,75 @@ const handleLogin = async () => {
 .form-subtitle {
   font-size: 14px;
   color: var(--px-text-tertiary, #8c8c8c);
-  margin: 0 0 32px;
+  margin: 0 0 24px;
+}
+
+/* 登录方式切换 Tab */
+.login-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--px-border-light, #f0f0f0);
+}
+
+.login-tab {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--px-text-tertiary, #8c8c8c);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-tab:hover {
+  color: var(--px-text-secondary, #595959);
+}
+
+.login-tab.active {
+  color: var(--px-blue, #0096FA);
+  border-bottom-color: var(--px-blue, #0096FA);
+}
+
+/* 验证码输入行 */
+.code-input-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.code-input-wrapper .el-input {
+  flex: 1;
+}
+
+.send-code-btn {
+  flex-shrink: 0;
+  width: 110px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--px-bg-secondary, #f7f8fa);
+  border: 1.5px solid var(--px-border, #e8e8e8);
+  color: var(--px-blue, #0096FA);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  background: var(--px-blue, #0096FA);
+  color: #fff;
+  border-color: var(--px-blue, #0096FA);
+}
+
+.send-code-btn:disabled {
+  color: var(--px-text-tertiary, #8c8c8c);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* 表单样式 */

@@ -92,6 +92,9 @@ public class ArtworkService {
     private FeedService feedService;
 
     @Autowired
+    private BrowsingHistoryService browsingHistoryService;
+
+    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     private static final String ARTWORK_CACHE_PREFIX = "artwork:";
@@ -170,6 +173,7 @@ public class ArtworkService {
                 ArtworkImage img = new ArtworkImage();
                 img.setArtworkId(artwork.getId());
                 img.setImageUrl(imageItems.get(i).getImageUrl());
+                img.setOriginalImageUrl(imageItems.get(i).getOriginalImageUrl());
                 img.setThumbnailUrl(imageItems.get(i).getThumbnailUrl());
                 img.setSortOrder(i);
                 artworkImageRepository.save(img);
@@ -289,6 +293,7 @@ public class ArtworkService {
                 ArtworkImage img = new ArtworkImage();
                 img.setArtworkId(artworkId);
                 img.setImageUrl(request.getImages().get(i).getImageUrl());
+                img.setOriginalImageUrl(request.getImages().get(i).getOriginalImageUrl());
                 img.setThumbnailUrl(request.getImages().get(i).getThumbnailUrl());
                 img.setSortOrder(i);
                 artworkImageRepository.save(img);
@@ -412,6 +417,11 @@ public class ArtworkService {
             int delta = viewCountService.getUnflushedDelta(artworkId);
             if (delta > 0) {
                 detailDTO.setViewCount(detailDTO.getViewCount() + delta);
+            }
+
+            // 7. 异步记录浏览历史（仅登录用户）
+            if (currentUserId != null) {
+                browsingHistoryService.recordView(currentUserId, artworkId);
             }
         }
 
@@ -580,10 +590,12 @@ public class ArtworkService {
             sortBy = "hottest";
         }
 
-        // === 优先从 Redis ZSet 获取排行榜（仅 hottest 排序走 Redis） ===
-        if ("hottest".equalsIgnoreCase(sortBy) && rankingService.isRankingAvailable(period)) {
-            List<Long> rankedIds = rankingService.getRankingIds(period, page, size);
-            long total = rankingService.getRankingCount(period);
+        // === 优先从 Redis ZSet 获取排行榜 ===
+        // 所有排序类型都尝试走 Redis（按 sortBy+period 组合查询）
+        String rankingKey = rankingService.getRankingKey(sortBy, period);
+        if (rankingService.isRankingAvailable(rankingKey)) {
+            List<Long> rankedIds = rankingService.getRankingIdsByKey(rankingKey, page, size);
+            long total = rankingService.getRankingCountByKey(rankingKey);
 
             if (!rankedIds.isEmpty()) {
                 // 按排行榜顺序从 DB 加载作品详情
@@ -597,42 +609,17 @@ public class ArtworkService {
                         .collect(Collectors.toList());
 
                 List<ArtworkDTO> dtos = convertToDTOBatch(ordered);
-                logger.info("排行榜查询成功(Redis): period={}, 总数={}, 当前页={}", period, total, page);
+                logger.info("排行榜查询成功(Redis): sortBy={}, period={}, 总数={}, 当前页={}", sortBy, period, total, page);
                 return new PageResult<>(dtos, total, page, size);
             }
         }
 
         // === Redis 不可用时降级到数据库查询 ===
+        // 注意：按点赞/收藏/浏览排序时，不按创建时间筛选
+        // 因为"今日最多点赞"应包含所有被点赞的作品，而非仅今日创建的作品
         Page<Artwork> artworkPage;
-
-        if (period != null && !period.equals("all")) {
-            LocalDateTime startTime = getStartTimeByPeriod(period);
-            LocalDateTime endTime = LocalDateTime.now();
-
-            Sort sort;
-            switch (sortBy.toLowerCase()) {
-                case "most_liked":
-                    sort = Sort.by(Sort.Direction.DESC, "likeCount");
-                    break;
-                case "most_favorited":
-                    sort = Sort.by(Sort.Direction.DESC, "favoriteCount");
-                    break;
-                case "most_viewed":
-                    sort = Sort.by(Sort.Direction.DESC, "viewCount");
-                    break;
-                case "hottest":
-                default:
-                    sort = Sort.by(Sort.Direction.DESC, "hotnessScore");
-                    break;
-            }
-
-            Pageable sortedPageable = PageRequest.of(page - 1, size, sort);
-            artworkPage = artworkRepository.findByCreatedAtBetween(startTime, endTime, ArtworkStatus.PUBLISHED,
-                    sortedPageable);
-        } else {
-            Pageable sortedPageable = createPageable(sortBy, page - 1, size);
-            artworkPage = getArtworksBySortType(sortBy, sortedPageable);
-        }
+        Pageable sortedPageable = createPageable(sortBy, page - 1, size);
+        artworkPage = getArtworksBySortType(sortBy, sortedPageable);
 
         List<ArtworkDTO> artworkDTOs = convertToDTOBatch(artworkPage.getContent());
 
@@ -956,7 +943,8 @@ public class ArtworkService {
         dto.setImageCount(artwork.getImageCount() != null ? artwork.getImageCount() : 1);
         List<ArtworkImage> images = artworkImageRepository.findByArtworkIdOrderBySortOrderAsc(artwork.getId());
         dto.setImages(images.stream()
-                .map(img -> new ImageDTO(img.getImageUrl(), img.getThumbnailUrl(), img.getSortOrder()))
+                .map(img -> new ImageDTO(img.getImageUrl(), img.getOriginalImageUrl(), img.getThumbnailUrl(),
+                        img.getSortOrder()))
                 .collect(Collectors.toList()));
 
         // 加载标签
@@ -1011,7 +999,8 @@ public class ArtworkService {
         dto.setImageCount(artwork.getImageCount() != null ? artwork.getImageCount() : 1);
         List<ArtworkImage> detailImages = artworkImageRepository.findByArtworkIdOrderBySortOrderAsc(artwork.getId());
         dto.setImages(detailImages.stream()
-                .map(img -> new ImageDTO(img.getImageUrl(), img.getThumbnailUrl(), img.getSortOrder()))
+                .map(img -> new ImageDTO(img.getImageUrl(), img.getOriginalImageUrl(), img.getThumbnailUrl(),
+                        img.getSortOrder()))
                 .collect(Collectors.toList()));
 
         // 加载标签

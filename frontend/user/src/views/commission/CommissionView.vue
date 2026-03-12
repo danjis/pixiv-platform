@@ -162,6 +162,14 @@
             <button class="action-btn outline" @click="goChat(c)">
               私信沟通
             </button>
+            <!-- 删除记录（仅限终态） -->
+            <button
+              v-if="['COMPLETED','CANCELLED','REJECTED'].includes(c.status)"
+              class="action-btn danger-text"
+              @click="handleDelete(c)"
+            >
+              删除记录
+            </button>
           </div>
         </div>
       </div>
@@ -233,6 +241,75 @@
         <el-button type="primary" @click="handleQuote" :loading="submitting">确认报价</el-button>
       </template>
     </el-dialog>
+
+    <!-- 优惠券选择弹窗 -->
+    <el-dialog v-model="couponDialogVisible" title="选择优惠券" width="520px" :close-on-click-modal="false">
+      <div class="coupon-list">
+        <div
+          v-for="c in availableCoupons"
+          :key="c.userCouponId"
+          class="coupon-item"
+          :class="{ selected: selectedCouponId === c.userCouponId }"
+          @click="selectedCouponId = selectedCouponId === c.userCouponId ? null : c.userCouponId"
+        >
+          <div class="coupon-left">
+            <span class="coupon-discount">
+              <template v-if="c.type === 'FIXED'">¥{{ c.discountValue }}</template>
+              <template v-else>{{ c.discountValue }}%</template>
+            </span>
+            <span class="coupon-type">{{ c.type === 'FIXED' ? '满减券' : '折扣券' }}</span>
+          </div>
+          <div class="coupon-right">
+            <span class="coupon-name">{{ c.name }}</span>
+            <span class="coupon-save">可省 ¥{{ c.discountAmount }}</span>
+            <span v-if="c.minOrderAmount > 0" class="coupon-min">满¥{{ c.minOrderAmount }}可用</span>
+            <span class="coupon-expire">{{ new Date(c.endTime).toLocaleDateString('zh-CN') }} 到期</span>
+          </div>
+          <div class="coupon-check">
+            <span v-if="selectedCouponId === c.userCouponId" class="check-icon">✓</span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="couponDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmPayNoCoupon">不使用优惠券，直接支付</el-button>
+        <el-button v-if="selectedCouponId" type="success" @click="confirmPayWithCoupon">使用优惠券并支付</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 费用明细确认弹窗 -->
+    <el-dialog v-model="feeDialogVisible" title="费用明细" width="420px" :close-on-click-modal="false">
+      <div class="fee-breakdown">
+        <div class="fee-row">
+          <span class="fee-label">{{ feeDetail.payLabel }}</span>
+          <span class="fee-value">¥{{ feeDetail.originalAmount }}</span>
+        </div>
+        <div v-if="feeDetail.payLabel === '约稿定金'" class="fee-tip">
+          💡 定金支付不可使用优惠券，优惠券仅在支付尾款时可用
+        </div>
+        <div class="fee-row discount" v-if="feeDetail.couponDiscount > 0">
+          <span class="fee-label">🎫 优惠券抵扣</span>
+          <span class="fee-value green">-¥{{ feeDetail.couponDiscount }}</span>
+        </div>
+        <div class="fee-row">
+          <span class="fee-label">平台服务费 (5%)</span>
+          <span class="fee-value">+¥{{ feeDetail.platformFee }}</span>
+        </div>
+        <div class="fee-row discount" v-if="feeDetail.feeDiscount > 0">
+          <span class="fee-label">🏅 {{ feeDetail.vipLevel }} 手续费减免</span>
+          <span class="fee-value green">-¥{{ feeDetail.feeDiscount }}</span>
+        </div>
+        <div class="fee-divider"></div>
+        <div class="fee-row total">
+          <span class="fee-label">实付金额</span>
+          <span class="fee-value accent">¥{{ feeDetail.totalAmount }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="feeDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleFeeConfirmPay" :loading="submitting">确认支付</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -242,10 +319,15 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
   getMyCommissions, rejectCommission, quoteCommission,
-  startWork, deliverWork, requestRevision, cancelCommission
+  startWork, deliverWork, requestRevision, cancelCommission,
+  deleteCommission
 } from '@/api/commission'
 import { createPayment } from '@/api/payment'
+import { getAvailableCouponsForOrder } from '@/api/payment'
+import { getMyMembership } from '@/api/membership'
 import { createOrGetConversation } from '@/api/chat'
+
+const FEE_RATE = 0.05 // 平台服务费率 5%
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -278,6 +360,22 @@ const quoteForm = ref({
   revisionsAllowed: 3,
   quoteNote: ''
 })
+
+// 优惠券选择
+const couponDialogVisible = ref(false)
+const availableCoupons = ref([])
+const selectedCouponId = ref(null)
+const payTarget = ref(null)
+const payType = ref('DEPOSIT')
+
+// 费用明细
+const feeDialogVisible = ref(false)
+const feeDetail = ref({
+  payLabel: '', originalAmount: '0', couponDiscount: 0,
+  platformFee: '0', feeDiscount: 0, vipLevel: '',
+  totalAmount: '0'
+})
+const pendingPayCouponId = ref(null)
 
 const statusFilters = [
   { label: '全部', value: '' },
@@ -380,43 +478,100 @@ function goDetail(c) {
 // === 支付相关 ===
 
 async function handlePayDeposit(c) {
-  try {
-    await ElMessageBox.confirm(
-      `确认接受画师报价并通过支付宝支付定金 ¥${c.depositAmount}？`,
-      '支付定金',
-      { confirmButtonText: '去支付', cancelButtonText: '取消', type: 'info' }
-    )
-    submitting.value = true
-    const res = await createPayment({ commissionId: c.id, paymentType: 'DEPOSIT' })
-    if (res.code === 200 && res.data) {
-      submitAlipayForm(res.data)
-    } else {
-      ElMessage.error(res.message || '创建支付订单失败')
-    }
-  } catch {
-    // 取消操作
-  } finally {
-    submitting.value = false
-  }
+  payTarget.value = c
+  payType.value = 'DEPOSIT'
+  selectedCouponId.value = null
+  availableCoupons.value = []
+  // 定金不可用优惠券，直接进入费用明细
+  confirmPay(c, 'DEPOSIT', null)
 }
 
 async function handlePayFinal(c) {
   const finalAmount = (c.totalAmount - c.depositAmount).toFixed(2)
+  payTarget.value = c
+  payType.value = 'FINAL_PAYMENT'
+  selectedCouponId.value = null
+  availableCoupons.value = []
   try {
-    await ElMessageBox.confirm(
-      `确认收到作品并通过支付宝支付尾款 ¥${finalAmount}？\n支付完成后约稿将自动完成。`,
-      '确认收货并支付尾款',
-      { confirmButtonText: '去支付', cancelButtonText: '取消', type: 'info' }
-    )
+    const res = await getAvailableCouponsForOrder(finalAmount)
+    if (res.code === 200 && res.data && res.data.length > 0) {
+      availableCoupons.value = res.data
+      couponDialogVisible.value = true
+      return
+    }
+  } catch { /* ignore */ }
+  confirmPay(c, 'FINAL_PAYMENT', null)
+}
+
+async function confirmPayWithCoupon() {
+  couponDialogVisible.value = false
+  await confirmPay(payTarget.value, payType.value, selectedCouponId.value)
+}
+
+async function confirmPayNoCoupon() {
+  couponDialogVisible.value = false
+  await confirmPay(payTarget.value, payType.value, null)
+}
+
+async function confirmPay(c, type, userCouponId) {
+  const amount = type === 'DEPOSIT' ? parseFloat(c.depositAmount) : parseFloat((c.totalAmount - c.depositAmount).toFixed(2))
+  const payLabel = type === 'DEPOSIT' ? '约稿定金' : '约稿尾款'
+
+  // 查找选中的优惠券折扣
+  let couponDiscount = 0
+  if (userCouponId) {
+    const coupon = availableCoupons.value.find(cp => cp.userCouponId === userCouponId)
+    if (coupon) couponDiscount = parseFloat(coupon.discountAmount)
+  }
+  const afterCoupon = Math.max(0, amount - couponDiscount)
+
+  // 获取用户会员等级以计算手续费减免
+  let vipLevel = ''
+  let feeDiscountRate = 0
+  try {
+    const memRes = await getMyMembership()
+    if (memRes.code === 200 && memRes.data && !memRes.data.expired) {
+      const level = memRes.data.level
+      if (level === 'SVIP') { vipLevel = 'SVIP'; feeDiscountRate = 0.10 }
+      else if (level === 'VIP') { vipLevel = 'VIP'; feeDiscountRate = 0.05 }
+    }
+  } catch { /* ignore */ }
+
+  const platformFee = parseFloat((afterCoupon * 0.05).toFixed(2))
+  const feeDiscountAmt = parseFloat((platformFee * feeDiscountRate).toFixed(2))
+  const actualFee = parseFloat((platformFee - feeDiscountAmt).toFixed(2))
+  const totalAmount = parseFloat((afterCoupon + actualFee).toFixed(2))
+
+  feeDetail.value = {
+    payLabel,
+    originalAmount: amount.toFixed(2),
+    couponDiscount: couponDiscount,
+    platformFee: platformFee.toFixed(2),
+    feeDiscount: feeDiscountAmt,
+    vipLevel,
+    totalAmount: totalAmount.toFixed(2)
+  }
+  pendingPayCouponId.value = userCouponId
+  feeDialogVisible.value = true
+}
+
+async function handleFeeConfirmPay() {
+  const c = payTarget.value
+  const type = payType.value
+  const userCouponId = pendingPayCouponId.value
+  try {
     submitting.value = true
-    const res = await createPayment({ commissionId: c.id, paymentType: 'FINAL_PAYMENT' })
+    const data = { commissionId: c.id, paymentType: type }
+    if (userCouponId) data.userCouponId = userCouponId
+    const res = await createPayment(data)
     if (res.code === 200 && res.data) {
+      feeDialogVisible.value = false
       submitAlipayForm(res.data)
     } else {
       ElMessage.error(res.message || '创建支付订单失败')
     }
   } catch {
-    // 取消
+    ElMessage.error('支付失败')
   } finally {
     submitting.value = false
   }
@@ -564,21 +719,77 @@ async function handleRevision(c) {
 }
 
 async function handleCancel(c) {
+  const hasPaid = ['DEPOSIT_PAID', 'IN_PROGRESS', 'DELIVERED'].includes(c.status)
+  const isUserArtist = activeTab.value === 'artist'
+
+  let warningMsg = ''
+  if (isUserArtist) {
+    if (hasPaid) {
+      warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #e6a23c;">' +
+        '<p style="margin:0 0 6px;font-weight:600;color:#e6a23c;">⚠️ 退款提示</p>' +
+        '<p style="margin:0;color:#606266;font-size:13px;">画师主动取消约稿，委托方已支付的<strong>所有款项（包括定金）</strong>将<strong>全额退还</strong>。</p>' +
+        '</div>'
+    }
+    warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
+  } else {
+    if (hasPaid) {
+      warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #f56c6c;">' +
+        '<p style="margin:0 0 6px;font-weight:600;color:#f56c6c;">⚠️ 定金不予退还</p>' +
+        '<p style="margin:0;color:#606266;font-size:13px;">委托方主动取消约稿，<strong>定金将不予退还</strong>。</p>' +
+        '<p style="margin:4px 0 0;color:#606266;font-size:13px;">如有已支付的尾款，尾款部分将退还。</p>' +
+        '</div>' +
+        '<div style="margin-bottom:12px;padding:10px;background:#f0f9ff;border-radius:8px;font-size:12px;color:#909399;">' +
+        '💡 如因画师原因需取消，建议与画师协商由画师方发起取消，可获全额退款。' +
+        '</div>'
+    }
+    warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
+  }
+
   try {
-    const { value } = await ElMessageBox.prompt('请输入取消原因（可选）', '取消约稿', {
-      confirmButtonText: '确认取消',
-      cancelButtonText: '返回',
-      inputPlaceholder: '取消原因...',
-      type: 'warning'
+    const { value } = await ElMessageBox.prompt('', '取消约稿', {
+      message: warningMsg,
+      dangerouslyUseHTMLString: true,
+      inputPlaceholder: '取消原因（可选）',
+      confirmButtonText: hasPaid ? '确认取消并退款' : '确认取消',
+      cancelButtonText: '我再想想',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
+      customClass: 'cancel-commission-dialog'
     })
     const res = await cancelCommission(c.id, value)
     if (res.code === 200) {
-      ElMessage.success('约稿已取消')
+      if (isUserArtist && hasPaid) {
+        ElMessage.success('约稿已取消，款项将退还给委托方')
+      } else if (!isUserArtist && hasPaid) {
+        ElMessage.success('约稿已取消，定金不退还，尾款（如有）将退还')
+      } else {
+        ElMessage.success('约稿已取消')
+      }
       loadCommissions()
     } else {
       ElMessage.error(res.message || '操作失败')
     }
   } catch {}
+}
+
+async function handleDelete(c) {
+  try {
+    await ElMessageBox.confirm(
+      '确定删除这条约稿记录？删除后无法恢复。',
+      '删除约稿记录',
+      { confirmButtonText: '确认删除', cancelButtonText: '取消', type: 'warning' }
+    )
+    const res = await deleteCommission(c.id)
+    if (res.code === 200) {
+      ElMessage.success('已删除')
+      loadCommissions()
+      loadCounts()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('删除失败')
+  }
 }
 
 async function goChat(c) {
@@ -980,5 +1191,98 @@ function formatDate(d) {
 @media (max-width: 768px) {
   .commission-page { padding: 12px; }
   .card-info-row { gap: 12px; }
+}
+
+.coupon-list {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.coupon-item {
+  display: flex;
+  align-items: center;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.coupon-item:hover { border-color: #0096FA; background: #f0f8ff; }
+.coupon-item.selected { border-color: #0096FA; background: #e6f4ff; }
+.coupon-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  padding-right: 14px;
+  border-right: 1px dashed #ddd;
+}
+.coupon-discount { font-size: 22px; font-weight: 700; color: #ff4d4f; }
+.coupon-type { font-size: 11px; color: #999; margin-top: 2px; }
+.coupon-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 14px;
+}
+.coupon-name { font-size: 14px; font-weight: 600; color: #333; }
+.coupon-save { font-size: 13px; color: #ff4d4f; font-weight: 500; }
+.coupon-min { font-size: 12px; color: #999; }
+.coupon-expire { font-size: 11px; color: #bbb; }
+.coupon-check { width: 28px; display: flex; justify-content: center; }
+.check-icon { color: #0096FA; font-size: 20px; font-weight: 700; }
+
+/* 费用明细 */
+.fee-breakdown {
+  padding: 8px 0;
+}
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+.fee-row.discount {
+  padding: 6px 0;
+}
+.fee-label {
+  font-size: 14px;
+  color: #555;
+}
+.fee-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  font-variant-numeric: tabular-nums;
+}
+.fee-value.green {
+  color: #52c41a;
+}
+.fee-value.accent {
+  font-size: 20px;
+  font-weight: 800;
+  color: #6366f1;
+}
+.fee-divider {
+  border-top: 1px dashed #e0e0e0;
+  margin: 8px 0;
+}
+.fee-tip {
+  background: #fef9e7;
+  color: #b7791f;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 4px 0 8px;
+  line-height: 1.6;
+}
+.fee-row.total .fee-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
 }
 </style>

@@ -47,10 +47,10 @@
         <template v-if="artworkImages.length > 1">
           <div class="image-wrapper">
             <el-image
-              :src="artworkImages[currentImageIndex]?.imageUrl || artwork.imageUrl"
+              :src="getDisplayImageUrl(artworkImages[currentImageIndex]) || artwork.imageUrl"
               :alt="artwork.title"
               fit="contain"
-              :preview-src-list="artworkImages.map(i => i.imageUrl)"
+              :preview-src-list="artworkImages.map(i => getDisplayImageUrl(i))"
               :initial-index="currentImageIndex"
               class="main-image"
             >
@@ -98,10 +98,10 @@
         <template v-else>
           <div class="image-wrapper">
             <el-image
-              :src="artwork.imageUrl"
+              :src="artworkImages.length > 0 ? getDisplayImageUrl(artworkImages[0]) : artwork.imageUrl"
               :alt="artwork.title"
               fit="contain"
-              :preview-src-list="[artwork.imageUrl]"
+              :preview-src-list="artworkImages.length > 0 ? [getDisplayImageUrl(artworkImages[0])] : [artwork.imageUrl]"
               class="main-image"
             >
               <template #error>
@@ -309,13 +309,15 @@
           <div v-else class="comments-list">
             <div v-for="comment in comments" :key="comment.id" class="comment-thread">
               <!-- 顶级评论 -->
-              <div class="comment-item">
+              <div class="comment-item" :class="{ 'vip-comment': comment.membershipLevel === 'VIP', 'svip-comment': comment.membershipLevel === 'SVIP' }">
                 <el-avatar :size="36" :src="comment.avatarUrl || defaultAvatar" class="comment-avatar">
                   {{ comment.username?.charAt(0) }}
                 </el-avatar>
                 <div class="comment-main">
                   <div class="comment-bubble">
                     <span class="comment-author">{{ comment.username }}</span>
+                    <span v-if="comment.membershipLevel === 'VIP'" class="vip-badge">VIP</span>
+                    <span v-if="comment.membershipLevel === 'SVIP'" class="vip-badge svip">SVIP</span>
                     <p class="comment-content">{{ comment.content }}</p>
                   </div>
                   <div class="comment-footer">
@@ -340,6 +342,8 @@
                   <div class="reply-main">
                     <div class="reply-bubble">
                       <span class="reply-author">{{ reply.username }}</span>
+                      <span v-if="reply.membershipLevel === 'VIP'" class="vip-badge small">VIP</span>
+                      <span v-if="reply.membershipLevel === 'SVIP'" class="vip-badge svip small">SVIP</span>
                       <span v-if="reply.replyToUsername" class="reply-to-tag">
                         <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
                         <span class="reply-to-name">{{ reply.replyToUsername }}</span>
@@ -397,6 +401,7 @@ import { useUserStore } from '@/stores/user'
 import { getArtwork, getArtworks, likeArtwork, unlikeArtwork, favoriteArtwork, unfavoriteArtwork } from '@/api/artwork'
 import { getComments, addComment, deleteComment } from '@/api/comment'
 import { followArtist, unfollowArtist, checkFollowStatus } from '@/api/follow'
+import { getMyMembership } from '@/api/membership'
 import SkeletonBlock from '@/components/SkeletonBlock.vue'
 import { ElMessage } from 'element-plus'
 import { Picture, Loading } from '@element-plus/icons-vue'
@@ -417,7 +422,10 @@ let aiTagTimer = null
 
 // 多图相关
 const currentImageIndex = ref(0)
-const artworkImages = ref([]) // [{ imageUrl, thumbnailUrl, sortOrder }]
+const artworkImages = ref([]) // [{ imageUrl, thumbnailUrl, originalImageUrl, sortOrder }]
+
+// 会员状态
+const isVip = ref(false)
 
 // 评论相关
 const comments = ref([])
@@ -432,6 +440,28 @@ const commentInputRef = ref(null)
 
 // 画师其他作品
 const artistWorks = ref([])
+
+// 获取当前图片的显示URL（VIP看原图，非VIP看水印图）
+function getDisplayImageUrl(img) {
+  if (isVip.value && img.originalImageUrl) {
+    return img.originalImageUrl
+  }
+  return img.imageUrl
+}
+
+// 加载会员状态
+async function loadMembership() {
+  try {
+    const res = await getMyMembership()
+    if (res.code === 200 && res.data) {
+      const level = res.data.level
+      isVip.value = (level === 'VIP' || level === 'SVIP')
+    }
+  } catch (e) {
+    // 非登录用户或获取失败，默认非VIP
+    isVip.value = false
+  }
+}
 
 
 // 加载作品详情（支持AI标签自动刷新）
@@ -454,6 +484,8 @@ async function loadArtwork({ pollForTags = false } = {}) {
       loadArtistWorks()
       if (userStore.isAuthenticated && artwork.value.artistId) {
         checkFollow()
+        // 加载会员状态以决定是否显示无水印原图
+        loadMembership()
       }
       // AI标签自动轮询逻辑
       if (pollForTags && (!artwork.value.tags || artwork.value.tags.length === 0)) {
@@ -1219,7 +1251,39 @@ onBeforeUnmount(() => {
 }
 .comment-author {
   font-size: 13px; font-weight: 600; color: #1a1a1a;
-  display: block; margin-bottom: 3px;
+  display: inline; margin-bottom: 3px;
+}
+
+/* VIP 徽章 */
+.vip-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: #fff;
+  margin-left: 6px;
+  vertical-align: middle;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.vip-badge.svip {
+  background: linear-gradient(135deg, #e040fb, #7c4dff);
+}
+.vip-badge.small {
+  font-size: 9px;
+  padding: 0 4px;
+}
+
+/* VIP/SVIP 评论高亮 */
+.vip-comment > .comment-main > .comment-bubble {
+  background: linear-gradient(135deg, #fff8e1, #fff3e0);
+  border-left: 3px solid #ff9800;
+}
+.svip-comment > .comment-main > .comment-bubble {
+  background: linear-gradient(135deg, #f3e5f5, #ede7f6);
+  border-left: 3px solid #ab47bc;
 }
 .comment-content {
   font-size: 13px; color: #444; line-height: 1.6; margin: 0;

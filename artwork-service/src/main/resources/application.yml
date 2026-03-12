@@ -8,7 +8,7 @@ spring:
   # JPA 配置
   jpa:
     hibernate:
-      ddl-auto: validate  # 生产环境使用 validate，不自动创建表
+      ddl-auto: update  # 开发阶段使用 update 自动建表
     show-sql: false
     properties:
       hibernate:

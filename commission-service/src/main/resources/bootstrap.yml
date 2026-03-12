@@ -9,13 +9,13 @@ spring:
     # Nacos 服务注册与发现配置
     nacos:
       discovery:
-        server-addr: 47.120.61.152:8848
+        server-addr: ${NACOS_ADDR:47.120.61.152:8848}
         namespace: dev
         username: nacos
         password: nacos
         # 服务注册配置
         service: ${spring.application.name}
-        ip: localhost
+        ip: ${HOST_IP:localhost}
         port: 8083
         # 健康检查配置
         heart-beat-interval: 5000
@@ -27,7 +27,7 @@ spring:
       
       # Nacos 配置中心配置
       config:
-        server-addr: 47.120.61.152:8848
+        server-addr: ${NACOS_ADDR:47.120.61.152:8848}
         namespace: dev
         username: nacos
         password: nacos

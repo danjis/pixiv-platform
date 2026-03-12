@@ -49,6 +49,45 @@
       </div>
     </section>
 
+    <!-- 比赛精选区域 -->
+    <section v-if="contestEntries.length > 0" class="contest-section">
+      <div class="section-container">
+        <div class="section-header">
+          <h2 class="section-title contest-title-icon">比赛精选</h2>
+          <router-link to="/contests" class="section-more">
+            查看全部比赛
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </router-link>
+        </div>
+        <div class="contest-grid">
+          <div
+            v-for="entry in contestEntries"
+            :key="entry.id"
+            class="contest-card"
+            @click="goToContestEntry(entry)"
+          >
+            <div class="contest-card-thumb">
+              <img :src="entry.imageUrl" :alt="entry.title" />
+              <div class="contest-ribbon">参赛作品</div>
+              <div v-if="entry.averageScore > 0" class="contest-score">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </svg>
+                {{ entry.averageScore.toFixed(1) }}
+              </div>
+            </div>
+            <div class="contest-card-info">
+              <h3 class="contest-card-title">{{ entry.title }}</h3>
+              <span class="contest-card-badge">{{ entry.contestTitle }}</span>
+              <p class="contest-card-artist">{{ entry.artistName }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 推荐作品区域 -->
     <section class="recommend-section">
       <div class="section-container">
@@ -109,6 +148,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getArtworks } from '@/api/artwork'
+import { getFeaturedEntries } from '@/api/contest'
 import ArtworkCard from '@/components/ArtworkCard.vue'
 
 const router = useRouter()
@@ -116,7 +156,20 @@ const userStore = useUserStore()
 
 const artworks = ref([])
 const featuredArtworks = ref([])
+const contestEntries = ref([])
 const loading = ref(true)
+
+// 加载比赛精选
+async function loadContestEntries() {
+  try {
+    const res = await getFeaturedEntries(8)
+    if (res.code === 200 && res.data) {
+      contestEntries.value = res.data
+    }
+  } catch (e) {
+    console.error('加载比赛精选失败:', e)
+  }
+}
 
 // 加载推荐作品
 async function loadArtworks() {
@@ -146,8 +199,15 @@ function goToArtist(id) {
   router.push(`/artist/${id}`)
 }
 
+function goToContestEntry(entry) {
+  if (entry.contestId) {
+    router.push(`/contests/${entry.contestId}`)
+  }
+}
+
 onMounted(() => {
   loadArtworks()
+  loadContestEntries()
 })
 </script>
 
@@ -302,6 +362,134 @@ onMounted(() => {
   object-fit: cover;
 }
 
+/* ====== 比赛精选区域 ====== */
+.contest-section {
+  padding: 40px 0 0;
+  background: linear-gradient(180deg, #fffbf0 0%, var(--px-bg-secondary) 100%);
+}
+
+.contest-title-icon::after {
+  content: '🏆';
+  margin-left: 8px;
+  font-size: 18px;
+}
+
+.contest-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.contest-card {
+  background: #fff;
+  border-radius: var(--px-radius-lg, 12px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.contest-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(255, 165, 0, 0.15);
+  border-color: #f0c040;
+}
+
+.contest-card-thumb {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+  overflow: hidden;
+}
+
+.contest-card-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.contest-card:hover .contest-card-thumb img {
+  transform: scale(1.05);
+}
+
+.contest-ribbon {
+  position: absolute;
+  top: 12px;
+  left: -6px;
+  background: linear-gradient(135deg, #f0a030, #e88000);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 12px 3px 14px;
+  border-radius: 0 4px 4px 0;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(240, 160, 48, 0.35);
+}
+
+.contest-ribbon::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  border-style: solid;
+  border-width: 3px 6px 3px 0;
+  border-color: transparent #c06800 transparent transparent;
+}
+
+.contest-score {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  color: #ffc040;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.contest-card-info {
+  padding: 12px 14px 14px;
+}
+
+.contest-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--px-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+
+.contest-card-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e88000;
+  background: #fff7eb;
+  border: 1px solid #ffe0b2;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.contest-card-artist {
+  font-size: 12px;
+  color: var(--px-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ====== 推荐作品区域 ====== */
 .recommend-section {
   padding: 40px 0 60px;
@@ -453,6 +641,9 @@ onMounted(() => {
   .grid-loading {
     column-count: 4;
   }
+  .contest-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 900px) {
@@ -481,6 +672,9 @@ onMounted(() => {
   .grid-loading {
     column-count: 3;
   }
+  .contest-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
@@ -504,6 +698,10 @@ onMounted(() => {
   .grid-loading {
     column-count: 2;
     column-gap: 10px;
+  }
+  .contest-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   .section-container {
     padding: 0 12px;

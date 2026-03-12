@@ -231,4 +231,48 @@ public class CommissionController {
             return ResponseEntity.badRequest().body(Result.error(e.getMessage()));
         }
     }
+
+    // ===================== 删除 =====================
+
+    @Operation(summary = "删除约稿记录", description = "仅允许删除已完成/已取消/已拒绝的约稿")
+    @DeleteMapping("/{commissionId}")
+    public ResponseEntity<Result<Void>> deleteCommission(
+            @PathVariable(value = "commissionId") Long commissionId,
+            @RequestHeader(value = "X-User-Id") Long userId) {
+        try {
+            commissionService.deleteCommission(userId, commissionId);
+            return ResponseEntity.ok(Result.success(null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("删除约稿失败: commissionId={}, userId={}", commissionId, userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Result.error("删除约稿失败: " + e.getMessage()));
+        }
+    }
+
+    // ===================== 管理员操作 =====================
+
+    @Operation(summary = "管理员取消约稿", description = "管理员介入取消约稿并处理退款")
+    @PutMapping("/admin/{commissionId}/cancel")
+    public ResponseEntity<Result<CommissionDTO>> adminCancelCommission(
+            @PathVariable(value = "commissionId") Long commissionId,
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestHeader(value = "X-User-Id", required = false) Long adminId,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
+        try {
+            String reason = body != null && body.get("reason") != null ? body.get("reason").toString() : null;
+            boolean refundDeposit = body != null && body.containsKey("refundDeposit")
+                    ? Boolean.parseBoolean(body.get("refundDeposit").toString())
+                    : false;
+            CommissionDTO dto = commissionService.adminCancelCommission(adminId, commissionId, reason, refundDeposit);
+            return ResponseEntity.ok(Result.success(dto));
+        } catch (Exception e) {
+            logger.error("管理员取消约稿失败", e);
+            return ResponseEntity.ok(Result.error("操作失败: " + e.getMessage()));
+        }
+    }
 }

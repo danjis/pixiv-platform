@@ -72,6 +72,8 @@
           <div class="info-area">
             <div class="name-row">
               <h1 class="display-name">{{ userProfile.username }}</h1>
+              <span v-if="userProfile.membershipLevel === 'VIP'" class="vip-badge vip">VIP</span>
+              <span v-else-if="userProfile.membershipLevel === 'SVIP'" class="vip-badge svip">SVIP</span>
               <button class="edit-btn" @click="handleEditProfile">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 编辑资料
@@ -622,6 +624,19 @@ onMounted(() => loadUserProfile())
 .display-name {
   font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vip-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; flex-shrink: 0;
+}
+.vip-badge.vip {
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  color: #fff; box-shadow: 0 2px 8px rgba(255, 170, 0, 0.3);
+}
+.vip-badge.svip {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: #fff; box-shadow: 0 2px 8px rgba(238, 90, 36, 0.3);
 }
 .edit-btn {
   display: flex; align-items: center; gap: 6px;

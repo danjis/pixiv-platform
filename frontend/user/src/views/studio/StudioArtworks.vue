@@ -361,7 +361,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.artworks-page { max-width: 960px; }
+.artworks-page { max-width: 100%; }
 
 /* 页头 */
 .page-header {

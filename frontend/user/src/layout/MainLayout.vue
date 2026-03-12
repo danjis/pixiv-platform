@@ -44,6 +44,7 @@
           <router-link to="/artworks" class="nav-item">发现</router-link>
           <router-link to="/following" class="nav-item" v-if="userStore.isAuthenticated">关注</router-link>
           <router-link to="/ranking" class="nav-item">排行榜</router-link>
+          <router-link to="/contests" class="nav-item">比赛</router-link>
         </nav>
 
         <div class="right-actions">
@@ -60,12 +61,47 @@
               </div>
               <template #dropdown>
                 <el-dropdown-menu class="px-dropdown">
+                  <!-- 当前账号信息 -->
+                  <div class="current-account-info">
+                    <el-avatar :size="28" :src="userStore.user?.avatarUrl || defaultAvatar" />
+                    <div class="account-detail">
+                      <span class="account-name">{{ userStore.user?.username }}</span>
+                      <span class="account-role">{{ userStore.isArtist ? '画师' : '用户' }}</span>
+                    </div>
+                  </div>
                   <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                   <el-dropdown-item v-if="userStore.isArtist" command="studio">创作者中心</el-dropdown-item>
                   <el-dropdown-item command="chat">私信</el-dropdown-item>
                   <el-dropdown-item command="commissions">约稿管理</el-dropdown-item>
+                  <el-dropdown-item command="history">浏览记录</el-dropdown-item>
+                  <el-dropdown-item command="coupons">我的优惠券</el-dropdown-item>
+                  <el-dropdown-item command="orders">我的订单</el-dropdown-item>
+                  <el-dropdown-item command="membership">会员中心</el-dropdown-item>
                   <el-dropdown-item command="notifications">
                     通知 <el-badge :value="unreadCount" :hidden="!unreadCount" is-dot class="nav-badge" />
+                  </el-dropdown-item>
+                  <!-- 快速切换账号 -->
+                  <template v-if="otherAccounts.length > 0">
+                    <div class="dropdown-divider-label">切换账号</div>
+                    <el-dropdown-item
+                      v-for="acc in otherAccounts"
+                      :key="acc.id"
+                      :command="'switch-' + acc.id"
+                    >
+                      <div class="switch-account-item">
+                        <el-avatar :size="22" :src="acc.avatarUrl || defaultAvatar" />
+                        <span class="switch-name">{{ acc.username }}</span>
+                        <span class="switch-role-tag" :class="acc.role === 'ARTIST' ? 'artist' : 'user'">
+                          {{ acc.role === 'ARTIST' ? '画师' : '用户' }}
+                        </span>
+                      </div>
+                    </el-dropdown-item>
+                  </template>
+                  <el-dropdown-item command="addAccount">
+                    <div class="switch-account-item add-account">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="#999"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                      <span>登录其他账号</span>
+                    </div>
                   </el-dropdown-item>
                   <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
@@ -90,18 +126,22 @@
         </transition>
       </router-view>
     </main>
+
+    <!-- 悬浮客服/反馈按钮 -->
+    <FloatingHelpButton />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getUnreadCount } from '@/api/notification'
 import { getSearchSuggestions } from '@/api/artwork'
 import { useWebSocketNotification } from '@/composables/useWebSocket'
 import { Search, Upload, CaretBottom } from '@element-plus/icons-vue'
-import { ElNotification } from 'element-plus'
+import { ElNotification, ElMessage } from 'element-plus'
+import FloatingHelpButton from '@/components/FloatingHelpButton.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -109,6 +149,9 @@ const { connect: wsConnect, disconnect: wsDisconnect } = useWebSocketNotificatio
 const keyword = ref('')
 const unreadCount = ref(0)
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+
+// 其他已保存的账号
+const otherAccounts = computed(() => userStore.getOtherAccounts())
 
 // 搜索建议
 const suggestions = ref([])
@@ -166,7 +209,22 @@ const handleCommand = (cmd) => {
   if (cmd === 'logout') {
     userStore.clearAuth()
     router.push('/')
-  } else if (['profile', 'commissions', 'notifications', 'chat', 'studio'].includes(cmd)) {
+  } else if (cmd === 'addAccount') {
+    // 保存当前账号后跳转到登录页
+    userStore.saveCurrentAccount()
+    userStore.clearAuth()
+    router.push('/login')
+  } else if (cmd.startsWith('switch-')) {
+    // 切换到已保存的账号
+    const accountId = parseInt(cmd.replace('switch-', ''))
+    const account = userStore.savedAccounts.find(a => a.id === accountId)
+    if (account) {
+      userStore.switchToAccount(account)
+      ElMessage.success(`已切换到 ${account.username}`)
+      // 刷新页面以重新加载数据
+      window.location.reload()
+    }
+  } else if (['profile', 'commissions', 'notifications', 'chat', 'studio', 'history', 'coupons', 'membership', 'orders'].includes(cmd)) {
     router.push(`/${cmd}`)
   }
 }
@@ -395,5 +453,72 @@ onBeforeUnmount(() => {
 .main-content {
   min-height: calc(100vh - 56px);
   background-color: #f2f4f5; /* 全局浅灰背景 */
+}
+
+/* 当前账号信息 */
+.current-account-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 4px;
+}
+.account-detail {
+  display: flex;
+  flex-direction: column;
+}
+.account-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+}
+.account-role {
+  font-size: 11px;
+  color: #999;
+}
+
+/* 切换账号分隔标签 */
+.dropdown-divider-label {
+  font-size: 11px;
+  color: #999;
+  padding: 8px 16px 4px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 4px;
+}
+
+/* 切换账号项 */
+.switch-account-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.switch-name {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+}
+.switch-role-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.switch-role-tag.artist {
+  background: #fff3e0;
+  color: #e65100;
+}
+.switch-role-tag.user {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+.add-account {
+  color: #999;
+  font-size: 13px;
+}
+.add-account svg {
+  flex-shrink: 0;
 }
 </style>

@@ -1,79 +1,70 @@
 <template>
   <div class="artworks-page">
-    <h2 class="page-title">作品管理</h2>
+    <div class="page-header-bar">
+      <h2>作品管理</h2>
+    </div>
 
-    <!-- 搜索栏 -->
-    <el-card shadow="never" class="filter-card">
-      <el-row :gutter="16" align="middle">
-        <el-col :span="8">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索作品标题或描述"
-            clearable
-            @keyup.enter="handleSearch"
-            @clear="handleSearch"
-          >
-            <template #prefix><el-icon><Search /></el-icon></template>
-          </el-input>
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="statusFilter" placeholder="状态筛选" clearable @change="handleSearch">
-            <el-option label="全部" value="" />
-            <el-option label="已发布" value="PUBLISHED" />
-            <el-option label="草稿" value="DRAFT" />
-            <el-option label="已删除" value="DELETED" />
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-        </el-col>
-      </el-row>
-    </el-card>
+    <!-- 筛选栏 -->
+    <div class="filter-bar">
+      <el-input
+        v-model="keyword"
+        placeholder="搜索作品标题"
+        clearable
+        style="width: 260px"
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
+      >
+        <template #prefix><el-icon><Search /></el-icon></template>
+      </el-input>
+      <el-select v-model="statusFilter" placeholder="状态筛选" clearable style="width: 140px" @change="handleSearch">
+        <el-option label="已发布" value="PUBLISHED" />
+        <el-option label="草稿" value="DRAFT" />
+        <el-option label="已删除" value="DELETED" />
+      </el-select>
+      <el-button type="primary" @click="handleSearch">查询</el-button>
+    </div>
 
-    <!-- 作品列表 -->
-    <el-card shadow="never" style="margin-top: 16px">
-      <el-table :data="artworks" stripe v-loading="loading" style="width: 100%">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="缩略图" width="100">
+    <!-- 表格 -->
+    <div class="table-wrapper">
+      <el-table :data="artworks" v-loading="loading">
+        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column label="作品" min-width="280">
           <template #default="{ row }">
-            <el-image
-              :src="row.thumbnailUrl || row.imageUrl"
-              fit="cover"
-              style="width: 60px; height: 60px; border-radius: 4px"
-              :preview-src-list="[row.imageUrl]"
-            >
-              <template #error>
-                <div class="image-placeholder">
-                  <el-icon><Picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-          </template>
-        </el-table-column>
-        <el-table-column prop="title" label="标题" width="200" show-overflow-tooltip />
-        <el-table-column prop="artistName" label="画师" width="120" />
-        <el-table-column label="数据" width="200">
-          <template #default="{ row }">
-            <div class="stats-cell">
-              <span title="浏览">👁 {{ row.viewCount || 0 }}</span>
-              <span title="点赞">❤ {{ row.likeCount || 0 }}</span>
-              <span title="收藏">⭐ {{ row.favoriteCount || 0 }}</span>
+            <div class="artwork-cell">
+              <el-image
+                :src="row.thumbnailUrl || row.imageUrl"
+                class="artwork-thumb"
+                fit="cover"
+                :preview-src-list="[row.imageUrl || row.thumbnailUrl]"
+                preview-teleported
+              />
+              <div class="artwork-info">
+                <span class="artwork-title">{{ row.title }}</span>
+                <span class="artwork-artist">by {{ row.artistName || '未知' }}</span>
+              </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column label="数据" width="180">
           <template #default="{ row }">
-            <el-tag :type="artworkStatusType(row.status)" size="small">
-              {{ artworkStatusText(row.status) }}
-            </el-tag>
+            <div class="artwork-stats">
+              <span>👁 {{ row.viewCount || 0 }}</span>
+              <span>❤ {{ row.likeCount || 0 }}</span>
+              <span>⭐ {{ row.favoriteCount || 0 }}</span>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="发布时间" width="180">
+        <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
+            <el-tag :type="statusTagType(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="发布时间" width="160">
+          <template #default="{ row }">
+            <span class="text-muted">{{ formatDate(row.createdAt) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="90" fixed="right">
           <template #default="{ row }">
             <el-button
               v-if="row.status !== 'DELETED'"
@@ -81,15 +72,13 @@
               text
               size="small"
               @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
-            <span v-else class="deleted-text">已删除</span>
+            >删除</el-button>
+            <span v-else class="text-muted" style="font-size: 12px;">已删除</span>
           </template>
         </el-table-column>
       </el-table>
 
-      <div class="pagination-wrapper">
+      <div class="pagination-bar">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -100,120 +89,123 @@
           @size-change="loadArtworks"
         />
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Picture } from '@element-plus/icons-vue'
-import { getArtworks, deleteArtwork } from '../api/artwork'
+import { getArtworks, deleteArtwork } from '@/api/artwork'
 
-const artworks = ref([])
 const loading = ref(false)
-const total = ref(0)
+const artworks = ref([])
+const keyword = ref('')
+const statusFilter = ref('')
 const currentPage = ref(1)
 const pageSize = ref(20)
-const searchKeyword = ref('')
-const statusFilter = ref('')
+const total = ref(0)
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('zh-CN')
+function formatDate(str) {
+  return str ? new Date(str).toLocaleString('zh-CN') : '—'
 }
 
-const artworkStatusText = (status) => {
-  const map = { PUBLISHED: '已发布', DRAFT: '草稿', DELETED: '已删除' }
-  return map[status] || status
+function statusLabel(s) {
+  return { PUBLISHED: '已发布', DRAFT: '草稿', DELETED: '已删除' }[s] || s
 }
 
-const artworkStatusType = (status) => {
-  const map = { PUBLISHED: 'success', DRAFT: 'info', DELETED: 'danger' }
-  return map[status] || 'info'
+function statusTagType(s) {
+  return { PUBLISHED: 'success', DRAFT: 'warning', DELETED: 'danger' }[s] || 'info'
 }
 
-const loadArtworks = async () => {
+async function loadArtworks() {
   loading.value = true
   try {
-    const params = {
+    const res = await getArtworks({
       page: currentPage.value,
-      size: pageSize.value
+      size: pageSize.value,
+      keyword: keyword.value || undefined,
+      status: statusFilter.value || undefined
+    })
+    if (res.code === 200 && res.data) {
+      artworks.value = res.data.records || res.data.items || []
+      total.value = res.data.total || 0
     }
-    if (searchKeyword.value) params.keyword = searchKeyword.value
-    if (statusFilter.value) params.status = statusFilter.value
-
-    const res = await getArtworks(params)
-    const data = res.data
-    artworks.value = data?.records || data?.items || data?.content || []
-    total.value = data?.total || data?.totalElements || 0
-  } catch (e) {
-    console.error('加载作品列表失败:', e)
-  } finally {
-    loading.value = false
-  }
+  } catch { /* ignore */ }
+  finally { loading.value = false }
 }
 
-const handleDelete = async (artwork) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除作品 "${artwork.title}" 吗？此操作将进行软删除。`,
-      '删除确认',
-      { confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning' }
-    )
-    await deleteArtwork(artwork.id)
-    ElMessage.success('作品已删除')
-    loadArtworks()
-  } catch (e) {
-    if (e !== 'cancel') console.error('删除失败:', e)
-  }
-}
-
-const handleSearch = () => {
+function handleSearch() {
   currentPage.value = 1
   loadArtworks()
 }
 
-onMounted(loadArtworks)
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除作品「${row.title}」吗？此操作为软删除。`,
+      '删除作品',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+    )
+    const res = await deleteArtwork(row.id)
+    if (res.code === 200) {
+      ElMessage.success('作品已删除')
+      loadArtworks()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch { /* cancelled */ }
+}
+
+onMounted(() => { loadArtworks() })
 </script>
 
 <style scoped>
-.page-title {
-  margin: 0 0 20px 0;
-  color: #303133;
-  font-size: 22px;
+.artworks-page {
+  width: 100%;
 }
 
-.filter-card {
-  margin-bottom: 0;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.stats-cell {
-  display: flex;
-  gap: 12px;
-  font-size: 13px;
-  color: #606266;
-}
-
-.image-placeholder {
-  width: 60px;
-  height: 60px;
+.artwork-cell {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: #f5f7fa;
-  border-radius: 4px;
-  color: #c0c4cc;
+  gap: 12px;
 }
 
-.deleted-text {
-  color: #909399;
+.artwork-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.artwork-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.artwork-title {
+  font-weight: 600;
+  color: var(--c-text);
+  font-size: 13px;
+}
+
+.artwork-artist {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.artwork-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--c-text-secondary);
+}
+
+.text-muted {
+  color: var(--c-text-secondary);
   font-size: 13px;
 }
 </style>

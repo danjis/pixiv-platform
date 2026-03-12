@@ -26,6 +26,9 @@ public class UserDTO {
     private Boolean hideFollowing; // 是否隐藏关注列表
     private Boolean hideFavorites; // 是否隐藏收藏列表
 
+    // 会员等级
+    private String membershipLevel; // NORMAL / VIP / SVIP
+
     public UserDTO() {
     }
 
@@ -137,5 +140,13 @@ public class UserDTO {
 
     public void setHideFavorites(Boolean hideFavorites) {
         this.hideFavorites = hideFavorites;
+    }
+
+    public String getMembershipLevel() {
+        return membershipLevel;
+    }
+
+    public void setMembershipLevel(String membershipLevel) {
+        this.membershipLevel = membershipLevel;
     }
 }

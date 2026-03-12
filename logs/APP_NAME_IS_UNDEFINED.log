@@ -1,0 +1,16 @@
+2026-03-11 20:35:58.604 WARN  [APP_NAME_IS_UNDEFINED] [Thread-12] com.alibaba.nacos.common.notify.NotifyCenter - [NotifyCenter] Start destroying Publisher
+2026-03-11 20:35:58.604 WARN  [APP_NAME_IS_UNDEFINED] [Thread-4] c.alibaba.nacos.common.http.HttpClientBeanHolder - [HttpClientBeanHolder] Start destroying common HttpClient
+2026-03-11 20:35:58.604 WARN  [APP_NAME_IS_UNDEFINED] [Thread-12] com.alibaba.nacos.common.notify.NotifyCenter - [NotifyCenter] Destruction of the end
+2026-03-11 20:35:58.610 WARN  [APP_NAME_IS_UNDEFINED] [Thread-4] c.alibaba.nacos.common.http.HttpClientBeanHolder - [HttpClientBeanHolder] Destruction of the end
+2026-03-11 20:35:58.652 WARN  [APP_NAME_IS_UNDEFINED] [Thread-12] com.alibaba.nacos.common.notify.NotifyCenter - [NotifyCenter] Start destroying Publisher
+2026-03-11 20:35:58.652 WARN  [APP_NAME_IS_UNDEFINED] [Thread-4] c.alibaba.nacos.common.http.HttpClientBeanHolder - [HttpClientBeanHolder] Start destroying common HttpClient
+2026-03-11 20:35:58.652 WARN  [APP_NAME_IS_UNDEFINED] [Thread-12] com.alibaba.nacos.common.notify.NotifyCenter - [NotifyCenter] Destruction of the end
+2026-03-11 20:35:58.660 WARN  [APP_NAME_IS_UNDEFINED] [Thread-4] c.alibaba.nacos.common.http.HttpClientBeanHolder - [HttpClientBeanHolder] Destruction of the end
+2026-03-11 20:35:58.768 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Start destroying NacosRestTemplate
+2026-03-11 20:35:58.769 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Destruction of the end
+2026-03-11 20:35:58.769 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Start destroying NacosRestTemplate
+2026-03-11 20:35:58.769 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Destruction of the end
+2026-03-11 20:36:00.900 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Start destroying NacosRestTemplate
+2026-03-11 20:36:00.900 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Destruction of the end
+2026-03-11 20:36:00.900 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Start destroying NacosRestTemplate
+2026-03-11 20:36:00.900 WARN  [APP_NAME_IS_UNDEFINED] [SpringApplicationShutdownHook] com.alibaba.nacos.client.naming - [NamingHttpClientManager] Destruction of the end

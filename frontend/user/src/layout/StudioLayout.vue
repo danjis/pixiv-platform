@@ -270,9 +270,8 @@ function isActive(path) {
 /* 主内容区 */
 .studio-main {
   flex: 1;
-  padding: 28px 32px;
+  padding: 28px 40px;
   min-width: 0;
-  max-width: 1100px;
 }
 
 /* 过渡动画 */

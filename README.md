@@ -1,251 +1,297 @@
-# 类 Pixiv 艺术作品分享和约稿平台
+# Pixiv Platform — 类 Pixiv 艺术作品分享与约稿平台
 
-## 项目简介
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-21-orange?logo=openjdk" alt="Java 21"/>
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen?logo=springboot" alt="Spring Boot 3.2"/>
+  <img src="https://img.shields.io/badge/Spring%20Cloud-2023.0-blue?logo=spring" alt="Spring Cloud"/>
+  <img src="https://img.shields.io/badge/Vue-3-green?logo=vuedotjs" alt="Vue 3"/>
+  <img src="https://img.shields.io/badge/Python-3.10-blue?logo=python" alt="Python 3.10"/>
+  <img src="https://img.shields.io/badge/MySQL-8.0-blue?logo=mysql" alt="MySQL 8.0"/>
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker" alt="Docker"/>
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License"/>
+</p>
 
-本系统是一个类似 Pixiv 的艺术作品分享和约稿平台，采用前后端分离的微服务架构。系统支持三种角色（普通用户、画师、管理员），提供作品发布、浏览、搜索、约稿、企划等核心功能，并集成智能打标服务作为核心特色功能。
+一个基于微服务架构的二次元艺术作品分享与约稿平台，支持作品发布、智能打标、社交互动、约稿交易、企划比赛等功能。
 
-## 核心特性
+## 预览
 
-- **多角色权限管理**: 用户、画师、管理员三种角色，权限分离
-- **智能打标**: 基于深度学习的图像识别，自动为作品生成标签
-- **约稿系统**: 完整的约稿流程，从发起到完成的全生命周期管理
-- **社交互动**: 点赞、收藏、评价、关注等社交功能
-- **企划系统**: 用户可发起创作主题，画师参与投稿
-- **前后端分离**: RESTful API 设计，支持多端访问
+| 用户首页 | 管理后台 |
+|---------|---------|
+| ![用户端](https://img.shields.io/badge/用户端-Vue3%20%2B%20Element%20Plus-42b883) | ![管理端](https://img.shields.io/badge/管理端-Vue3%20%2B%20ECharts-409EFF) |
+
+## 项目概述
+
+本系统是一个类似 Pixiv 的艺术作品分享和约稿平台，采用 **前后端分离 + 微服务架构**。系统支持三种角色（**普通用户、画师、管理员**），提供完整的作品发布浏览、智能 AI 打标、约稿交易、企划比赛等功能。
+
+### 核心特性
+
+- 🎨 **作品系统** — 发布、浏览、搜索、点赞、收藏、评论，支持多图上传
+- 🤖 **AI 智能打标** — 基于 DeepDanbooru 深度学习模型，自动识别二次元图片内容并生成标签
+- 📝 **约稿系统** — 完整的约稿生命周期管理，从发起、报价、支付到交付
+- 🏆 **企划比赛** — 用户可发起创作主题，画师参与投稿和投票
+- 💬 **即时通讯** — 私信聊天、约稿消息、系统通知
+- 💰 **支付系统** — 支付宝沙箱支付、钱包管理、提现、优惠券
+- 👥 **社交互动** — 关注动态、排行榜、浏览历史
+- 🎫 **会员体系** — VIP 会员、签到积分、月度优惠券
 
 ## 技术栈
 
-### 后端技术栈
+### 后端
 
-- **开发语言**: Java 21（最新 LTS 版本）
-- **Web 框架**: Spring Boot 3.x
-- **安全框架**: Spring Security + JWT
-- **数据访问**: Spring Data JPA + Hibernate
-- **数据库**: MySQL 8.0（主数据库）+ Redis（缓存）
-- **文件存储**: 阿里云 OSS（对象存储服务）
-- **消息队列**: RabbitMQ（异步任务处理）
-- **API 文档**: Swagger（Springdoc OpenAPI）
-- **构建工具**: Maven
+| 技术 | 说明 |
+|------|------|
+| Java 21 | 开发语言（LTS） |
+| Spring Boot 3.2 | 微服务基础框架 |
+| Spring Cloud 2023 | 微服务治理 |
+| Spring Cloud Gateway | API 网关 |
+| Nacos 2.3 | 服务注册与配置中心 |
+| Spring Data JPA | 数据持久层 |
+| Spring Security + JWT | 认证与授权 |
+| MySQL 8.0 | 关系型数据库 |
+| Redis 7 | 缓存与会话管理 |
+| RabbitMQ 3 | 消息队列 |
+| Alibaba Druid | 数据库连接池 |
+| 阿里云 OSS | 文件对象存储 |
+| 支付宝沙箱 | 支付集成 |
+| Swagger / OpenAPI | API 文档 |
 
-### 前端技术栈
+### 前端
 
-- **开发语言**: JavaScript（ES6+）
-- **UI 框架**: React 18 + React Router
-- **状态管理**: Redux Toolkit
-- **UI 组件库**: Ant Design
-- **HTTP 客户端**: Axios
-- **构建工具**: Vite
+| 技术 | 说明 |
+|------|------|
+| Vue 3 | 前端框架 |
+| Vite 5 | 构建工具 |
+| Pinia | 状态管理 |
+| Vue Router 4 | 路由管理 |
+| Element Plus | UI 组件库 |
+| Axios | HTTP 客户端 |
+| ECharts | 数据可视化（管理端） |
 
-### 智能打标服务
+### AI 智能打标
 
-- **实现方式**: Python 微服务 + DeepDanbooru 预训练模型
-- **Web 框架**: FastAPI（高性能 Python Web 框架）
-- **模型选择**: DeepDanbooru（专门为二次元/动漫图片训练的开源模型）
+| 技术 | 说明 |
+|------|------|
+| Python 3.10 | 开发语言 |
+| FastAPI | Web 框架 |
+| TensorFlow 2.14 | 深度学习框架 |
+| DeepDanbooru | 二次元图像识别模型 |
+| Pillow | 图像处理 |
+
+### 基础设施
+
+| 技术 | 说明 |
+|------|------|
+| Docker & Docker Compose | 容器化部署 |
+| Nginx | 反向代理与静态资源 |
+| Maven | 后端构建工具 |
+| Git | 版本控制 |
+
+## 系统架构
+
+```
+                              ┌──────────────┐
+                              │    Nginx     │
+                              │  (反向代理)   │
+                              └──────┬───────┘
+                                     │
+                    ┌────────────────┼────────────────┐
+                    │                │                │
+             ┌──────┴──────┐  ┌─────┴──────┐  ┌─────┴──────┐
+             │  用户前端    │  │  管理后台   │  │  API 请求   │
+             │  (Vue 3)    │  │  (Vue 3)   │  │  /api/*    │
+             └─────────────┘  └────────────┘  └─────┬──────┘
+                                                     │
+                                              ┌──────┴───────┐
+                                              │   Gateway    │
+                                              │  (网关:8080)  │
+                                              └──────┬───────┘
+                                                     │
+                         ┌──────────┬──────────┬─────┴────┬──────────┐
+                         │          │          │          │          │
+                   ┌─────┴────┐┌───┴────┐┌────┴───┐┌────┴───┐┌────┴───┐
+                   │  用户服务 ││作品服务 ││约稿服务 ││通知服务 ││文件服务 │
+                   │  :8081   ││ :8082  ││ :8083  ││ :8084  ││ :8085  │
+                   └────┬─────┘└───┬────┘└────┬───┘└────┬───┘└────┬───┘
+                        │          │          │         │         │
+                   ┌────┴──────────┴──────────┴─────────┘         │
+                   │                                              │
+            ┌──────┴──────┐  ┌──────────┐  ┌──────────┐  ┌──────┴──────┐
+            │   MySQL 8   │  │  Redis 7  │  │ RabbitMQ │  │ 阿里云 OSS  │
+            └─────────────┘  └──────────┘  └──────────┘  └─────────────┘
+                                    │
+                             ┌──────┴──────┐
+                             │  AI 打标服务  │
+                             │  (Python)   │
+                             │   :8000     │
+                             └─────────────┘
+```
 
 ## 项目结构
 
 ```
 pixiv-platform/
-├── backend/                    # Java 后端项目
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/
-│   │       │   └── com/pixiv/platform/
-│   │       │       ├── controller/      # 控制器层
-│   │       │       ├── service/         # 业务逻辑层
-│   │       │       ├── repository/      # 数据访问层
-│   │       │       ├── entity/          # 实体类
-│   │       │       ├── dto/             # 数据传输对象
-│   │       │       ├── config/          # 配置类
-│   │       │       ├── exception/       # 异常处理
-│   │       │       └── PixivPlatformApplication.java
-│   │       └── resources/
-│   │           ├── application.yml
-│   │           └── application-dev.yml
-│   ├── pom.xml
-│   └── README.md
-│
-├── frontend/                   # React 前端项目
-│   ├── user/                   # 用户端前端
-│   │   ├── src/
-│   │   │   ├── components/     # 可复用组件
-│   │   │   ├── pages/          # 页面组件
-│   │   │   ├── services/       # API 服务
-│   │   │   ├── store/          # Redux 状态管理
-│   │   │   ├── utils/          # 工具函数
-│   │   │   ├── App.jsx
-│   │   │   └── main.jsx
-│   │   ├── package.json
-│   │   ├── vite.config.js
-│   │   └── .env
-│   │
-│   └── admin/                  # 管理员后台前端
-│       ├── src/
-│       │   ├── components/
-│       │   ├── pages/
-│       │   ├── services/
-│       │   ├── utils/
-│       │   ├── App.jsx
-│       │   └── main.jsx
-│       ├── package.json
-│       ├── vite.config.js
-│       └── .env
-│
-├── ai-service/                 # Python AI 智能打标服务
-│   ├── main.py                 # FastAPI 应用入口
-│   ├── deepdanbooru.py         # 模型包装类
-│   ├── requirements.txt        # Python 依赖
-│   └── models/                 # DeepDanbooru 模型文件
-│
-└── README.md                   # 项目总体说明
+├── common/                      # 公共模块（DTO、异常、工具类）
+├── gateway-service/             # API 网关（路由、鉴权、限流）
+├── user-service/                # 用户服务（认证、个人中心、钱包）
+├── artwork-service/             # 作品服务（发布、浏览、搜索、互动）
+├── commission-service/          # 约稿服务（约稿、支付、优惠券）
+├── notification-service/        # 通知服务（系统通知、反馈）
+├── file-service/                # 文件服务（阿里云 OSS 上传）
+├── ai-service/                  # AI 打标服务（Python + DeepDanbooru）
+├── frontend/
+│   ├── user/                    # 用户端前端（Vue 3）
+│   └── admin/                   # 管理后台前端（Vue 3）
+└── pom.xml                      # Maven 父 POM
 ```
 
-## 开发架构
+## 微服务说明
 
-### 本地开发 + 远程服务混合架构
+| 服务 | 端口 | 说明 | 主要功能 |
+|------|------|------|---------|
+| **gateway-service** | 8080 | API 网关 | 路由转发、JWT 鉴权、跨域处理、限流 |
+| **user-service** | 8081 | 用户服务 | 注册登录、个人中心、画师申请、钱包提现、会员签到 |
+| **artwork-service** | 8082 | 作品服务 | 作品 CRUD、点赞收藏评论、AI 打标、排行榜、企划比赛 |
+| **commission-service** | 8083 | 约稿服务 | 约稿方案、订单管理、支付宝支付、优惠券、私信 |
+| **notification-service** | 8084 | 通知服务 | 系统通知、未读计数、用户反馈 |
+| **file-service** | 8085 | 文件服务 | 图片上传、缩略图生成、OSS 存储 |
+| **ai-service** | 8000 | AI 打标 | DeepDanbooru 图像识别、标签翻译 |
 
-- **本地运行**：
-  - Java 后端（端口 8080）
-  - Python AI 服务（端口 8000）
-  - React 用户前端（端口 3000）
-  - React 管理员后台（端口 3001）
+## 功能模块
 
-- **远程服务器**（47.120.61.152）：
-  - MySQL 8.0（端口 3306）
-  - Redis 7（端口 6379）
-  - RabbitMQ 3（端口 5672/15672）
-  - Nacos 2.3.0（端口 8848）
+### 用户端（30 个页面）
+
+| 模块 | 功能 |
+|------|------|
+| 🏠 首页 | 作品瀑布流、推荐内容 |
+| 🔐 认证 | 注册、登录、邮箱验证 |
+| 🖼️ 作品 | 浏览、搜索、筛选、详情 |
+| ❤️ 互动 | 点赞、收藏、评论 |
+| 👤 个人 | 个人主页、资料编辑、收藏夹 |
+| 🎨 画师 | 画师主页、作品集、关注 |
+| 🖌️ 工作台 | 发布作品、管理作品、收入统计 |
+| 📝 约稿 | 发起约稿、约稿方案、订单管理 |
+| 💬 聊天 | 私信、约稿沟通 |
+| 🏆 比赛 | 企划比赛、投稿、投票 |
+| 📊 排行 | 日榜、周榜、月榜 |
+| 🎫 会员 | VIP 开通、签到领积分、优惠券 |
+| 🛒 订单 | 订单列表、支付、支付结果 |
+| 🔔 通知 | 系统通知、消息提醒 |
+| 📜 历史 | 浏览记录 |
+| 🎟️ 优惠 | 优惠券领取、使用 |
+
+### 管理后台（14 个页面）
+
+| 模块 | 功能 |
+|------|------|
+| 📊 仪表盘 | 数据概览、图表统计 |
+| 👥 用户管理 | 用户列表、禁用启用 |
+| ✅ 申请审核 | 画师申请审批 |
+| 🖼️ 作品管理 | 作品审核、违规删除 |
+| 💬 评论管理 | 评论审核、删除 |
+| 📝 约稿管理 | 约稿订单监管 |
+| 💰 财务管理 | 提现审批、收入统计 |
+| 💳 支付管理 | 支付订单查询 |
+| 🏆 比赛管理 | 企划创建、管理 |
+| 🎫 会员管理 | 会员权益配置 |
+| 🎟️ 优惠券 | 优惠券发放管理 |
+| 💡 反馈管理 | 用户反馈处理 |
+| 📋 审计日志 | 操作日志查询 |
 
 ## 快速开始
 
-### 前置要求
+### 环境要求
 
-- Java 21 或更高版本
-- Node.js 18 或更高版本
-- Python 3.10 或更高版本
-- Maven 3.8 或更高版本
-- Git
+- Java 21+
+- Maven 3.8+
+- Node.js 18+
+- Python 3.10+
+- Docker & Docker Compose
+- MySQL 8.0、Redis 7、RabbitMQ 3、Nacos 2.3
 
-### 后端启动
+### 1. 克隆项目
 
 ```bash
-cd backend
-mvn spring-boot:run
+git clone https://github.com/danjis/pixiv-platform.git
+cd pixiv-platform
 ```
 
-后端服务将在 http://localhost:8080 启动
+### 2. 启动中间件
 
-### 前端启动
+使用 Docker Compose 启动所有中间件（MySQL、Redis、RabbitMQ、Nacos）：
 
-**用户端前端：**
 ```bash
+# 在项目父目录 bs-3/ 下
+docker compose -f docker-compose.dev.yml up -d mysql redis rabbitmq nacos
+```
+
+### 3. 后端启动
+
+```bash
+# 构建公共模块
+mvn clean install -DskipTests
+
+# 依次启动各服务（或在 IDE 中启动）
+# Gateway → User → Artwork → Commission → Notification → File
+```
+
+### 4. 前端启动
+
+```bash
+# 用户端
 cd frontend/user
 npm install
-npm run dev
-```
+npm run dev    # http://localhost:3000
 
-用户端前端将在 http://localhost:3000 启动
-
-**管理员后台：**
-```bash
+# 管理后台
 cd frontend/admin
 npm install
-npm run dev
+npm run dev    # http://localhost:3001
 ```
 
-管理员后台将在 http://localhost:3001 启动
-
-### AI 服务启动
+### 5. AI 服务启动
 
 ```bash
 cd ai-service
 pip install -r requirements.txt
+# 下载 DeepDanbooru 模型到 models/deepdanbooru/ 目录
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-AI 服务将在 http://localhost:8000 启动
+> **注意**：AI 服务需要下载 DeepDanbooru 预训练模型（约 617MB），请从 [DeepDanbooru Releases](https://github.com/KichangKim/DeepDanbooru/releases) 下载并解压到 `ai-service/models/deepdanbooru/` 目录。
 
-## 远程服务连接信息
+## 数据库设计
 
-- **服务器 IP**: 47.120.61.152
-- **MySQL**: 端口 3306
-  - 用户: pixiv_user
-  - 密码: pixiv123456
-  - 数据库: pixiv_platform
-- **Redis**: 端口 6379
-  - 密码: redis123456
-- **RabbitMQ**: 端口 5672/15672
-  - 用户: admin
-  - 密码: rabbitmq123456
-- **Nacos**: 端口 8848
-  - 命名空间: dev
-  - 用户: nacos
-  - 密码: nacos
+系统采用分库设计，共 4 个业务数据库：
 
-## API 文档
+| 数据库 | 说明 | 主要表 |
+|-------|------|--------|
+| `user_db` | 用户数据 | users, artists, artist_wallets, follows, user_memberships, audit_logs 等 |
+| `artwork_db` | 作品数据 | artworks, artwork_images, tags, comments, likes, favorites, contests 等 |
+| `commission_db` | 约稿数据 | commissions, commission_plans, payment_orders, coupons, conversations 等 |
+| `notification_db` | 通知数据 | notifications, feedbacks |
 
-启动后端服务后，访问以下地址查看 API 文档：
+## 项目统计
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- OpenAPI JSON: http://localhost:8080/v3/api-docs
+| 指标 | 数量 |
+|------|------|
+| 微服务数 | 7 个（6 Java + 1 Python） |
+| Controller | 23 个 |
+| Service | 27 个 |
+| Entity | 34 个 |
+| 用户端页面 | 30 个 |
+| 管理端页面 | 14 个 |
+| API 接口 | 100+ 个 |
+| 数据库表 | 30+ 张 |
 
-## 开发指南
+## 部署
 
-详细的开发指南请参考各子项目的 README.md 文件：
+项目支持 Docker Compose 一键部署，所有服务（中间件 + 微服务 + 前端）均已容器化：
 
-- [后端开发指南](backend/README.md)
-- [前端开发指南](frontend/user/README.md)
-- [管理员后台开发指南](frontend/admin/README.md)
-- [AI 服务开发指南](ai-service/README.md)
+```bash
+# 全量部署
+docker compose -f docker-compose.dev.yml up -d
+```
 
-## 功能模块
+## License
 
-### 用户功能
-- 用户注册和登录
-- 个人信息管理
-- 作品浏览和搜索
-- 作品点赞、收藏、评价
-- 关注画师
-- 发起约稿
-- 发布企划
-
-### 画师功能
-- 画师申请
-- 作品发布和管理
-- 智能打标（自动生成标签）
-- 接受约稿订单
-- 参与企划
-
-### 管理员功能
-- 画师申请审核
-- 内容管理
-- 违规作品删除
-- 审计日志查看
-
-## 贡献指南
-
-欢迎贡献代码！请遵循以下步骤：
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
-## 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
-
-## 联系方式
-
-如有问题或建议，请通过以下方式联系：
-
-- 提交 Issue
-- 发送邮件至项目维护者
-
-## 致谢
-
-- [DeepDanbooru](https://github.com/KichangKim/DeepDanbooru) - 智能打标模型
-- [Spring Boot](https://spring.io/projects/spring-boot) - 后端框架
-- [React](https://reactjs.org/) - 前端框架
-- [Ant Design](https://ant.design/) - UI 组件库
+[MIT](LICENSE)

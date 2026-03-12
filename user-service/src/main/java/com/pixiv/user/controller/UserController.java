@@ -4,19 +4,24 @@ import com.pixiv.common.dto.Result;
 import com.pixiv.user.dto.ArtistDTO;
 import com.pixiv.user.dto.UpdateProfileRequest;
 import com.pixiv.user.dto.UserDTO;
+import com.pixiv.user.entity.WalletTransaction;
+import com.pixiv.user.entity.WithdrawalRequest;
 import com.pixiv.user.service.FollowService;
 import com.pixiv.user.service.UserService;
+import com.pixiv.user.service.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户管理控制器
@@ -31,10 +36,12 @@ public class UserController {
 
     private final UserService userService;
     private final FollowService followService;
+    private final WalletService walletService;
 
-    public UserController(UserService userService, FollowService followService) {
+    public UserController(UserService userService, FollowService followService, WalletService walletService) {
         this.userService = userService;
         this.followService = followService;
+        this.walletService = walletService;
     }
 
     /**
@@ -187,5 +194,240 @@ public class UserController {
 
         UserDTO userDTO = userService.updatePrivacySettings(userId, settings);
         return ResponseEntity.ok(Result.success(userDTO));
+    }
+
+    /**
+     * 更新画师设置
+     * PUT /api/users/me/artist-settings
+     *
+     * 包括：接稿状态、擅长风格、价格区间、联系方式、简介
+     */
+    @PutMapping("/me/artist-settings")
+    @Operation(summary = "更新画师设置", description = "更新当前画师的接稿设置、擅长风格、价格区间、联系方式等")
+    public ResponseEntity<Result<ArtistDTO>> updateArtistSettings(
+            Authentication authentication,
+            @RequestBody java.util.Map<String, Object> settings) {
+        Long userId = Long.parseLong(authentication.getName());
+        logger.info("更新画师设置: userId={}", userId);
+
+        ArtistDTO artistDTO = userService.updateArtistSettings(userId, settings);
+        return ResponseEntity.ok(Result.success(artistDTO));
+    }
+
+    /**
+     * 获取当前用户的画师设置
+     * GET /api/users/me/artist-settings
+     */
+    @GetMapping("/me/artist-settings")
+    @Operation(summary = "获取画师设置", description = "获取当前画师的详细设置信息")
+    public ResponseEntity<Result<ArtistDTO>> getMyArtistSettings(Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        logger.info("获取画师设置: userId={}", userId);
+
+        ArtistDTO artistDTO = userService.getArtistByUserId(userId);
+        return ResponseEntity.ok(Result.success(artistDTO));
+    }
+
+    // =========== 画师钱包接口 ===========
+
+    /**
+     * 获取钱包概览
+     * GET /api/users/me/wallet
+     */
+    @GetMapping("/me/wallet")
+    @Operation(summary = "获取钱包概览", description = "获取当前画师的钱包余额和收入统计")
+    public ResponseEntity<Result<Map<String, Object>>> getWalletOverview(Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        logger.info("获取钱包概览: userId={}", userId);
+
+        Map<String, Object> overview = walletService.getWalletOverview(userId);
+        return ResponseEntity.ok(Result.success(overview));
+    }
+
+    /**
+     * 获取钱包交易记录
+     * GET /api/users/me/wallet/transactions
+     */
+    @GetMapping("/me/wallet/transactions")
+    @Operation(summary = "获取交易记录", description = "获取画师钱包的交易明细")
+    public ResponseEntity<Result<Page<WalletTransaction>>> getWalletTransactions(
+            Authentication authentication,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        Long userId = Long.parseLong(authentication.getName());
+        logger.info("获取交易记录: userId={}, page={}, size={}", userId, page, size);
+
+        Page<WalletTransaction> transactions = walletService.getTransactions(userId, page, size);
+        return ResponseEntity.ok(Result.success(transactions));
+    }
+
+    /**
+     * 画师收入入账（内部服务调用）
+     * POST /api/users/wallet/income
+     */
+    @PostMapping("/wallet/income")
+    @Operation(summary = "收入入账（内部）", description = "约稿完成时，commission-service 调用此接口入账画师收入")
+    public ResponseEntity<Result<String>> addWalletIncome(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        java.math.BigDecimal amount = new java.math.BigDecimal(body.get("amount").toString());
+        Long commissionId = body.get("commissionId") != null ? Long.valueOf(body.get("commissionId").toString()) : null;
+        String orderNo = body.get("orderNo") != null ? body.get("orderNo").toString() : null;
+        String description = body.get("description") != null ? body.get("description").toString() : "约稿收入";
+
+        logger.info("画师收入入账: userId={}, amount={}, commissionId={}", userId, amount, commissionId);
+
+        walletService.addIncome(userId, amount, commissionId, orderNo, description);
+        return ResponseEntity.ok(Result.success("入账成功"));
+    }
+
+    /**
+     * 冻结金额（内部服务调用）
+     * POST /api/users/wallet/freeze
+     */
+    @PostMapping("/wallet/freeze")
+    @Operation(summary = "冻结金额（内部）", description = "定金支付成功时，commission-service 调用此接口冻结画师金额")
+    public ResponseEntity<Result<String>> freezeWalletAmount(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        java.math.BigDecimal amount = new java.math.BigDecimal(body.get("amount").toString());
+        Long commissionId = body.get("commissionId") != null ? Long.valueOf(body.get("commissionId").toString()) : null;
+        String description = body.get("description") != null ? body.get("description").toString() : "约稿定金冻结";
+
+        logger.info("冻结金额: userId={}, amount={}, commissionId={}", userId, amount, commissionId);
+        walletService.freezeAmount(userId, amount, commissionId, description);
+        return ResponseEntity.ok(Result.success("冻结成功"));
+    }
+
+    /**
+     * 解冻并释放金额（内部服务调用）
+     * POST /api/users/wallet/unfreeze
+     */
+    @PostMapping("/wallet/unfreeze")
+    @Operation(summary = "解冻并释放（内部）", description = "约稿完成时，commission-service 调用此接口解冻并转入可用余额")
+    public ResponseEntity<Result<String>> unfreezeWalletAmount(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        java.math.BigDecimal amount = new java.math.BigDecimal(body.get("amount").toString());
+        Long commissionId = body.get("commissionId") != null ? Long.valueOf(body.get("commissionId").toString()) : null;
+        String description = body.get("description") != null ? body.get("description").toString() : "约稿完成解冻";
+
+        logger.info("解冻金额: userId={}, amount={}, commissionId={}", userId, amount, commissionId);
+        walletService.unfreezeAndRelease(userId, amount, commissionId, description);
+        return ResponseEntity.ok(Result.success("解冻成功"));
+    }
+
+    /**
+     * 取消冻结（退款时内部调用）
+     * POST /api/users/wallet/cancel-freeze
+     */
+    @PostMapping("/wallet/cancel-freeze")
+    @Operation(summary = "取消冻结（退款用）", description = "约稿退款时，取消冻结金额（不入可用余额，资金退还给委托方）")
+    public ResponseEntity<Result<String>> cancelWalletFreeze(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        java.math.BigDecimal amount = new java.math.BigDecimal(body.get("amount").toString());
+        Long commissionId = body.get("commissionId") != null ? Long.valueOf(body.get("commissionId").toString()) : null;
+        String description = body.get("description") != null ? body.get("description").toString() : "约稿退款解冻";
+
+        logger.info("取消冻结(退款): userId={}, amount={}, commissionId={}", userId, amount, commissionId);
+        walletService.cancelFreeze(userId, amount, commissionId, description);
+        return ResponseEntity.ok(Result.success("取消冻结成功"));
+    }
+
+    /**
+     * 画师提现
+     * POST /api/users/me/wallet/withdraw
+     */
+    @PostMapping("/me/wallet/withdraw")
+    @Operation(summary = "画师提现", description = "画师将可用余额提现到支付宝账户，需管理员审批")
+    public ResponseEntity<Result<String>> withdraw(
+            Authentication authentication,
+            @RequestBody Map<String, Object> body) {
+        Long userId = Long.parseLong(authentication.getName());
+        java.math.BigDecimal amount = new java.math.BigDecimal(body.get("amount").toString());
+        String alipayAccount = body.get("alipayAccount") != null ? body.get("alipayAccount").toString() : null;
+        String alipayName = body.get("alipayName") != null ? body.get("alipayName").toString() : null;
+
+        logger.info("画师提现: userId={}, amount={}", userId, amount);
+        try {
+            walletService.withdraw(userId, amount, alipayAccount, alipayName);
+            return ResponseEntity.ok(Result.success("提现申请已提交，请等待管理员审批"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(400, e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取我的提现记录
+     * GET /api/users/me/wallet/withdrawals
+     */
+    @GetMapping("/me/wallet/withdrawals")
+    @Operation(summary = "我的提现记录", description = "获取当前画师的提现申请记录")
+    public ResponseEntity<Result<Page<WithdrawalRequest>>> getMyWithdrawals(
+            Authentication authentication,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(Result.success(walletService.getMyWithdrawals(userId, page, size)));
+    }
+
+    // =========== 提现管理（管理端） ===========
+
+    /**
+     * 获取提现申请列表（管理端）
+     * GET /api/users/admin/withdrawals
+     */
+    @GetMapping("/admin/withdrawals")
+    @Operation(summary = "提现申请列表（管理端）", description = "获取所有提现申请，支持按状态筛选")
+    public ResponseEntity<Result<Page<WithdrawalRequest>>> getWithdrawals(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        return ResponseEntity.ok(Result.success(walletService.getWithdrawals(status, page, size)));
+    }
+
+    /**
+     * 审批通过提现（管理端）
+     * PUT /api/users/admin/withdrawals/{id}/approve
+     */
+    @PutMapping("/admin/withdrawals/{id}/approve")
+    @Operation(summary = "审批通过提现（管理端）")
+    public ResponseEntity<Result<String>> approveWithdrawal(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) String adminIdStr) {
+        Long adminId = adminIdStr != null ? Long.parseLong(adminIdStr) : 0L;
+        try {
+            walletService.approveWithdrawal(id, adminId);
+            return ResponseEntity.ok(Result.success("审批通过"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(400, e.getMessage()));
+        }
+    }
+
+    /**
+     * 拒绝提现（管理端）
+     * PUT /api/users/admin/withdrawals/{id}/reject
+     */
+    @PutMapping("/admin/withdrawals/{id}/reject")
+    @Operation(summary = "拒绝提现（管理端）")
+    public ResponseEntity<Result<String>> rejectWithdrawal(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) String adminIdStr,
+            @RequestBody(required = false) Map<String, Object> body) {
+        Long adminId = adminIdStr != null ? Long.parseLong(adminIdStr) : 0L;
+        String remark = body != null && body.get("remark") != null ? body.get("remark").toString() : null;
+        try {
+            walletService.rejectWithdrawal(id, adminId, remark);
+            return ResponseEntity.ok(Result.success("已拒绝"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(400, e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取待审批提现数量（管理端）
+     * GET /api/users/admin/withdrawals/pending-count
+     */
+    @GetMapping("/admin/withdrawals/pending-count")
+    @Operation(summary = "待审批提现数量")
+    public ResponseEntity<Result<Long>> getPendingWithdrawalCount() {
+        return ResponseEntity.ok(Result.success(walletService.getPendingWithdrawalCount()));
     }
 }

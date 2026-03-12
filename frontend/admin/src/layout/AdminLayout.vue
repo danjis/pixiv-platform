@@ -1,196 +1,385 @@
 <template>
-  <div class="admin-layout">
-    <el-container style="height: 100vh">
-      <!-- 侧边栏 -->
-      <el-aside :width="isCollapse ? '64px' : '220px'" class="sidebar">
-        <div class="logo">
-          <img v-if="!isCollapse" src="" alt="" style="display:none" />
-          <h3 v-if="!isCollapse">Pixiv 管理</h3>
-          <h3 v-else>P</h3>
+  <div class="admin-layout" :class="{ collapsed: isCollapsed }">
+    <!-- 侧栏 -->
+    <aside class="sidebar">
+      <!-- Logo -->
+      <div class="sidebar-logo" @click="$router.push('/dashboard')">
+        <div class="logo-icon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#6366f1"/>
+            <path d="M10 16L15 11L20 16L15 21Z" fill="white" opacity="0.9"/>
+            <path d="M15 11L20 16L25 11L20 6Z" fill="white" opacity="0.6"/>
+          </svg>
         </div>
-        <el-menu
-          :default-active="activeMenu"
-          :collapse="isCollapse"
-          router
-          background-color="#1d1e1f"
-          text-color="#a3a6ad"
-          active-text-color="#409eff"
-          class="sidebar-menu"
-        >
-          <el-menu-item index="/dashboard">
+        <transition name="fade">
+          <span v-show="!isCollapsed" class="logo-text">Pixiv Admin</span>
+        </transition>
+      </div>
+
+      <!-- 导航 -->
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">概览</span>
+          <router-link to="/dashboard" class="nav-item" active-class="active">
             <el-icon><Odometer /></el-icon>
-            <template #title>数据概览</template>
-          </el-menu-item>
-          <el-menu-item index="/users">
+            <span v-show="!isCollapsed" class="nav-text">数据概览</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">用户</span>
+          <router-link to="/users" class="nav-item" active-class="active">
             <el-icon><User /></el-icon>
-            <template #title>用户管理</template>
-          </el-menu-item>
-          <el-menu-item index="/applications">
+            <span v-show="!isCollapsed" class="nav-text">用户管理</span>
+          </router-link>
+          <router-link to="/applications" class="nav-item" active-class="active">
             <el-icon><Stamp /></el-icon>
-            <template #title>
-              <span>画师审核</span>
-              <span v-if="pendingCount > 0" class="menu-badge">{{ pendingCount > 99 ? '99+' : pendingCount }}</span>
-            </template>
-          </el-menu-item>
-          <el-menu-item index="/artworks">
+            <span v-show="!isCollapsed" class="nav-text">画师审核</span>
+            <span v-if="pendingCount > 0 && !isCollapsed" class="nav-badge">{{ pendingCount }}</span>
+            <span v-if="pendingCount > 0 && isCollapsed" class="nav-dot"></span>
+          </router-link>
+          <router-link to="/membership" class="nav-item" active-class="active">
+            <el-icon><Medal /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">会员管理</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">内容</span>
+          <router-link to="/artworks" class="nav-item" active-class="active">
             <el-icon><Picture /></el-icon>
-            <template #title>作品管理</template>
-          </el-menu-item>
-          <el-menu-item index="/audit-logs">
+            <span v-show="!isCollapsed" class="nav-text">作品管理</span>
+          </router-link>
+          <router-link to="/comments" class="nav-item" active-class="active">
+            <el-icon><ChatDotRound /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">评论管理</span>
+          </router-link>
+          <router-link to="/contests" class="nav-item" active-class="active">
+            <el-icon><Trophy /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">比赛管理</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">交易</span>
+          <router-link to="/commissions" class="nav-item" active-class="active">
+            <el-icon><Suitcase /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">约稿管理</span>
+          </router-link>
+          <router-link to="/payments" class="nav-item" active-class="active">
+            <el-icon><Money /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">支付管理</span>
+          </router-link>
+          <router-link to="/finance" class="nav-item" active-class="active">
+            <el-icon><Coin /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">财务管理</span>
+          </router-link>
+          <router-link to="/coupons" class="nav-item" active-class="active">
+            <el-icon><Ticket /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">优惠券管理</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">系统</span>
+          <router-link to="/feedback" class="nav-item" active-class="active">
+            <el-icon><ChatLineSquare /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">反馈管理</span>
+          </router-link>
+          <router-link to="/audit-logs" class="nav-item" active-class="active">
             <el-icon><Document /></el-icon>
-            <template #title>审计日志</template>
-          </el-menu-item>
-        </el-menu>
-      </el-aside>
+            <span v-show="!isCollapsed" class="nav-text">审计日志</span>
+          </router-link>
+        </div>
+      </nav>
+    </aside>
 
-      <!-- 右侧内容区 -->
-      <el-container>
-        <el-header class="topbar">
-          <div class="topbar-left">
-            <el-icon class="collapse-btn" @click="isCollapse = !isCollapse">
-              <Expand v-if="isCollapse" />
-              <Fold v-else />
+    <!-- 主内容区 -->
+    <div class="main-wrapper">
+      <!-- 顶栏 -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="collapse-btn" @click="isCollapsed = !isCollapsed">
+            <el-icon :size="18">
+              <Fold v-if="!isCollapsed" />
+              <Expand v-else />
             </el-icon>
-            <el-breadcrumb separator="/">
-              <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
-              <el-breadcrumb-item v-if="currentTitle">{{ currentTitle }}</el-breadcrumb-item>
-            </el-breadcrumb>
+          </button>
+          <div class="breadcrumb-area">
+            <h3 class="page-title">{{ currentTitle }}</h3>
           </div>
-          <div class="topbar-right">
-            <span class="admin-name">{{ adminStore.adminInfo?.username || '管理员' }}</span>
-            <el-button type="danger" text @click="handleLogout">
-              <el-icon><SwitchButton /></el-icon> 退出
-            </el-button>
+        </div>
+        <div class="topbar-right">
+          <div class="admin-info">
+            <div class="admin-avatar">
+              {{ adminName?.charAt(0)?.toUpperCase() || 'A' }}
+            </div>
+            <span class="admin-name">{{ adminName || '管理员' }}</span>
           </div>
-        </el-header>
+          <button class="logout-btn" @click="handleLogout" title="退出登录">
+            <el-icon :size="16"><SwitchButton /></el-icon>
+          </button>
+        </div>
+      </header>
 
-        <el-main class="main-content">
-          <router-view />
-        </el-main>
-      </el-container>
-    </el-container>
+      <!-- 页面内容 -->
+      <main class="content-area">
+        <router-view />
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Odometer, User, Stamp, Picture, Document, Expand, Fold, SwitchButton } from '@element-plus/icons-vue'
-import { useAdminStore } from '../stores/admin'
-import { logout } from '../api/auth'
-import { getPendingCount } from '../api/artist'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import {
+  Odometer, User, Stamp, Picture, Document, Ticket,
+  ChatDotRound, ChatLineSquare, Suitcase, Money, Trophy, Medal,
+  Fold, Expand, SwitchButton, Coin
+} from '@element-plus/icons-vue'
+import { useAdminStore } from '@/stores/admin'
+import { getPendingApplications } from '@/api/artist'
 
 const router = useRouter()
 const route = useRoute()
 const adminStore = useAdminStore()
-const isCollapse = ref(false)
+const isCollapsed = ref(false)
 const pendingCount = ref(0)
 
-const activeMenu = computed(() => route.path)
+const adminName = computed(() => adminStore.adminInfo?.username || '')
 
 const titleMap = {
-  '/dashboard': '',
+  '/dashboard': '数据概览',
   '/users': '用户管理',
   '/applications': '画师审核',
   '/artworks': '作品管理',
-  '/audit-logs': '审计日志'
+  '/audit-logs': '审计日志',
+  '/coupons': '优惠券管理',
+  '/comments': '评论管理',
+  '/commissions': '约稿管理',
+  '/payments': '支付管理',
+  '/finance': '财务管理',
+  '/contests': '比赛管理',
+  '/membership': '会员管理'
 }
 
-const currentTitle = computed(() => titleMap[route.path] || '')
+const currentTitle = computed(() => titleMap[route.path] || '管理后台')
 
-// 加载待审核数量
 const loadPendingCount = async () => {
   try {
-    const res = await getPendingCount()
-    pendingCount.value = res.data || 0
-  } catch (e) {
-    // 忽略错误
-  }
+    const res = await getPendingApplications()
+    if (res.code === 200) {
+      const data = res.data
+      pendingCount.value = data?.total || data?.length || 0
+    }
+  } catch { /* ignore */ }
+}
+
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
+      confirmButtonText: '退出',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    localStorage.removeItem('admin_token')
+    adminStore.clearAdminInfo()
+    router.push('/login')
+    ElMessage.success('已退出登录')
+  } catch { /* cancelled */ }
 }
 
 onMounted(() => {
   loadPendingCount()
 })
-
-const handleLogout = async () => {
-  try {
-    await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    try { await logout() } catch (e) { /* ignore */ }
-    adminStore.logout()
-    ElMessage.success('已退出登录')
-    router.push('/login')
-  } catch (e) {
-    // 用户取消
-  }
-}
 </script>
 
 <style scoped>
 .admin-layout {
-  height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
 
+/* ============ 侧栏 ============ */
 .sidebar {
-  background-color: #1d1e1f;
-  transition: width 0.3s;
+  width: 240px;
+  background: var(--c-sidebar);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
   overflow: hidden;
 }
 
-.logo {
-  height: 60px;
+.collapsed .sidebar {
+  width: 72px;
+}
+
+/* Logo */
+.sidebar-logo {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background-color: #191a1b;
-  border-bottom: 1px solid #2a2b2c;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.logo h3 {
-  color: #409eff;
-  margin: 0;
-  font-size: 18px;
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--c-text-inverse);
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+/* 导航 */
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 0;
+}
+
+.nav-section {
+  padding: 4px 0;
+}
+
+.nav-label {
+  display: block;
+  padding: 12px 24px 6px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 2px;
+  color: var(--c-text-inverse-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  white-space: nowrap;
 }
 
-.sidebar-menu {
-  border-right: none;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  margin: 2px 10px;
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  position: relative;
+  white-space: nowrap;
 }
 
-.sidebar-menu:not(.el-menu--collapse) {
-  width: 220px;
+.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
+  margin: 2px 10px;
 }
 
-.menu-badge {
-  display: inline-block;
-  min-width: 18px;
+.nav-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.nav-item.active {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #6366f1;
+}
+
+.collapsed .nav-item.active::before {
+  left: -10px;
+}
+
+.nav-item .el-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.nav-text {
+  white-space: nowrap;
+}
+
+.nav-badge {
+  margin-left: auto;
+  padding: 0 7px;
   height: 18px;
   line-height: 18px;
-  text-align: center;
   border-radius: 9px;
-  background-color: #f56c6c;
-  color: #fff;
-  font-size: 12px;
-  margin-left: 8px;
-  padding: 0 5px;
-  box-sizing: border-box;
-  vertical-align: middle;
-  font-weight: normal;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
 }
 
+.nav-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+/* ============ 主内容区 ============ */
+.main-wrapper {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left var(--transition);
+}
+
+.collapsed .main-wrapper {
+  margin-left: 72px;
+}
+
+/* 顶栏 */
 .topbar {
-  background: #fff;
-  border-bottom: 1px solid #e8e8e8;
+  height: 60px;
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  height: 56px;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .topbar-left {
@@ -200,29 +389,95 @@ const handleLogout = async () => {
 }
 
 .collapse-btn {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--c-text-secondary);
   cursor: pointer;
-  color: #606266;
+  transition: all var(--transition-fast);
 }
 
 .collapse-btn:hover {
-  color: #409eff;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c-text);
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .admin-name {
-  color: #303133;
-  font-size: 14px;
+  font-size: 13px;
+  color: var(--c-text-secondary);
+  font-weight: 500;
 }
 
-.main-content {
-  background-color: #f5f7fa;
-  padding: 20px;
-  overflow-y: auto;
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--c-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.logout-btn:hover {
+  background: #fef2f2;
+  color: var(--c-danger);
+}
+
+/* 内容区 */
+.content-area {
+  flex: 1;
+  padding: var(--page-padding);
+  background: var(--c-bg);
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

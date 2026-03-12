@@ -96,6 +96,14 @@ public class Commission {
     @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
 
+    /** 取消方：记录是谁发起的取消（用户ID） */
+    @Column(name = "cancelled_by")
+    private Long cancelledBy;
+
+    /** 取消方角色：CLIENT / ARTIST / ADMIN */
+    @Column(name = "cancelled_by_role", length = 20)
+    private String cancelledByRole;
+
     /** 用户预算（参考价格） */
     @Column(name = "budget", precision = 10, scale = 2)
     private BigDecimal budget;

@@ -18,6 +18,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -63,6 +65,10 @@ public class RateLimiterFilter implements GlobalFilter, Ordered {
     /** 限流窗口：60 秒 */
     private static final Duration WINDOW = Duration.ofSeconds(60);
 
+    /** 开发环境可通过 rate-limit.enabled=false 关闭限流 */
+    @Value("${rate-limit.enabled:true}")
+    private boolean rateLimitEnabled;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -71,6 +77,9 @@ public class RateLimiterFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        if (!rateLimitEnabled) {
+            return chain.filter(exchange);
+        }
         ServerHttpRequest request = exchange.getRequest();
         String ip = getClientIp(request);
         String path = request.getURI().getPath();

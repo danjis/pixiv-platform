@@ -298,7 +298,8 @@ async function uploadFiles(files) {
       if (response.code === 200 && response.data) {
         imageList.value.push({
           imageUrl: response.data.imageUrl,
-          thumbnailUrl: response.data.thumbnailUrl || response.data.imageUrl
+          thumbnailUrl: response.data.thumbnailUrl || response.data.imageUrl,
+          originalImageUrl: response.data.originalImageUrl || ''
         })
       } else {
         ElMessage.error(`"${file.name}" 上传失败: ${response.message || '未知错误'}`)
@@ -380,7 +381,8 @@ async function handleSubmit() {
       tags: formData.tags,
       images: imageList.value.map(img => ({
         imageUrl: img.imageUrl,
-        thumbnailUrl: img.thumbnailUrl
+        thumbnailUrl: img.thumbnailUrl,
+        originalImageUrl: img.originalImageUrl || ''
       }))
     }
 

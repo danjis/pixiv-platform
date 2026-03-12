@@ -40,6 +40,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final CaptchaService captchaService;
     private final ArtworkServiceClient artworkServiceClient;
+    private final MembershipService membershipService;
 
     public UserService(UserRepository userRepository,
             ArtistRepository artistRepository,
@@ -47,7 +48,8 @@ public class UserService {
             PasswordEncoder passwordEncoder,
             JwtTokenProvider jwtTokenProvider,
             CaptchaService captchaService,
-            ArtworkServiceClient artworkServiceClient) {
+            ArtworkServiceClient artworkServiceClient,
+            MembershipService membershipService) {
         this.userRepository = userRepository;
         this.artistRepository = artistRepository;
         this.followRepository = followRepository;
@@ -55,6 +57,7 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.captchaService = captchaService;
         this.artworkServiceClient = artworkServiceClient;
+        this.membershipService = membershipService;
     }
 
     /**
@@ -216,6 +219,42 @@ public class UserService {
     }
 
     /**
+     * 邮箱验证码登录
+     *
+     * @param email     邮箱地址
+     * @param emailCode 邮箱验证码
+     * @return 认证响应（包含令牌和用户信息）
+     */
+    @Transactional(readOnly = true)
+    public AuthResponse loginByEmail(String email, String emailCode) {
+        logger.info("邮箱验证码登录: email={}", email);
+
+        // 1. 验证邮箱验证码
+        if (!captchaService.verifyEmailCode(email, emailCode)) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "邮箱验证码错误或已过期");
+        }
+
+        // 2. 查找用户
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "该邮箱未注册"));
+
+        logger.info("邮箱验证码登录成功: userId={}, username={}", user.getId(), user.getUsername());
+
+        // 3. 生成 JWT 令牌
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getId(),
+                user.getUsername(),
+                user.getRole().name());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(
+                user.getId(),
+                user.getUsername());
+
+        // 4. 返回认证响应
+        UserDTO userDTO = new UserDTO(user);
+        return new AuthResponse(accessToken, refreshToken, 7200L, userDTO);
+    }
+
+    /**
      * 刷新访问令牌
      *
      * @param refreshToken 刷新令牌
@@ -292,6 +331,14 @@ public class UserService {
                 logger.error("调用 artwork-service 获取作品数量失败: userId={}", userId, e);
                 userDTO.setArtworkCount(0L);
             }
+        }
+
+        // 查询会员等级
+        try {
+            userDTO.setMembershipLevel(membershipService.getEffectiveLevel(userId).name());
+        } catch (Exception e) {
+            logger.warn("获取会员等级失败: userId={}", userId, e);
+            userDTO.setMembershipLevel("NORMAL");
         }
 
         logger.info("用户信息查询成功: userId={}, followingCount={}, followerCount={}, artworkCount={}",
@@ -379,6 +426,76 @@ public class UserService {
         logger.info("隐私设置更新成功: userId={}", userId);
 
         return getCurrentUser(userId);
+    }
+
+    /**
+     * 更新画师设置（接稿状态、擅长风格、价格区间、联系方式等）
+     *
+     * @param userId   用户ID
+     * @param settings 画师设置参数
+     * @return 更新后的画师信息
+     */
+    @Caching(evict = {
+            @CacheEvict(value = "userProfile", key = "#userId"),
+            @CacheEvict(value = "artistProfile", key = "#userId")
+    })
+    @Transactional
+    public ArtistDTO updateArtistSettings(Long userId, java.util.Map<String, Object> settings) {
+        logger.info("更新画师设置: userId={}, settings={}", userId, settings);
+
+        Artist artist = artistRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "画师不存在"));
+
+        // 更新接稿状态
+        if (settings.containsKey("commissionOpen")) {
+            artist.setAcceptingCommissions(Boolean.valueOf(settings.get("commissionOpen").toString()));
+        }
+
+        // 更新擅长风格（前端传 List，存储为 JSON 字符串）
+        if (settings.containsKey("specialties")) {
+            try {
+                Object specialtiesObj = settings.get("specialties");
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                String json = mapper.writeValueAsString(specialtiesObj);
+                artist.setSpecialties(json);
+            } catch (Exception e) {
+                logger.warn("序列化 specialties 失败", e);
+                artist.setSpecialties("[]");
+            }
+        }
+
+        // 更新价格区间
+        if (settings.containsKey("minPrice")) {
+            Object v = settings.get("minPrice");
+            artist.setMinPrice(v != null ? new java.math.BigDecimal(v.toString()) : null);
+        }
+        if (settings.containsKey("maxPrice")) {
+            Object v = settings.get("maxPrice");
+            artist.setMaxPrice(v != null ? new java.math.BigDecimal(v.toString()) : null);
+        }
+
+        // 更新联系偏好
+        if (settings.containsKey("contactPreference")) {
+            Object v = settings.get("contactPreference");
+            artist.setContactPreference(v != null ? v.toString() : "platform");
+        }
+        if (settings.containsKey("contactInfo")) {
+            Object v = settings.get("contactInfo");
+            artist.setContactInfo(v != null ? v.toString() : "");
+        }
+
+        // 更新简介（同步到 User.bio）
+        if (settings.containsKey("bio")) {
+            Object v = settings.get("bio");
+            String bio = v != null ? v.toString() : "";
+            artist.getUser().setBio(bio);
+            userRepository.save(artist.getUser());
+        }
+
+        artistRepository.save(artist);
+        logger.info("画师设置更新成功: userId={}", userId);
+
+        return new ArtistDTO(artist);
     }
 
 }

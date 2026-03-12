@@ -83,8 +83,10 @@ public class InternalServiceAuthenticationFilter extends OncePerRequestFilter {
         // - /api/auth/** - 认证相关接口
         // - /api/captcha/** - 验证码接口
 
-        // 使用更精确的正则表达式，确保只匹配数字ID 和批量查询接口
-        boolean isInternal = requestURI.matches("^/api/users/(\\d+(/artist|/following-ids|/follower-ids)?|batch)$");
+        // 使用更精确的正则表达式，确保只匹配数字ID、批量查询接口 和 内部服务接口
+        boolean isInternal = requestURI.matches("^/api/users/(\\d+(/artist|/following-ids|/follower-ids)?|batch)$")
+                || requestURI.startsWith("/api/membership/internal/")
+                || requestURI.startsWith("/api/users/wallet/");
 
         logger.debug("isInternalServiceEndpoint: URI={}, isInternal={}", requestURI, isInternal);
 

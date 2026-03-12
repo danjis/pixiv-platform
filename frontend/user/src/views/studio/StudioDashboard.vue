@@ -335,7 +335,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .dashboard-page {
-  max-width: 960px;
+  max-width: 100%;
 }
 
 /* 欢迎区 */

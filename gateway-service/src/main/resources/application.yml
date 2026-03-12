@@ -18,6 +18,10 @@ logging:
     com.pixiv.gateway: DEBUG
     org.springframework.cloud.gateway: DEBUG
 
+# 限流开关（开发环境设为 false 关闭，生产环境改为 true）
+rate-limit:
+  enabled: false
+
 # Actuator 健康检查配置
 management:
   endpoints:

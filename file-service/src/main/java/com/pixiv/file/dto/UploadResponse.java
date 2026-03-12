@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class UploadResponse {
 
     /**
-     * 原图 URL
+     * 原图 URL（带水印）
      */
     private String imageUrl;
 
@@ -25,6 +25,11 @@ public class UploadResponse {
      * 缩略图 URL
      */
     private String thumbnailUrl;
+
+    /**
+     * 原始图片 URL（无水印，VIP可见）
+     */
+    private String originalImageUrl;
 
     /**
      * 文件名

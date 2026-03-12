@@ -49,6 +49,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
      */
     private static final List<String> WHITE_LIST = Arrays.asList(
             "/api/auth/login", // 登录
+            "/api/auth/login-by-email", // 邮箱验证码登录
             "/api/auth/register", // 注册
             "/api/auth/refresh", // 刷新令牌
             "/api/admin/auth/**", // 管理员登录（公开接口）
@@ -57,9 +58,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/api/artworks/ranking", // 排行榜（游客可访问）
             "/api/artworks/*/", // 作品详情（游客可访问）
             "/api/tags/**", // 标签（游客可访问）
+            "/api/contests", // 比赛列表（游客可访问）
+            "/api/contests/**", // 比赛详情（游客可访问）
             "/api/payments/notify", // 支付宝异步通知回调（无JWT）
             "/api/payments/status", // 支付状态查询（支付宝回跳时无JWT可能性）
             "/api/commission-plans/artist/**", // 画师约稿方案（游客可查看）
+            "/api/membership/*/", // 查看用户会员状态（VIP徽章显示）
+            "/api/membership/internal/**", // 服务间内部调用（会员升级）
+            "/api/payments/membership/status", // 会员支付状态查询（支付宝回跳）
             "/actuator/**", // 健康检查
             "/ws/**", // WebSocket 连接（通过 token 查询参数认证）
             "/v3/api-docs/**", // API 文档

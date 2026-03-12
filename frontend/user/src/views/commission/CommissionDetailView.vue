@@ -69,6 +69,9 @@
                 <div class="payment-main">
                   <span class="payment-type">{{ p.paymentType === 'DEPOSIT' ? '定金' : '尾款' }}</span>
                   <span class="payment-amount">¥{{ p.amount }}</span>
+                  <span v-if="p.discountAmount && p.discountAmount > 0" class="payment-coupon-tag">
+                    已优惠 ¥{{ p.discountAmount }}
+                  </span>
                 </div>
                 <div class="payment-sub">
                   <span class="payment-status" :class="'ps-' + p.status">
@@ -80,6 +83,8 @@
                     </template>
                   </span>
                   <span v-if="p.paidAt" class="payment-time">{{ formatTime(p.paidAt) }}</span>
+                  <span v-if="p.refundedAt" class="payment-time refund-time">退款于 {{ formatTime(p.refundedAt) }}</span>
+                  <span v-if="p.refundReason" class="refund-reason">退款原因: {{ p.refundReason }}</span>
                   <span v-if="p.orderNo" class="payment-order">订单号: {{ p.orderNo }}</span>
                   <button
                     v-if="p.status === 'PENDING' && !isOrderExpired(p) && p.payerId === currentUserId"
@@ -92,6 +97,30 @@
                     {{ formatCountdown(p.expireAt) }}
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 取消信息 -->
+          <div v-if="commission.status === 'CANCELLED' && commission.cancelledByRole" class="card cancel-info-card">
+            <h3 class="card-title">取消信息</h3>
+            <div class="cancel-info">
+              <div class="cancel-role-badge" :class="'role-' + commission.cancelledByRole">
+                {{ cancelRoleLabelMap[commission.cancelledByRole] || commission.cancelledByRole }}
+              </div>
+              <p v-if="commission.cancelReason" class="cancel-reason">
+                <strong>取消原因：</strong>{{ commission.cancelReason }}
+              </p>
+              <div class="cancel-refund-hint">
+                <template v-if="commission.cancelledByRole === 'ARTIST'">
+                  <p class="refund-ok">✅ 画师取消，所有已支付款项（包括定金）已全额退还</p>
+                </template>
+                <template v-else-if="commission.cancelledByRole === 'CLIENT'">
+                  <p class="refund-partial">⚠️ 委托方取消，定金不予退还，尾款（如有）已退还</p>
+                </template>
+                <template v-else-if="commission.cancelledByRole === 'ADMIN'">
+                  <p class="refund-admin">🔧 管理员介入取消，退款由管理员处理</p>
+                </template>
               </div>
             </div>
           </div>
@@ -230,12 +259,96 @@
         <div class="modal-body">
           <h3>交付作品</h3>
           <div class="modal-form">
-            <label>交付说明</label>
-            <textarea v-model="deliverNote" rows="3" class="form-input" placeholder="输入交付说明或文件链接"></textarea>
+            <label>作品链接 <span style="color:#f56c6c">*</span></label>
+            <input v-model="deliverUrl" class="form-input" placeholder="输入作品下载/查看链接" />
+            <label style="margin-top: 12px">交付说明</label>
+            <textarea v-model="deliverNote" rows="3" class="form-input" placeholder="描述交付内容（可选）"></textarea>
           </div>
           <div class="modal-actions">
             <button class="btn-cancel" @click="showDeliverDialog = false">取消</button>
             <button class="btn-submit" @click="doDeliver">确认交付</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 优惠券选择弹窗 -->
+      <div v-if="showCouponDialog" class="modal-overlay" @click.self="showCouponDialog = false">
+        <div class="modal-body coupon-modal">
+          <h3>选择优惠券</h3>
+          <div v-if="couponLoading" class="coupon-loading">加载中...</div>
+          <div v-else>
+            <div v-if="availableCoupons.length === 0" class="empty-coupon">
+              <p>暂无可用优惠券</p>
+            </div>
+            <div v-else class="coupon-list">
+              <div
+                v-for="c in availableCoupons"
+                :key="c.userCouponId"
+                class="coupon-item"
+                :class="{ selected: selectedCouponId === c.userCouponId }"
+                @click="selectedCouponId = selectedCouponId === c.userCouponId ? null : c.userCouponId"
+              >
+                <div class="coupon-left">
+                  <span class="coupon-discount">
+                    <template v-if="c.type === 'FIXED'">¥{{ c.discountValue }}</template>
+                    <template v-else>{{ c.discountValue }}%</template>
+                  </span>
+                  <span class="coupon-type">{{ c.type === 'FIXED' ? '满减券' : '折扣券' }}</span>
+                </div>
+                <div class="coupon-right">
+                  <span class="coupon-name">{{ c.name }}</span>
+                  <span class="coupon-save">可省 ¥{{ c.discountAmount }}</span>
+                  <span v-if="c.minOrderAmount > 0" class="coupon-min">满¥{{ c.minOrderAmount }}可用</span>
+                  <span class="coupon-expire">{{ new Date(c.endTime).toLocaleDateString('zh-CN') }} 到期</span>
+                </div>
+                <div class="coupon-check">
+                  <span v-if="selectedCouponId === c.userCouponId" class="check-icon">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-cancel" @click="showCouponDialog = false">取消</button>
+            <button class="btn-submit" @click="confirmPayment">
+              {{ selectedCouponId ? '使用优惠券并支付' : '不使用优惠券，直接支付' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 费用明细确认弹窗 -->
+      <div v-if="showFeeDialog" class="modal-overlay" @click.self="showFeeDialog = false">
+        <div class="modal-body fee-modal">
+          <h3>费用明细</h3>
+          <div class="fee-breakdown">
+            <div class="fee-row">
+              <span class="fee-label">{{ feeDetail.payLabel }}</span>
+              <span class="fee-value">¥{{ feeDetail.originalAmount }}</span>
+            </div>
+            <div v-if="feeDetail.payLabel === '约稿定金'" class="fee-tip">
+              💡 定金支付不可使用优惠券，优惠券仅在支付尾款时可用
+            </div>
+            <div class="fee-row" v-if="feeDetail.couponDiscount > 0">
+              <span class="fee-label">🎫 优惠券抵扣</span>
+              <span class="fee-value green">-¥{{ feeDetail.couponDiscount }}</span>
+            </div>
+            <div class="fee-row">
+              <span class="fee-label">平台服务费 (5%)</span>
+              <span class="fee-value">+¥{{ feeDetail.platformFee }}</span>
+            </div>
+            <div class="fee-row" v-if="feeDetail.feeDiscount > 0">
+              <span class="fee-label">🏅 {{ feeDetail.vipLevel }} 手续费减免</span>
+              <span class="fee-value green">-¥{{ feeDetail.feeDiscount }}</span>
+            </div>
+            <div class="fee-divider"></div>
+            <div class="fee-row total">
+              <span class="fee-label">实付金额</span>
+              <span class="fee-value accent">¥{{ feeDetail.totalAmount }}</span>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-cancel" @click="showFeeDialog = false">取消</button>
+            <button class="btn-submit" @click="doFinalPayment" :disabled="paying">确认支付</button>
           </div>
         </div>
       </div>
@@ -259,7 +372,8 @@ import {
   confirmDelivery, requestRevision, cancelCommission,
   getCommissionMessages, sendCommissionMessage
 } from '@/api/commission'
-import { createPayment, getCommissionPayments, continuePay } from '@/api/payment'
+import { createPayment, getCommissionPayments, continuePay, getAvailableCouponsForOrder } from '@/api/payment'
+import { getMyMembership } from '@/api/membership'
 import request from '@/utils/request'
 
 const route = useRoute()
@@ -276,12 +390,31 @@ const otherUser = ref(null)
 const loadError = ref('')
 const msgText = ref('')
 
+// 优惠券相关
+const showCouponDialog = ref(false)
+const availableCoupons = ref([])
+const selectedCouponId = ref(null)
+const pendingPaymentType = ref(null)
+const couponLoading = ref(false)
+
+// 费用明细
+const showFeeDialog = ref(false)
+const paying = ref(false)
+const feeDetail = ref({
+  payLabel: '', originalAmount: '0', couponDiscount: 0,
+  platformFee: '0', feeDiscount: 0, vipLevel: '',
+  totalAmount: '0'
+})
+const pendingPayCouponId = ref(null)
+
 const showQuoteDialog = ref(false)
 const showDeliverDialog = ref(false)
+const deliverUrl = ref('')
 const deliverNote = ref('')
 const quoteForm = ref({ totalAmount: null, depositRatio: 0.3, estimatedDays: 7, revisionsAllowed: 2, quoteNote: '' })
 
 const statusMap = { PENDING: '待报价', QUOTED: '已报价', DEPOSIT_PAID: '已付定金', IN_PROGRESS: '创作中', DELIVERED: '已交付', COMPLETED: '已完成', CANCELLED: '已取消', REJECTED: '已拒绝' }
+const cancelRoleLabelMap = { CLIENT: '委托方取消', ARTIST: '画师取消', ADMIN: '管理员取消' }
 const paymentStatusMap = { PENDING: '待支付', PAID: '已支付', REFUNDED: '已退款', FAILED: '失败', CLOSED: '已关闭' }
 
 const isArtist = computed(() => commission.value && currentUserId.value === commission.value.artistId)
@@ -291,7 +424,7 @@ const hasQuote = computed(() => {
 })
 const canCancel = computed(() => {
   const s = commission.value?.status
-  return ['PENDING', 'QUOTED', 'DEPOSIT_PAID'].includes(s)
+  return ['PENDING', 'QUOTED', 'DEPOSIT_PAID', 'IN_PROGRESS'].includes(s)
 })
 const canSendMessage = computed(() => {
   const s = commission.value?.status
@@ -374,25 +507,113 @@ function formatDate(t) {
 
 // ---- Actions ----
 async function payDeposit() {
-  try {
-    const res = await createPayment({ commissionId, paymentType: 'DEPOSIT' })
-    if (res.code === 200 && res.data) {
-      submitAlipayForm(res.data)
-    } else {
-      ElMessage.error(res.message || '创建支付失败')
-    }
-  } catch { ElMessage.error('发起支付失败') }
+  await openCouponSelector('DEPOSIT')
 }
 
 async function payFinal() {
+  await openCouponSelector('FINAL_PAYMENT')
+}
+
+/** 打开优惠券选择弹窗 */
+async function openCouponSelector(paymentType) {
+  pendingPaymentType.value = paymentType
+  selectedCouponId.value = null
+
+  // 定金不可用优惠券，直接进入费用明细
+  if (paymentType === 'DEPOSIT') {
+    availableCoupons.value = []
+    confirmPayment()
+    return
+  }
+
+  couponLoading.value = true
+  showCouponDialog.value = true
+
+  // 计算订单金额
+  const c = commission.value
+  let orderAmount = 0
+  if (paymentType === 'DEPOSIT') {
+    orderAmount = c.depositAmount || 0
+  } else {
+    orderAmount = (c.totalAmount || 0) - (c.depositAmount || 0)
+  }
+
   try {
-    const res = await createPayment({ commissionId, paymentType: 'FINAL_PAYMENT' })
+    const res = await getAvailableCouponsForOrder(orderAmount)
+    if (res.code === 200) {
+      availableCoupons.value = res.data || []
+    } else {
+      availableCoupons.value = []
+    }
+  } catch {
+    availableCoupons.value = []
+  } finally {
+    couponLoading.value = false
+  }
+}
+
+/** 确认支付 → 先展示费用明细 */
+async function confirmPayment() {
+  showCouponDialog.value = false
+
+  const c = commission.value
+  const type = pendingPaymentType.value
+  const originalAmount = parseFloat(type === 'DEPOSIT' ? c.depositAmount : (c.totalAmount - c.depositAmount).toFixed(2))
+
+  // 优惠券折扣
+  let couponDiscount = 0
+  if (selectedCouponId.value) {
+    const coupon = availableCoupons.value.find(x => x.userCouponId === selectedCouponId.value)
+    if (coupon) couponDiscount = parseFloat(coupon.discountAmount) || 0
+  }
+  const afterCoupon = Math.max(0, originalAmount - couponDiscount)
+
+  // 平台服务费
+  const platformFee = parseFloat((afterCoupon * 0.05).toFixed(2))
+
+  // 会员手续费减免
+  let feeDiscountAmt = 0
+  let vipLevel = ''
+  try {
+    const mRes = await getMyMembership()
+    if (mRes.code === 200 && mRes.data && !mRes.data.expired) {
+      vipLevel = mRes.data.level || ''
+      if (vipLevel === 'SVIP') feeDiscountAmt = parseFloat((platformFee * 0.10).toFixed(2))
+      else if (vipLevel === 'VIP') feeDiscountAmt = parseFloat((platformFee * 0.05).toFixed(2))
+    }
+  } catch { /* ignore */ }
+
+  const actualFee = parseFloat((platformFee - feeDiscountAmt).toFixed(2))
+  const totalAmount = parseFloat((afterCoupon + actualFee).toFixed(2))
+
+  feeDetail.value = {
+    payLabel: type === 'DEPOSIT' ? '约稿定金' : '约稿尾款',
+    originalAmount: originalAmount.toFixed(2),
+    couponDiscount,
+    platformFee: platformFee.toFixed(2),
+    feeDiscount: feeDiscountAmt,
+    vipLevel,
+    totalAmount: totalAmount.toFixed(2)
+  }
+  pendingPayCouponId.value = selectedCouponId.value
+  showFeeDialog.value = true
+}
+
+/** 确认费用后发起支付 */
+async function doFinalPayment() {
+  paying.value = true
+  try {
+    const data = { commissionId, paymentType: pendingPaymentType.value }
+    if (pendingPayCouponId.value) data.userCouponId = pendingPayCouponId.value
+    const res = await createPayment(data)
     if (res.code === 200 && res.data) {
+      showFeeDialog.value = false
       submitAlipayForm(res.data)
     } else {
       ElMessage.error(res.message || '创建支付失败')
     }
   } catch { ElMessage.error('发起支付失败') }
+  finally { paying.value = false }
 }
 
 function submitAlipayForm(htmlForm) {
@@ -460,8 +681,12 @@ async function doStart() {
 }
 
 async function doDeliver() {
+  if (!deliverUrl.value.trim()) {
+    ElMessage.warning('请输入作品链接')
+    return
+  }
   try {
-    const res = await deliverWork(commissionId, { deliveryNote: deliverNote.value })
+    const res = await deliverWork(commissionId, { deliveryUrl: deliverUrl.value, deliveryNote: deliverNote.value })
     if (res.code === 200) { ElMessage.success('已交付'); showDeliverDialog.value = false; await loadData() }
     else ElMessage.error(res.message || '操作失败')
   } catch { ElMessage.error('操作失败') }
@@ -477,11 +702,61 @@ async function doRevision() {
 }
 
 async function doCancel() {
+  const status = commission.value?.status
+  const hasPaid = ['DEPOSIT_PAID', 'IN_PROGRESS', 'DELIVERED'].includes(status)
+
+  // 构建退款提示信息
+  let warningMsg = ''
+  if (isArtist.value) {
+    // 画师取消 → 全额退还
+    if (hasPaid) {
+      warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #e6a23c;">' +
+        '<p style="margin:0 0 6px;font-weight:600;color:#e6a23c;">⚠️ 退款提示</p>' +
+        '<p style="margin:0;color:#606266;font-size:13px;">画师主动取消约稿，委托方已支付的<strong>所有款项（包括定金）</strong>将<strong>全额退还</strong>。</p>' +
+        '</div>'
+    }
+    warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
+  } else {
+    // 委托方取消
+    if (hasPaid) {
+      warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #f56c6c;">' +
+        '<p style="margin:0 0 6px;font-weight:600;color:#f56c6c;">⚠️ 定金不予退还</p>' +
+        '<p style="margin:0;color:#606266;font-size:13px;">委托方主动取消约稿，<strong>定金将不予退还</strong>。</p>' +
+        '<p style="margin:4px 0 0;color:#606266;font-size:13px;">如有已支付的尾款，尾款部分将退还。</p>' +
+        '</div>' +
+        '<div style="margin-bottom:12px;padding:10px;background:#f0f9ff;border-radius:8px;font-size:12px;color:#909399;">' +
+        '💡 如因画师原因需取消，建议与画师协商由画师方发起取消，可获全额退款。' +
+        '</div>'
+      warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
+    } else {
+      warningMsg = '<p style="margin:0;color:#909399;font-size:13px;">当前尚未支付，取消不涉及退款。请输入取消原因：</p>'
+    }
+  }
+
   try {
-    const { value: reason } = await ElMessageBox.prompt('取消原因（选填）', '取消约稿')
-    const res = await cancelCommission(commissionId, reason)
-    if (res.code === 200) { ElMessage.success('已取消'); await loadData() }
-    else ElMessage.error(res.message || '操作失败')
+    const { value: reason } = await ElMessageBox.prompt('', '取消约稿', {
+      message: warningMsg,
+      dangerouslyUseHTMLString: true,
+      inputPlaceholder: '取消原因（选填）',
+      confirmButtonText: hasPaid ? '确认取消并退款' : '确认取消',
+      cancelButtonText: '我再想想',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
+      customClass: 'cancel-commission-dialog'
+    })
+    const res = await cancelCommission(commissionId, reason || '')
+    if (res.code === 200) {
+      if (isArtist.value && hasPaid) {
+        ElMessage.success('约稿已取消，款项将退还给委托方')
+      } else if (!isArtist.value && hasPaid) {
+        ElMessage.success('约稿已取消，定金不退还，尾款（如有）将退还')
+      } else {
+        ElMessage.success('约稿已取消')
+      }
+      await loadData()
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
   } catch {}
 }
 
@@ -642,6 +917,29 @@ async function sendMsg() {
   font-size: 11px;
 }
 
+.refund-time { color: #ff4d4f !important; }
+.refund-reason { color: #999; font-style: italic; }
+
+/* 取消信息 */
+.cancel-info-card { border-left: 4px solid #e6a23c; }
+.cancel-info { display: flex; flex-direction: column; gap: 10px; }
+.cancel-role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  width: fit-content;
+}
+.role-CLIENT { background: #fef0e7; color: #e6a23c; }
+.role-ARTIST { background: #e6f7ff; color: #1890ff; }
+.role-ADMIN { background: #f0f0f0; color: #666; }
+.cancel-reason { margin: 0; font-size: 14px; color: #555; }
+.cancel-refund-hint p { margin: 0; font-size: 13px; }
+.refund-ok { color: #52c41a; }
+.refund-partial { color: #e6a23c; }
+.refund-admin { color: #909399; }
+
 /* 消息 */
 .empty-msg { text-align: center; color: #ccc; padding: 20px; font-size: 14px; }
 .msg-list { max-height: 300px; overflow-y: auto; }
@@ -800,4 +1098,79 @@ async function sendMsg() {
   .detail-layout { flex-direction: column; }
   .side-col { width: 100%; }
 }
+
+/* 优惠券弹窗 */
+.coupon-modal { max-width: 520px; }
+.coupon-loading { text-align: center; padding: 30px 0; color: #999; }
+.empty-coupon { text-align: center; padding: 30px 0; color: #999; }
+.coupon-list { max-height: 320px; overflow-y: auto; margin-bottom: 18px; display: flex; flex-direction: column; gap: 10px; }
+.coupon-item {
+  display: flex;
+  align-items: center;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.coupon-item:hover { border-color: #0096FA; background: #f0f8ff; }
+.coupon-item.selected { border-color: #0096FA; background: #e6f4ff; }
+.coupon-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  padding-right: 14px;
+  border-right: 1px dashed #ddd;
+}
+.coupon-discount { font-size: 22px; font-weight: 700; color: #ff4d4f; }
+.coupon-type { font-size: 11px; color: #999; margin-top: 2px; }
+.coupon-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 14px;
+}
+.coupon-name { font-size: 14px; font-weight: 600; color: #333; }
+.coupon-save { font-size: 13px; color: #ff4d4f; font-weight: 500; }
+.coupon-min { font-size: 12px; color: #999; }
+.coupon-expire { font-size: 11px; color: #bbb; }
+.coupon-check { width: 28px; display: flex; justify-content: center; }
+.check-icon { color: #0096FA; font-size: 20px; font-weight: 700; }
+.payment-coupon-tag {
+  display: inline-block;
+  font-size: 11px;
+  color: #ff4d4f;
+  background: #fff1f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 8px;
+}
+
+/* 费用明细弹窗 */
+.fee-modal { max-width: 420px; }
+.fee-breakdown { padding: 8px 0; }
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+.fee-label { font-size: 14px; color: #555; }
+.fee-value { font-size: 14px; font-weight: 600; color: #1a1a2e; font-variant-numeric: tabular-nums; }
+.fee-value.green { color: #52c41a; }
+.fee-value.accent { font-size: 20px; font-weight: 800; color: #0096FA; }
+.fee-divider { border-top: 1px dashed #e0e0e0; margin: 8px 0; }
+.fee-tip {
+  background: #fef9e7;
+  color: #b7791f;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 4px 0 8px;
+  line-height: 1.6;
+}
+.fee-row.total .fee-label { font-size: 15px; font-weight: 700; color: #1a1a2e; }
 </style>

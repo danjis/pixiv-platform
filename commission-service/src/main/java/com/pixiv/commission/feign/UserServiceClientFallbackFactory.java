@@ -23,22 +23,40 @@ public class UserServiceClientFallbackFactory implements FallbackFactory<UserSer
         return new UserServiceClient() {
             @Override
             public Result<UserDTO> getUserById(Long userId) {
-                log.error("调用用户服务失败，获取用户信息: userId={}, 错误信息: {}", 
-                    userId, 
-                    cause.getMessage(), 
-                    cause);
-                
+                log.error("调用用户服务失败，获取用户信息: userId={}, 错误信息: {}",
+                        userId, cause.getMessage(), cause);
                 return Result.error(503, "用户服务暂时不可用，请稍后重试");
             }
 
             @Override
             public Result<ArtistDTO> getArtistByUserId(Long userId) {
-                log.error("调用用户服务失败，获取画师信息: userId={}, 错误信息: {}", 
-                    userId, 
-                    cause.getMessage(), 
-                    cause);
-                
+                log.error("调用用户服务失败，获取画师信息: userId={}, 错误信息: {}",
+                        userId, cause.getMessage(), cause);
                 return Result.error(503, "用户服务暂时不可用，请稍后重试");
+            }
+
+            @Override
+            public Result<String> freezeWalletAmount(java.util.Map<String, Object> body) {
+                log.error("调用用户服务失败，冻结钱包: body={}, 错误: {}", body, cause.getMessage(), cause);
+                return Result.error(503, "用户服务暂时不可用");
+            }
+
+            @Override
+            public Result<String> unfreezeWalletAmount(java.util.Map<String, Object> body) {
+                log.error("调用用户服务失败，解冻钱包: body={}, 错误: {}", body, cause.getMessage(), cause);
+                return Result.error(503, "用户服务暂时不可用");
+            }
+
+            @Override
+            public Result<String> addWalletIncome(java.util.Map<String, Object> body) {
+                log.error("调用用户服务失败，记录收入: body={}, 错误: {}", body, cause.getMessage(), cause);
+                return Result.error(503, "用户服务暂时不可用");
+            }
+
+            @Override
+            public Result<String> cancelWalletFreeze(java.util.Map<String, Object> body) {
+                log.error("调用用户服务失败，取消冻结: body={}, 错误: {}", body, cause.getMessage(), cause);
+                return Result.error(503, "用户服务暂时不可用");
             }
         };
     }

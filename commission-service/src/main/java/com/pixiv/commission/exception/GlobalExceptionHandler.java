@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -63,6 +65,20 @@ public class GlobalExceptionHandler {
     public Result<?> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
         log.warn("请求方法不支持: {}", e.getMethod());
         return Result.error(ErrorCode.REQUEST_METHOD_NOT_SUPPORTED, "请求方法不支持: " + e.getMethod());
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Result<?> handleMissingRequestHeader(MissingRequestHeaderException e) {
+        log.warn("缺少请求头: {}", e.getHeaderName());
+        return Result.error(401, "未提供认证信息");
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<?> handleMissingParam(MissingServletRequestParameterException e) {
+        log.warn("缺少请求参数: {}", e.getParameterName());
+        return Result.error(ErrorCode.PARAM_INVALID, "缺少参数: " + e.getParameterName());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

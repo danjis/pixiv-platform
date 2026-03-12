@@ -133,10 +133,12 @@ public class CreateArtworkRequest {
      */
     @Schema(description = "单张图片信息")
     public static class ImageItem {
-        @Schema(description = "原图 URL")
+        @Schema(description = "原图 URL（带水印）")
         private String imageUrl;
         @Schema(description = "缩略图 URL")
         private String thumbnailUrl;
+        @Schema(description = "原始图片URL（无水印，VIP可见）")
+        private String originalImageUrl;
 
         public String getImageUrl() {
             return imageUrl;
@@ -152,6 +154,14 @@ public class CreateArtworkRequest {
 
         public void setThumbnailUrl(String thumbnailUrl) {
             this.thumbnailUrl = thumbnailUrl;
+        }
+
+        public String getOriginalImageUrl() {
+            return originalImageUrl;
+        }
+
+        public void setOriginalImageUrl(String originalImageUrl) {
+            this.originalImageUrl = originalImageUrl;
         }
     }
 }

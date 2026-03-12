@@ -45,10 +45,30 @@ public class GatewayRoutesConfig {
                                                 .path("/api/follows/**")
                                                 .uri("lb://user-service"))
 
+                                // 会员接口
+                                .route("user-service-membership", r -> r
+                                                .path("/api/membership/**")
+                                                .uri("lb://user-service"))
+
+                                // 签到/积分接口
+                                .route("user-service-checkin", r -> r
+                                                .path("/api/checkin/**")
+                                                .uri("lb://user-service"))
+
                                 // ========== 管理员路由 ==========
                                 // 管理员-作品管理接口（转发到 artwork-service）
                                 .route("admin-artworks", r -> r
                                                 .path("/api/admin/artworks/**")
+                                                .uri("lb://artwork-service"))
+
+                                // 管理员-评论管理接口（转发到 artwork-service）
+                                .route("admin-comments", r -> r
+                                                .path("/api/admin/comments/**")
+                                                .uri("lb://artwork-service"))
+
+                                // 管理员-比赛管理接口（转发到 artwork-service）
+                                .route("admin-contests", r -> r
+                                                .path("/api/admin/contests/**")
                                                 .uri("lb://artwork-service"))
 
                                 // 管理员-其他管理接口（转发到 user-service）
@@ -65,6 +85,16 @@ public class GatewayRoutesConfig {
                                 // 标签管理接口
                                 .route("artwork-service-tags", r -> r
                                                 .path("/api/tags/**")
+                                                .uri("lb://artwork-service"))
+
+                                // 浏览记录接口
+                                .route("artwork-service-browsing-history", r -> r
+                                                .path("/api/browsing-history/**")
+                                                .uri("lb://artwork-service"))
+
+                                // 比赛接口
+                                .route("artwork-service-contests", r -> r
+                                                .path("/api/contests/**")
                                                 .uri("lb://artwork-service"))
 
                                 // ========== 约稿服务路由 ==========
@@ -88,10 +118,20 @@ public class GatewayRoutesConfig {
                                                 .path("/api/conversations/**")
                                                 .uri("lb://commission-service"))
 
+                                // 优惠券接口
+                                .route("commission-service-coupons", r -> r
+                                                .path("/api/coupons/**")
+                                                .uri("lb://commission-service"))
+
                                 // ========== 通知服务路由 ==========
                                 // 通知接口
                                 .route("notification-service-notifications", r -> r
                                                 .path("/api/notifications/**")
+                                                .uri("lb://notification-service"))
+
+                                // 反馈/客服接口
+                                .route("notification-service-feedback", r -> r
+                                                .path("/api/feedback/**")
                                                 .uri("lb://notification-service"))
 
                                 // WebSocket 实时通知（STOMP over SockJS）

@@ -114,6 +114,53 @@ const routes = [
         name: 'Notifications',
         component: () => import('@/views/notification/NotificationView.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'history',
+        name: 'BrowsingHistory',
+        component: () => import('@/views/history/BrowsingHistoryView.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'coupons',
+        name: 'MyCoupons',
+        component: () => import('@/views/coupon/CouponView.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'orders',
+        name: 'MyOrders',
+        component: () => import('@/views/order/OrderHistoryView.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'membership',
+        name: 'Membership',
+        component: () => import('@/views/membership/MembershipView.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'membership/pay-result',
+        name: 'MembershipPayResult',
+        component: () => import('@/views/membership/MembershipPayResultView.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'contests',
+        name: 'Contests',
+        component: () => import('@/views/contest/ContestListView.vue'),
+        meta: { requiresAuth: false }
+      },
+      {
+        path: 'contests/:id',
+        name: 'ContestDetail',
+        component: () => import('@/views/contest/ContestDetailView.vue'),
+        meta: { requiresAuth: false }
+      },
+      // 兼容旧通知链接 /commissions/:id → /commission/:id
+      {
+        path: 'commissions/:id',
+        redirect: to => ({ path: `/commission/${to.params.id}` })
       }
     ]
   },
@@ -158,11 +205,11 @@ const routes = [
   // 404 兜底路由 — 必须放在最后
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
     component: () => import('@/layout/MainLayout.vue'),
     children: [
       {
         path: '',
+        name: 'NotFound',
         component: () => import('@/views/NotFoundView.vue')
       }
     ]

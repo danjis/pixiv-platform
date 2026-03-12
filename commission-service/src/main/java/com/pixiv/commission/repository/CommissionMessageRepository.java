@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Repository
 public interface CommissionMessageRepository extends JpaRepository<CommissionMessage, Long> {
-    
+
     /**
      * 根据约稿 ID 查询消息列表（按创建时间升序）
      * 
@@ -23,7 +23,7 @@ public interface CommissionMessageRepository extends JpaRepository<CommissionMes
      * @return 消息列表
      */
     List<CommissionMessage> findByCommissionIdOrderByCreatedAtAsc(Long commissionId);
-    
+
     /**
      * 统计约稿的消息数量
      * 
@@ -31,4 +31,11 @@ public interface CommissionMessageRepository extends JpaRepository<CommissionMes
      * @return 消息数量
      */
     long countByCommissionId(Long commissionId);
+
+    /**
+     * 根据约稿 ID 删除所有消息
+     *
+     * @param commissionId 约稿 ID
+     */
+    void deleteByCommissionId(Long commissionId);
 }

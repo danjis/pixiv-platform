@@ -33,7 +33,7 @@
         <!-- 顶部 -->
         <div class="card-top">
           <div class="card-client">
-            <el-avatar :size="36" :src="c.clientAvatarUrl || defaultAvatar">
+            <el-avatar :size="36" :src="c.clientAvatar || defaultAvatar">
               {{ (c.clientName || '?').charAt(0) }}
             </el-avatar>
             <div class="client-info">
@@ -145,8 +145,17 @@
           </button>
 
           <!-- 取消 -->
-          <button v-if="['PENDING','QUOTED','DEPOSIT_PAID'].includes(c.status)" class="action-btn danger-text" @click="handleCancel(c)">
+          <button v-if="['PENDING','QUOTED','DEPOSIT_PAID','IN_PROGRESS'].includes(c.status)" class="action-btn danger-text" @click="handleCancel(c)">
             取消
+          </button>
+
+          <!-- 删除记录（仅限终态） -->
+          <button
+            v-if="['COMPLETED','CANCELLED','REJECTED'].includes(c.status)"
+            class="action-btn danger-text"
+            @click="handleDelete(c)"
+          >
+            删除记录
           </button>
         </div>
       </div>
@@ -250,7 +259,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMyCommissions, quoteCommission, rejectCommission, startWork, deliverWork, cancelCommission } from '@/api/commission'
+import { getMyCommissions, quoteCommission, rejectCommission, startWork, deliverWork, cancelCommission, deleteCommission } from '@/api/commission'
 import { createOrGetConversation } from '@/api/chat'
 
 const router = useRouter()
@@ -469,14 +478,37 @@ async function handleChat(c) {
 }
 
 async function handleCancel(c) {
+  const hasPaid = ['DEPOSIT_PAID', 'IN_PROGRESS', 'DELIVERED'].includes(c.status)
+  
+  let warningMsg = ''
+  if (hasPaid) {
+    warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #e6a23c;">' +
+      '<p style="margin:0 0 6px;font-weight:600;color:#e6a23c;">⚠️ 退款提示</p>' +
+      '<p style="margin:0;color:#606266;font-size:13px;">画师主动取消约稿，委托方已支付的<strong>所有款项（包括定金）</strong>将<strong>全额退还</strong>。</p>' +
+      '</div>'
+    warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
+  } else {
+    warningMsg = '<p style="margin:0;color:#909399;font-size:13px;">当前尚未支付，取消不涉及退款。请输入取消原因：</p>'
+  }
+
   try {
-    const { value } = await ElMessageBox.prompt('请输入取消原因', '取消约稿', {
+    const { value } = await ElMessageBox.prompt('', '取消约稿', {
+      message: warningMsg,
+      dangerouslyUseHTMLString: true,
       inputPlaceholder: '取消原因（可选）',
-      type: 'warning'
+      confirmButtonText: hasPaid ? '确认取消并退款' : '确认取消',
+      cancelButtonText: '我再想想',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
+      customClass: 'cancel-commission-dialog'
     })
     const res = await cancelCommission(c.id, value || '')
     if (res.code === 200) {
-      ElMessage.success('已取消')
+      if (hasPaid) {
+        ElMessage.success('约稿已取消，款项将退还给委托方')
+      } else {
+        ElMessage.success('已取消')
+      }
       loadCommissions()
     } else {
       ElMessage.error(res.message || '取消失败')
@@ -486,11 +518,30 @@ async function handleCancel(c) {
   }
 }
 
+async function handleDelete(c) {
+  try {
+    await ElMessageBox.confirm(`确定要删除约稿「${c.title}」的记录吗？删除后不可恢复。`, '删除约稿记录', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    const res = await deleteCommission(c.id)
+    if (res.code === 200) {
+      ElMessage.success('已删除')
+      loadCommissions()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('删除失败')
+  }
+}
+
 onMounted(loadCommissions)
 </script>
 
 <style scoped>
-.commissions-page { max-width: 800px; }
+.commissions-page { max-width: 100%; }
 
 .page-header { margin-bottom: 24px; }
 .page-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }

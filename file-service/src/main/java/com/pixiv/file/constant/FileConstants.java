@@ -39,9 +39,14 @@ public class FileConstants {
     public static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
     /**
-     * OSS 文件路径前缀（作品图片）
+     * OSS 文件路径前缀（作品图片，带水印）
      */
     public static final String OSS_PATH_PREFIX = "artworks/";
+
+    /**
+     * 原始图片路径前缀（无水印，VIP可见）
+     */
+    public static final String ORIGINAL_PATH_PREFIX = "originals/";
 
     /**
      * 缩略图路径前缀

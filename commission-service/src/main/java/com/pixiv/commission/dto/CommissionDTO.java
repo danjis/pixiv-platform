@@ -36,6 +36,8 @@ public class CommissionDTO {
     private String deliveryNote;
     private LocalDateTime deliveredAt;
     private String cancelReason;
+    private Long cancelledBy;
+    private String cancelledByRole;
     private CommissionStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
