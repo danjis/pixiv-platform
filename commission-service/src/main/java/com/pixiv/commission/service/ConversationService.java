@@ -11,6 +11,7 @@ import com.pixiv.common.dto.Result;
 import com.pixiv.common.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 public class ConversationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ConversationService.class);
+    private static final String CHAT_MESSAGE_QUEUE = "chat.message";
 
     @Autowired
     private ConversationRepository conversationRepository;
@@ -37,6 +41,9 @@ public class ConversationService {
 
     @Autowired
     private UserServiceClient userServiceClient;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 创建或获取与目标用户的对话
@@ -152,7 +159,13 @@ public class ConversationService {
         conversationRepository.save(conv);
 
         logger.info("发送私信: convId={}, senderId={}, msgId={}", conversationId, senderId, message.getId());
-        return toMessageDTO(message);
+
+        // 通过 RabbitMQ 推送给接收方，notification-service 消费后通过 WebSocket 实时推送
+        Long recipientId = conv.getUser1Id().equals(senderId) ? conv.getUser2Id() : conv.getUser1Id();
+        PrivateMessageDTO msgDTO = toMessageDTO(message);
+        pushChatMessageEvent(recipientId, msgDTO);
+
+        return msgDTO;
     }
 
     /**
@@ -225,6 +238,28 @@ public class ConversationService {
         } catch (Exception e) {
             logger.warn("获取用户信息失败: userId={}, error={}", userId, e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * 通过 RabbitMQ 发送私信事件，由 notification-service 消费并通过 WebSocket 推送
+     */
+    private void pushChatMessageEvent(Long recipientId, PrivateMessageDTO msgDTO) {
+        try {
+            Map<String, Object> event = new HashMap<>();
+            event.put("recipientId", recipientId);
+            event.put("id", msgDTO.getId());
+            event.put("conversationId", msgDTO.getConversationId());
+            event.put("senderId", msgDTO.getSenderId());
+            event.put("senderName", msgDTO.getSenderName());
+            event.put("senderAvatar", msgDTO.getSenderAvatar());
+            event.put("content", msgDTO.getContent());
+            event.put("messageType", msgDTO.getMessageType() != null ? msgDTO.getMessageType().name() : "TEXT");
+            event.put("attachmentUrl", msgDTO.getAttachmentUrl());
+            event.put("createdAt", msgDTO.getCreatedAt() != null ? msgDTO.getCreatedAt().toString() : null);
+            rabbitTemplate.convertAndSend(CHAT_MESSAGE_QUEUE, event);
+        } catch (Exception e) {
+            logger.warn("推送私信事件失败: recipientId={}, error={}", recipientId, e.getMessage());
         }
     }
 }

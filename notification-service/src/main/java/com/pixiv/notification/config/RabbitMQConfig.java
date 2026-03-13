@@ -15,23 +15,33 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class RabbitMQConfig {
-    
+
     /**
      * 通知创建队列名称
      */
     public static final String NOTIFICATION_CREATE_QUEUE = "notification.create";
-    
+
+    /**
+     * 私信消息推送队列名称
+     */
+    public static final String CHAT_MESSAGE_QUEUE = "chat.message";
+
     /**
      * 创建通知队列
-     * 
-     * @return 队列实例
      */
     @Bean
     public Queue notificationCreateQueue() {
-        // durable = true: 队列持久化，服务器重启后队列不会丢失
         return new Queue(NOTIFICATION_CREATE_QUEUE, true);
     }
-    
+
+    /**
+     * 创建私信消息推送队列
+     */
+    @Bean
+    public Queue chatMessageQueue() {
+        return new Queue(CHAT_MESSAGE_QUEUE, true);
+    }
+
     /**
      * 配置消息转换器
      * 使用 Jackson2JsonMessageConverter 将消息转换为 JSON 格式
@@ -42,7 +52,7 @@ public class RabbitMQConfig {
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
-    
+
     /**
      * 配置 RabbitMQ 监听器容器工厂
      * 

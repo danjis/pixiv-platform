@@ -134,7 +134,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getUnreadCount } from '@/api/notification'
 import { getSearchSuggestions } from '@/api/artwork'
@@ -144,8 +144,9 @@ import { ElNotification, ElMessage } from 'element-plus'
 import FloatingHelpButton from '@/components/FloatingHelpButton.vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
-const { connect: wsConnect, disconnect: wsDisconnect } = useWebSocketNotification()
+const { connect: wsConnect, disconnect: wsDisconnect, onChatMessage: wsOnChat } = useWebSocketNotification()
 const keyword = ref('')
 const unreadCount = ref(0)
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
@@ -254,6 +255,29 @@ onMounted(async () => {
           }
         }
       })
+    })
+
+    // 注册私信 WebSocket 回调：不在聊天页时弹出提醒
+    wsOnChat((chatMsg) => {
+      // 如果当前不在对应的聊天页面，弹出通知提醒
+      const currentPath = route.path
+      const chatConvId = chatMsg.conversationId ? Number(chatMsg.conversationId) : null
+      const isOnChatPage = currentPath === '/chat' || currentPath === `/chat/${chatConvId}`
+      if (!isOnChatPage) {
+        ElNotification({
+          title: '新私信',
+          message: `${chatMsg.senderName || '用户'}: ${chatMsg.content || '发来一条消息'}`,
+          type: 'info',
+          duration: 4500,
+          onClick: () => {
+            if (chatConvId) {
+              router.push(`/chat/${chatConvId}`)
+            } else {
+              router.push('/chat')
+            }
+          }
+        })
+      }
     })
   }
 })

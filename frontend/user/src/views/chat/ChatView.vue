@@ -109,15 +109,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getMyConversations, getConversation, getMessages, sendMessage, markAsRead } from '@/api/chat'
+import { useWebSocketNotification } from '@/composables/useWebSocket'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { onChatMessage, offChatMessage } = useWebSocketNotification()
 
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 const currentUserId = computed(() => userStore.user?.id)
@@ -160,7 +162,48 @@ onMounted(async () => {
       }
     }
   }
+
+  // 注册 WebSocket 私信回调，实时接收对方发来的消息
+  onChatMessage(handleIncomingMessage)
 })
+
+onBeforeUnmount(() => {
+  offChatMessage()
+})
+
+/**
+ * 处理 WebSocket 推送的实时私信
+ */
+async function handleIncomingMessage(chatMsg) {
+  const convId = chatMsg.conversationId ? Number(chatMsg.conversationId) : null
+
+  // 如果当前正在查看该对话，直接追加消息到列表
+  if (activeConversation.value && activeConversation.value.id === convId) {
+    // 避免重复（发送方已经本地追加过）
+    const exists = messages.value.some(m => m.id === chatMsg.id)
+    if (!exists) {
+      messages.value.unshift(chatMsg)
+      await nextTick()
+      scrollToBottom()
+      // 自动标记已读
+      try { await markAsRead(convId) } catch { /* ignore */ }
+    }
+  }
+
+  // 更新对话列表中的最后消息和未读数
+  const conv = conversations.value.find(c => c.id === convId)
+  if (conv) {
+    conv.lastMessage = chatMsg.content
+    conv.lastMessageAt = chatMsg.createdAt || new Date().toISOString()
+    // 如果不是当前正在查看的对话，未读数 +1
+    if (!activeConversation.value || activeConversation.value.id !== convId) {
+      conv.unreadCount = (conv.unreadCount || 0) + 1
+    }
+  } else {
+    // 新对话未在列表中，重新加载对话列表
+    await loadConversations()
+  }
+}
 
 async function loadConversations() {
   loadingConversations.value = true
