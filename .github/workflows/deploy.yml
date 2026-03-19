@@ -24,7 +24,6 @@ jobs:
 
     - name: 编译后端微服务 (Maven)
       run: |
-        cd pixiv-platform
         mvn clean package -DskipTests
         # 编译完成后，清理本地冗余产物只留 jar 包，以防传到服务器过慢
         find . -name "src" -type d -exec rm -rf {} +
