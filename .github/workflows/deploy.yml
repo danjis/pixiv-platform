@@ -1,17 +1,18 @@
-name: 一键自动部署 (CI/CD)
+name: 一键同步代码到服务器
 
 on:
   push:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 concurrency:
-  group: pixiv-platform-deploy
+  group: pixiv-platform-sync
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build-and-sync:
     runs-on: ubuntu-latest
 
     defaults:
@@ -34,14 +35,13 @@ jobs:
           set -e
           mvn -B clean package -DskipTests
 
-          # 瘦身：删除源码，保留运行和 Docker 构建所需内容
+          # 只保留 Docker 构建镜像需要的 jar / Dockerfile / 资源文件
           rm -rf gateway-service/src
           rm -rf user-service/src
           rm -rf artwork-service/src
           rm -rf commission-service/src
           rm -rf notification-service/src
           rm -rf file-service/src
-          rm -rf common/src
 
       - name: 4. 安装 Node.js 20
         uses: actions/setup-node@v4
@@ -62,37 +62,20 @@ jobs:
           npm install
           npm run build
 
-      - name: 7. 瘦身前端依赖
+      - name: 7. 删除前端依赖目录
         run: |
           rm -rf frontend/user/node_modules
           rm -rf frontend/admin/node_modules
 
-      - name: 8. 上传项目运行所需文件到服务器
+      - name: 8. 上传运行所需文件到服务器
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          source: "gateway-service,user-service,artwork-service,commission-service,notification-service,file-service,ai-service,common,frontend/user/dist,frontend/admin/dist,docker,nacos-configs,pom.xml,.dockerignore"
+          source: "gateway-service,user-service,artwork-service,commission-service,notification-service,file-service,ai-service,frontend/user/dist,frontend/admin/dist,docker,nacos-configs"
           target: "/root/bs-3/pixiv-platform/"
           overwrite: true
           strip_components: 0
-
-      - name: 9. 通过 SSH 登录服务器，执行部署脚本
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          script: |
-            set -e
-
-            cd /root/bs-3
-
-            # 你自己提前放好的 deploy.sh
-            sed -i 's/\r$//' deploy.sh
-            chmod +x deploy.sh
-
-            mkdir -p /root/bs-3/pixiv-platform
-
-            bash ./deploy.sh deploy
+          timeout: 60s
+          command_timeout: 20m
