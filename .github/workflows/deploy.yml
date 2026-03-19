@@ -25,8 +25,9 @@ jobs:
     - name: 编译后端微服务 (Maven)
       run: |
         mvn clean package -DskipTests
-        # 编译完成后，清理本地冗余产物只留 jar 包，以防传到服务器过慢
-        find . -name "src" -type d -exec rm -rf {} +
+        # 编译完成后删除 Java 微服务的 src，减小传输体积 (一定要排除 frontend)
+        rm -rf *-service/src
+        rm -rf common/src
         rm -rf ~/.m2/repository
 
     - name: 安装 Node.js 环境 (用于编译前端)
