@@ -1,0 +1,62 @@
+name: 一键自动部署 (CI/CD)
+
+# 触发条件：当你 push 代码到 master 或 main 分支时自动触发
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # 使用 GitHub 提供的一台免费 Linux 机器帮你干活
+
+    steps:
+    - name: 1. 拉取最新代码
+      uses: actions/checkout@v3
+
+    - name: 2. 安装 Node.js 环境 (用于编译前端)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18' # 如果你的项目对应的是更高版本，比如 20，可以这里改一下
+
+    - name: 3. 编译 user 前端
+      run: |
+        cd frontend/user
+        npm install
+        npm run build
+
+    - name: 4. 编译 admin 前端
+      run: |
+        cd frontend/admin
+        npm install
+        npm run build
+
+    - name: 5. 瘦身：删除云端的 node_modules (防止传到你的服务器太慢)
+      run: |
+        rm -rf frontend/user/node_modules
+        rm -rf frontend/admin/node_modules
+
+    - name: 6. 上传最新的代码+前端编译产物(dist) 到你的服务器
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        # source 为当前仓库的所有文件，因为刚才删了 node_modules，所以包很小
+        source: "."
+        # 对应你服务器上的绝对路径位置
+        target: "/root/bs-3/pixiv-platform/"
+
+    - name: 7. 通过 SSH 登录服务器，去触发你的部署脚本
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        script: |
+          cd /root/bs-3
+          # 给部署脚本赋权防止无法执行
+          chmod +x deploy.sh
+          # 执行你原本用来部署或重启的脚本
+          ./deploy.sh
