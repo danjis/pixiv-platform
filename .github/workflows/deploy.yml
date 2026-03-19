@@ -18,7 +18,7 @@ jobs:
     - name: 2. 安装 Node.js 环境 (用于编译前端)
       uses: actions/setup-node@v3
       with:
-        node-version: '18' # 如果你的项目对应的是更高版本，比如 20，可以这里改一下
+        node-version: '20' # 修改为 20，以支持 Vite 7+ 和 @vitejs/plugin-vue 的要求
 
     - name: 3. 编译 user 前端
       run: |
