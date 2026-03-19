@@ -34,7 +34,7 @@ jobs:
           set -e
           mvn -B clean package -DskipTests
 
-          # 瘦身：删除源码，保留 Docker 构建与运行所需内容
+          # 瘦身：删除源码，保留运行和 Docker 构建所需内容
           rm -rf gateway-service/src
           rm -rf user-service/src
           rm -rf artwork-service/src
@@ -78,18 +78,7 @@ jobs:
           overwrite: true
           strip_components: 0
 
-      - name: 9. 上传部署脚本和 Compose 文件
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          source: "deploy.sh,docker-compose.dev.yml"
-          target: "/root/bs-3/"
-          overwrite: true
-          strip_components: 0
-
-      - name: 10. 执行服务器部署脚本
+      - name: 9. 通过 SSH 登录服务器，执行部署脚本
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -100,6 +89,7 @@ jobs:
 
             cd /root/bs-3
 
+            # 你自己提前放好的 deploy.sh
             sed -i 's/\r$//' deploy.sh
             chmod +x deploy.sh
 
