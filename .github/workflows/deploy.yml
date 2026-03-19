@@ -71,7 +71,9 @@ jobs:
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
           cd /root/bs-3
-          # 给部署脚本赋权防止无法执行
+          # 修复从 Windows 手动上传带来的格式乱码问题 (将 CRLF 转换为 LF)
+          sed -i 's/\r$//' deploy.sh
+          # 给部署脚本赋权
           chmod +x deploy.sh
-          # 执行你原本用来部署或重启的脚本
-          ./deploy.sh
+          # 显式使用 bash 执行
+          bash ./deploy.sh
