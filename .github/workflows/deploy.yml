@@ -1,79 +1,112 @@
 name: 一键自动部署 (CI/CD)
 
-# 触发条件：当你 push 代码到 master 或 main 分支时自动触发
 on:
   push:
     branches:
       - main
       - master
 
+concurrency:
+  group: pixiv-platform-deploy
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest # 使用 GitHub 提供的一台免费 Linux 机器帮你干活
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
-    - name: 1. 拉取最新代码
-      uses: actions/checkout@v3
+      - name: 1. 拉取最新代码
+        uses: actions/checkout@v4
 
-    - name: 安装 Java JDK 21 (用于编译后端)
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21' # 项目采用的是 Java 21
-        distribution: 'temurin'
-        cache: 'maven'
+      - name: 2. 安装 Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
 
-    - name: 编译后端微服务 (Maven)
-      run: |
-        mvn clean package -DskipTests
-        # 编译完成后删除 Java 微服务的 src，减小传输体积 (一定要排除 frontend)
-        rm -rf *-service/src
-        rm -rf common/src
-        rm -rf ~/.m2/repository
+      - name: 3. 编译后端微服务
+        run: |
+          set -e
+          mvn -B clean package -DskipTests
 
-    - name: 安装 Node.js 环境 (用于编译前端)
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20' # 修改为 20，以支持 Vite 7+ 和 @vitejs/plugin-vue 的要求
+          # 瘦身：删除源码，仅保留运行和构建镜像需要的内容
+          rm -rf gateway-service/src
+          rm -rf user-service/src
+          rm -rf artwork-service/src
+          rm -rf commission-service/src
+          rm -rf notification-service/src
+          rm -rf file-service/src
+          rm -rf common/src
 
-    - name: 3. 编译 user 前端
-      run: |
-        cd frontend/user
-        npm install
-        npm run build
+      - name: 4. 安装 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            frontend/user/package-lock.json
+            frontend/admin/package-lock.json
 
-    - name: 4. 编译 admin 前端
-      run: |
-        cd frontend/admin
-        npm install
-        npm run build
+      - name: 5. 编译 user 前端
+        working-directory: frontend/user
+        run: |
+          set -e
+          npm ci
+          npm run build
 
-    - name: 5. 瘦身：删除云端的 node_modules (防止传到你的服务器太慢)
-      run: |
-        rm -rf frontend/user/node_modules
-        rm -rf frontend/admin/node_modules
+      - name: 6. 编译 admin 前端
+        working-directory: frontend/admin
+        run: |
+          set -e
+          npm ci
+          npm run build
 
-    - name: 6. 上传最新的代码+前端编译产物(dist) 到你的服务器
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
-        # source 为当前仓库的所有文件，因为刚才删了 node_modules，所以包很小
-        source: "."
-        # 对应你服务器上的绝对路径位置
-        target: "/root/bs-3/pixiv-platform/"
+      - name: 7. 瘦身前端依赖
+        run: |
+          rm -rf frontend/user/node_modules
+          rm -rf frontend/admin/node_modules
 
-    - name: 7. 通过 SSH 登录服务器，去触发你的部署脚本
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
-        script: |
-          cd /root/bs-3
-          # 修复从 Windows 手动上传带来的格式乱码问题 (将 CRLF 转换为 LF)
-          sed -i 's/\r$//' deploy.sh
-          # 给部署脚本赋权
-          chmod +x deploy.sh
-          # 显式使用 bash 执行
-          bash ./deploy.sh
+      - name: 8. 上传项目运行所需文件到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "gateway-service,user-service,artwork-service,commission-service,notification-service,file-service,ai-service,common,frontend/user/dist,frontend/admin/dist,docker,nacos-configs,pom.xml,.dockerignore,README.md"
+          target: "/root/bs-3/pixiv-platform/"
+          overwrite: true
+          strip_components: 0
+
+      - name: 9. 上传部署脚本和 Compose 文件
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "deploy.sh,docker-compose.dev.yml"
+          target: "/root/bs-3/"
+          overwrite: true
+          strip_components: 0
+
+      - name: 10. 执行服务器部署脚本
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            set -e
+
+            cd /root/bs-3
+
+            sed -i 's/\r$//' deploy.sh
+            chmod +x deploy.sh
+
+            mkdir -p /root/bs-3/pixiv-platform
+
+            bash ./deploy.sh deploy
