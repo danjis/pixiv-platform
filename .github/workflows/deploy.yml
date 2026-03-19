@@ -15,7 +15,22 @@ jobs:
     - name: 1. 拉取最新代码
       uses: actions/checkout@v3
 
-    - name: 2. 安装 Node.js 环境 (用于编译前端)
+    - name: 安装 Java JDK 17 (用于编译后端)
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17' # 你的后端是 Java 17 还是 8？如果不同请根据实际更改
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: 编译后端微服务 (Maven)
+      run: |
+        cd pixiv-platform
+        mvn clean package -DskipTests
+        # 编译完成后，清理本地冗余产物只留 jar 包，以防传到服务器过慢
+        find . -name "src" -type d -exec rm -rf {} +
+        rm -rf ~/.m2/repository
+
+    - name: 安装 Node.js 环境 (用于编译前端)
       uses: actions/setup-node@v3
       with:
         node-version: '20' # 修改为 20，以支持 Vite 7+ 和 @vitejs/plugin-vue 的要求
