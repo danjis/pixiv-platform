@@ -24,10 +24,10 @@ spring:
 
   # 邮件配置（示例，实际使用时需要配置真实的邮件服务器）
   mail:
-    host: smtp.example.com
+    host: smtp.qq.com
     port: 587
-    username: noreply@pixiv-platform.com
-    password: your-email-password
+    username: 1537157036@qq.com
+    password: ejmeoycdyzmrgihg
     properties:
       mail:
         smtp:
