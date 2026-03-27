@@ -80,7 +80,7 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
-        path: 'commission/create/:artistId',
+        path: 'commission/create',
         name: 'CreateCommission',
         component: () => import('@/views/commission/CreateCommissionView.vue'),
         meta: { requiresAuth: true }

@@ -1,1288 +1,398 @@
 <template>
   <div class="commission-page">
-    <div class="commission-container">
-      <!-- 页头 -->
-      <div class="page-header">
-        <div class="header-left">
-          <h1 class="page-title">约稿管理</h1>
-          <p class="page-desc">管理你的约稿委托与接稿</p>
+
+    <!-- ===== HERO ===== -->
+    <section class="cpage-hero">
+      <div class="cph-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+      </div>
+      <div class="cph-content">
+        <p class="cph-eyebrow">COMMISSION MANAGEMENT</p>
+        <h1 class="cph-title">约稿管理中心</h1>
+        <p class="cph-desc">管理你的所有委托与接稿订单，随时掌握每笔交易进度</p>
+        <div class="cph-stats">
+          <div class="cph-stat">
+            <span class="cph-num">{{ clientTotal || 0 }}</span>
+            <span class="cph-lbl">我的委托</span>
+          </div>
+          <div class="cph-divider"></div>
+          <div class="cph-stat" v-if="isArtist">
+            <span class="cph-num">{{ artistTotal || 0 }}</span>
+            <span class="cph-lbl">我的接稿</span>
+          </div>
         </div>
       </div>
+    </section>
 
-      <!-- Tabs -->
-      <div class="tabs-bar">
-        <button class="tab-btn" :class="{ active: activeTab === 'client' }" @click="switchTab('client')">
+    <!-- ===== MAIN ===== -->
+    <div class="main-wrap">
+
+      <!-- Tab Rail -->
+      <div class="tab-rail">
+        <button
+          class="tab-pill"
+          :class="{ active: activeTab === 'client' }"
+          @click="switchTab('client')"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg>
           我的委托
-          <span v-if="clientTotal" class="tab-count">{{ clientTotal }}</span>
+          <span v-if="clientTotal" class="tab-badge">{{ clientTotal }}</span>
         </button>
-        <button v-if="isArtist" class="tab-btn" :class="{ active: activeTab === 'artist' }" @click="switchTab('artist')">
+        <button
+          v-if="isArtist"
+          class="tab-pill"
+          :class="{ active: activeTab === 'artist' }"
+          @click="switchTab('artist')"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M7 14l5-5 5 5H7z"/><path d="M3 17h18v2H3zm0-8h18v2H3zm0-4h18v2H3z"/></svg>
           我的接稿
-          <span v-if="artistTotal" class="tab-count">{{ artistTotal }}</span>
+          <span v-if="artistTotal" class="tab-badge">{{ artistTotal }}</span>
         </button>
       </div>
 
-      <!-- 状态筛选 -->
-      <div class="filter-bar">
+      <!-- Status Filter -->
+      <div class="filter-strip">
         <button
           v-for="f in statusFilters"
           :key="f.value"
-          class="filter-btn"
+          class="filter-chip"
           :class="{ active: currentStatus === f.value }"
           @click="filterByStatus(f.value)"
         >
+          <span v-if="f.dot" class="chip-dot" :style="{ background: f.dot }"></span>
           {{ f.label }}
         </button>
       </div>
 
-      <!-- 列表 -->
-      <div v-if="loading" class="loading-state">
-        <div class="loading-spinner"></div>
-      </div>
-
-      <div v-else-if="commissions.length > 0" class="card-list">
-        <div v-for="c in commissions" :key="c.id" class="commission-card" @click="goDetail(c)">
-          <div class="card-top">
-            <div class="card-meta">
-              <el-avatar :size="36" :src="getOtherAvatar(c) || defaultAvatar">
-                {{ getOtherName(c)?.charAt(0) }}
-              </el-avatar>
-              <div>
-                <span class="card-role">{{ activeTab === 'client' ? '画师' : '委托方' }}</span>
-                <span class="card-target">{{ getOtherName(c) }}</span>
-              </div>
-            </div>
-            <span class="status-badge" :class="'status-' + c.status.toLowerCase()">
-              {{ getStatusText(c.status) }}
-            </span>
-          </div>
-
-          <h3 class="card-title">{{ c.title }}</h3>
-          <p class="card-desc">{{ c.description }}</p>
-
-          <!-- 报价信息（画师已报价） -->
-          <div v-if="c.status === 'QUOTED' && activeTab === 'client'" class="quote-info">
-            <div class="quote-header">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="#FF9800"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-              <span>画师已报价，等待您确认</span>
-            </div>
-            <div class="quote-details">
-              <div class="quote-item">
-                <span class="quote-label">报价金额</span>
-                <span class="quote-value price">¥{{ c.totalAmount }}</span>
-              </div>
-              <div class="quote-item">
-                <span class="quote-label">需付定金</span>
-                <span class="quote-value">¥{{ c.depositAmount }}</span>
-              </div>
-              <div v-if="c.quoteNote" class="quote-note">
-                <span class="quote-label">报价说明：</span>{{ c.quoteNote }}
-              </div>
-            </div>
-          </div>
-
-          <div class="card-info-row">
-            <!-- 待处理时显示预算 -->
-            <div v-if="c.status === 'PENDING' && c.budget" class="info-item">
-              <span class="info-label">预算</span>
-              <span class="info-value price">¥{{ c.budget }}</span>
-            </div>
-            <!-- 有报价后显示总金额 -->
-            <div v-if="c.totalAmount && !['PENDING','QUOTED'].includes(c.status)" class="info-item">
-              <span class="info-label">总金额</span>
-              <span class="info-value price">¥{{ c.totalAmount }}</span>
-            </div>
-            <div v-if="c.depositAmount && !['PENDING','QUOTED'].includes(c.status)" class="info-item">
-              <span class="info-label">定金</span>
-              <span class="info-value">¥{{ c.depositAmount }}</span>
-              <span :class="['pay-status', c.depositPaid ? 'paid' : 'unpaid']">{{ c.depositPaid ? '已付' : '未付' }}</span>
-            </div>
-            <div v-if="c.deadline" class="info-item">
-              <span class="info-label">截止</span>
-              <span class="info-value">{{ formatDate(c.deadline) }}</span>
-            </div>
-            <div v-if="c.revisionsAllowed" class="info-item">
-              <span class="info-label">修改次数</span>
-              <span class="info-value">{{ c.revisionsUsed || 0 }}/{{ c.revisionsAllowed }}</span>
-            </div>
-          </div>
-
-          <!-- 交付信息 -->
-          <div v-if="c.deliveryUrl" class="delivery-info">
-            <span class="delivery-label">交付作品:</span>
-            <a :href="c.deliveryUrl" target="_blank" class="delivery-link" @click.stop>查看作品</a>
-            <span v-if="c.deliveryNote" class="delivery-note">{{ c.deliveryNote }}</span>
-          </div>
-
-          <!-- 操作按钮 -->
-          <div class="card-actions" @click.stop>
-            <!-- 委托方操作 -->
-            <template v-if="activeTab === 'client'">
-              <!-- QUOTED: 接受报价 → 支付宝支付定金 -->
-              <button v-if="c.status === 'QUOTED'" class="action-btn primary" @click="handlePayDeposit(c)">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-                接受报价并支付定金 ¥{{ c.depositAmount }}
-              </button>
-              <!-- DELIVERED: 确认收货 + 支付尾款 -->
-              <button v-if="c.status === 'DELIVERED'" class="action-btn primary" @click="handlePayFinal(c)">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-                确认收货并支付尾款 ¥{{ (c.totalAmount - c.depositAmount).toFixed(2) }}
-              </button>
-              <button v-if="c.status === 'DELIVERED' && c.revisionsUsed < c.revisionsAllowed" class="action-btn outline" @click="handleRevision(c)">
-                请求修改 ({{ c.revisionsAllowed - c.revisionsUsed }}次)
-              </button>
-              <!-- PENDING: 等待画师报价 -->
-              <span v-if="c.status === 'PENDING'" class="waiting-hint">等待画师报价中...</span>
-            </template>
-
-            <!-- 画师操作 -->
-            <template v-if="activeTab === 'artist'">
-              <!-- PENDING: 报价 -->
-              <button v-if="c.status === 'PENDING'" class="action-btn primary" @click="openQuoteDialog(c)">
-                报价
-              </button>
-              <button v-if="c.status === 'PENDING'" class="action-btn danger-text" @click="handleReject(c)">
-                拒绝
-              </button>
-              <button v-if="c.status === 'DEPOSIT_PAID'" class="action-btn primary" @click="handleStart(c)">
-                开始创作
-              </button>
-              <button v-if="c.status === 'IN_PROGRESS'" class="action-btn primary" @click="showDeliverDialog(c)">
-                交付作品
-              </button>
-            </template>
-
-            <!-- 通用操作 -->
-            <button
-              v-if="!['COMPLETED','CANCELLED','REJECTED'].includes(c.status)"
-              class="action-btn danger-text"
-              @click="handleCancel(c)"
-            >
-              取消约稿
-            </button>
-            <button class="action-btn outline" @click="goChat(c)">
-              私信沟通
-            </button>
-            <!-- 删除记录（仅限终态） -->
-            <button
-              v-if="['COMPLETED','CANCELLED','REJECTED'].includes(c.status)"
-              class="action-btn danger-text"
-              @click="handleDelete(c)"
-            >
-              删除记录
-            </button>
+      <!-- Skeleton -->
+      <div v-if="loading" class="order-grid">
+        <div v-for="n in 6" :key="n" class="order-card skel-card">
+          <div class="skel-bar"></div>
+          <div class="skel-head"></div>
+          <div class="skel-body">
+            <div class="skel-line w70"></div>
+            <div class="skel-line w50"></div>
+            <div class="skel-line w40"></div>
           </div>
         </div>
       </div>
 
-      <div v-else class="empty-state">
-        <svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="#ddd" stroke-width="1.5">
-          <rect x="12" y="8" width="40" height="48" rx="4"/>
-          <line x1="20" y1="20" x2="44" y2="20"/><line x1="20" y1="28" x2="36" y2="28"/><line x1="20" y1="36" x2="40" y2="36"/>
-        </svg>
-        <p>{{ activeTab === 'client' ? '暂无委托约稿' : '暂无接稿记录' }}</p>
-        <span class="empty-hint">
-          {{ activeTab === 'client' ? '去画师主页发起约稿委托吧' : '当有用户向你发起约稿时，会在这里显示' }}
-        </span>
-      </div>
-
-      <!-- 分页 -->
-      <div v-if="total > pageSize" class="pager">
-        <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="pageSize"
-          :total="total"
-          layout="prev, pager, next"
-          small
-          @current-change="loadCommissions"
-        />
-      </div>
-    </div>
-
-    <!-- 交付对话框 -->
-    <el-dialog v-model="deliverDialogVisible" title="交付作品" width="480px" :close-on-click-modal="false">
-      <el-form label-position="top">
-        <el-form-item label="作品链接" required>
-          <el-input v-model="deliverForm.deliveryUrl" placeholder="输入作品下载/查看链接" />
-        </el-form-item>
-        <el-form-item label="交付说明">
-          <el-input v-model="deliverForm.deliveryNote" type="textarea" :rows="3" placeholder="描述交付内容（可选）" maxlength="2000" show-word-limit />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="deliverDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleDeliver" :loading="submitting">确认交付</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 画师报价对话框 -->
-    <el-dialog v-model="quoteDialogVisible" title="报价" width="520px" :close-on-click-modal="false">
-      <el-form label-position="top" :model="quoteForm">
-        <el-form-item label="报价金额（元）" required>
-          <el-input-number v-model="quoteForm.totalAmount" :min="1" :max="999999" :precision="2" :step="100" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="定金比例">
-          <el-slider v-model="quoteForm.depositRatio" :min="0.1" :max="1" :step="0.1" :format-tooltip="v => (v * 100).toFixed(0) + '%'" />
-          <div class="deposit-preview" v-if="quoteForm.totalAmount">
-            定金: ¥{{ (quoteForm.totalAmount * quoteForm.depositRatio).toFixed(2) }} / 尾款: ¥{{ (quoteForm.totalAmount * (1 - quoteForm.depositRatio)).toFixed(2) }}
-          </div>
-        </el-form-item>
-        <el-form-item label="预计完成天数">
-          <el-input-number v-model="quoteForm.estimatedDays" :min="1" :max="365" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="允许修改次数">
-          <el-input-number v-model="quoteForm.revisionsAllowed" :min="0" :max="10" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="报价说明">
-          <el-input v-model="quoteForm.quoteNote" type="textarea" :rows="3" placeholder="报价说明、注意事项等（可选）" maxlength="1000" show-word-limit />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="quoteDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleQuote" :loading="submitting">确认报价</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 优惠券选择弹窗 -->
-    <el-dialog v-model="couponDialogVisible" title="选择优惠券" width="520px" :close-on-click-modal="false">
-      <div class="coupon-list">
-        <div
-          v-for="c in availableCoupons"
-          :key="c.userCouponId"
-          class="coupon-item"
-          :class="{ selected: selectedCouponId === c.userCouponId }"
-          @click="selectedCouponId = selectedCouponId === c.userCouponId ? null : c.userCouponId"
+      <!-- Order Grid -->
+      <div v-else-if="commissions.length > 0" class="order-grid">
+        <article
+          v-for="c in commissions"
+          :key="c.id"
+          class="order-card"
+          @click="goDetail(c)"
         >
-          <div class="coupon-left">
-            <span class="coupon-discount">
-              <template v-if="c.type === 'FIXED'">¥{{ c.discountValue }}</template>
-              <template v-else>{{ c.discountValue }}%</template>
-            </span>
-            <span class="coupon-type">{{ c.type === 'FIXED' ? '满减券' : '折扣券' }}</span>
-          </div>
-          <div class="coupon-right">
-            <span class="coupon-name">{{ c.name }}</span>
-            <span class="coupon-save">可省 ¥{{ c.discountAmount }}</span>
-            <span v-if="c.minOrderAmount > 0" class="coupon-min">满¥{{ c.minOrderAmount }}可用</span>
-            <span class="coupon-expire">{{ new Date(c.endTime).toLocaleDateString('zh-CN') }} 到期</span>
-          </div>
-          <div class="coupon-check">
-            <span v-if="selectedCouponId === c.userCouponId" class="check-icon">✓</span>
-          </div>
-        </div>
-      </div>
-      <template #footer>
-        <el-button @click="couponDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmPayNoCoupon">不使用优惠券，直接支付</el-button>
-        <el-button v-if="selectedCouponId" type="success" @click="confirmPayWithCoupon">使用优惠券并支付</el-button>
-      </template>
-    </el-dialog>
+          <!-- Status color bar -->
+          <div class="card-status-bar" :class="'bar-' + c.status.toLowerCase()"></div>
 
-    <!-- 费用明细确认弹窗 -->
-    <el-dialog v-model="feeDialogVisible" title="费用明细" width="420px" :close-on-click-modal="false">
-      <div class="fee-breakdown">
-        <div class="fee-row">
-          <span class="fee-label">{{ feeDetail.payLabel }}</span>
-          <span class="fee-value">¥{{ feeDetail.originalAmount }}</span>
-        </div>
-        <div v-if="feeDetail.payLabel === '约稿定金'" class="fee-tip">
-          💡 定金支付不可使用优惠券，优惠券仅在支付尾款时可用
-        </div>
-        <div class="fee-row discount" v-if="feeDetail.couponDiscount > 0">
-          <span class="fee-label">🎫 优惠券抵扣</span>
-          <span class="fee-value green">-¥{{ feeDetail.couponDiscount }}</span>
-        </div>
-        <div class="fee-row">
-          <span class="fee-label">平台服务费 (5%)</span>
-          <span class="fee-value">+¥{{ feeDetail.platformFee }}</span>
-        </div>
-        <div class="fee-row discount" v-if="feeDetail.feeDiscount > 0">
-          <span class="fee-label">🏅 {{ feeDetail.vipLevel }} 手续费减免</span>
-          <span class="fee-value green">-¥{{ feeDetail.feeDiscount }}</span>
-        </div>
-        <div class="fee-divider"></div>
-        <div class="fee-row total">
-          <span class="fee-label">实付金额</span>
-          <span class="fee-value accent">¥{{ feeDetail.totalAmount }}</span>
-        </div>
+          <!-- Header: party + status badge -->
+          <div class="oc-header">
+            <div class="oc-party">
+              <div class="party-avatar-wrap">
+                <el-avatar :size="44" :src="getOtherAvatar(c) || defaultAvatar" class="party-avatar"></el-avatar>
+                <span class="party-online" :class="'online-' + c.status.toLowerCase()"></span>
+              </div>
+              <div class="party-meta">
+                <span class="party-role-tag">{{ activeTab === 'client' ? '画师' : '委托方' }}</span>
+                <span class="party-name">{{ getOtherName(c) || '未知用户' }}</span>
+              </div>
+            </div>
+            <div class="status-badge" :class="'s-' + c.status.toLowerCase()">
+              <span class="status-dot"></span>
+              {{ getStatusText(c.status) }}
+            </div>
+          </div>
+
+          <!-- Title & desc -->
+          <h3 class="oc-title">{{ c.title }}</h3>
+          <p class="oc-desc">{{ c.description }}</p>
+
+          <!-- Quote banner (client sees artist's quote) -->
+          <div v-if="c.status === 'QUOTED' && activeTab === 'client'" class="quote-banner">
+            <div class="qb-inner">
+              <div class="qb-col">
+                <p class="qb-label">画师报价</p>
+                <p class="qb-amount">&yen;{{ c.totalAmount }}</p>
+              </div>
+              <div class="qb-sep"></div>
+              <div class="qb-col">
+                <p class="qb-label">需付定金</p>
+                <p class="qb-deposit">&yen;{{ c.depositAmount }}</p>
+              </div>
+            </div>
+            <p v-if="c.quoteNote" class="qb-note">{{ c.quoteNote }}</p>
+          </div>
+
+          <!-- Meta chips -->
+          <div class="oc-meta">
+            <span v-if="c.status === 'PENDING' && c.budget" class="meta-chip price-chip">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              预算 &yen;{{ c.budget }}
+            </span>
+            <span v-if="c.totalAmount && c.status !== 'PENDING'" class="meta-chip price-chip">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              报价 &yen;{{ c.totalAmount }}
+            </span>
+            <span v-if="c.deadline" class="meta-chip date-chip">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>
+              {{ formatDate(c.deadline) }}
+            </span>
+            <span v-if="c.status === 'IN_PROGRESS'" class="meta-chip progress-chip">
+              <span class="progress-dot"></span>创作中
+            </span>
+          </div>
+
+          <!-- Footer -->
+          <div class="oc-footer">
+            <span class="oc-time">{{ formatRelative(c.updatedAt || c.createdAt) }}</span>
+            <span class="oc-arrow">›</span>
+          </div>
+        </article>
       </div>
-      <template #footer>
-        <el-button @click="feeDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleFeeConfirmPay" :loading="submitting">确认支付</el-button>
-      </template>
-    </el-dialog>
+
+      <!-- Empty -->
+      <div v-else class="empty-state">
+        <div class="empty-illustration">
+          <svg viewBox="0 0 120 100" width="120" height="100" fill="none">
+            <rect x="15" y="20" width="90" height="65" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
+            <rect x="25" y="35" width="50" height="6" rx="3" fill="#c7d2fe"/>
+            <rect x="25" y="47" width="35" height="5" rx="2.5" fill="#ddd6fe"/>
+            <rect x="25" y="58" width="42" height="5" rx="2.5" fill="#ddd6fe"/>
+            <circle cx="90" cy="30" r="14" fill="#818cf8"/>
+            <path d="M84 30h12M90 24v12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p class="empty-title">暂无{{ activeTab === 'client' ? '委托' : '接稿' }}记录</p>
+        <p class="empty-sub">{{ activeTab === 'client' ? '去发现画师，开启你的第一笔约稿' : '等待客户发起委托' }}</p>
+        <router-link to="/artworks" class="empty-cta" v-if="activeTab === 'client'">探索画师</router-link>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination">
+        <button class="page-btn" :disabled="page === 1" @click="changePage(page - 1)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+        </button>
+        <button
+          v-for="p in pageNumbers"
+          :key="p"
+          class="page-btn"
+          :class="{ active: p === page }"
+          @click="changePage(p)"
+        >{{ p }}</button>
+        <button class="page-btn" :disabled="page === totalPages" @click="changePage(page + 1)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </button>
+      </div>
+
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import {
-  getMyCommissions, rejectCommission, quoteCommission,
-  startWork, deliverWork, requestRevision, cancelCommission,
-  deleteCommission
-} from '@/api/commission'
-import { createPayment } from '@/api/payment'
-import { getAvailableCouponsForOrder } from '@/api/payment'
-import { getMyMembership } from '@/api/membership'
-import { createOrGetConversation } from '@/api/chat'
-
-const FEE_RATE = 0.05 // 平台服务费率 5%
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { getMyCommissions as getCommissions } from '@/api/commission'
 
 const router = useRouter()
 const userStore = useUserStore()
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
+const isArtist = computed(() => userStore.isArtist)
 const activeTab = ref('client')
-const commissions = ref([])
+const currentStatus = ref('')
 const loading = ref(false)
-const currentPage = ref(1)
-const pageSize = ref(10)
+const commissions = ref([])
+const page = ref(1)
+const pageSize = 10
 const total = ref(0)
 const clientTotal = ref(0)
 const artistTotal = ref(0)
-const currentStatus = ref('')
-const submitting = ref(false)
 
-// 交付对话框
-const deliverDialogVisible = ref(false)
-const deliverForm = ref({ deliveryUrl: '', deliveryNote: '' })
-const deliverTarget = ref(null)
-
-// 报价对话框
-const quoteDialogVisible = ref(false)
-const quoteTarget = ref(null)
-const quoteForm = ref({
-  totalAmount: 500,
-  depositRatio: 0.3,
-  estimatedDays: 14,
-  revisionsAllowed: 3,
-  quoteNote: ''
+const totalPages = computed(() => Math.ceil(total.value / pageSize))
+const pageNumbers = computed(() => {
+  const pages = []
+  const start = Math.max(1, page.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
 })
-
-// 优惠券选择
-const couponDialogVisible = ref(false)
-const availableCoupons = ref([])
-const selectedCouponId = ref(null)
-const payTarget = ref(null)
-const payType = ref('DEPOSIT')
-
-// 费用明细
-const feeDialogVisible = ref(false)
-const feeDetail = ref({
-  payLabel: '', originalAmount: '0', couponDiscount: 0,
-  platformFee: '0', feeDiscount: 0, vipLevel: '',
-  totalAmount: '0'
-})
-const pendingPayCouponId = ref(null)
 
 const statusFilters = [
   { label: '全部', value: '' },
-  { label: '待报价', value: 'PENDING' },
-  { label: '已报价', value: 'QUOTED' },
-  { label: '已付定金', value: 'DEPOSIT_PAID' },
-  { label: '创作中', value: 'IN_PROGRESS' },
-  { label: '已交付', value: 'DELIVERED' },
-  { label: '已完成', value: 'COMPLETED' },
-  { label: '已取消', value: 'CANCELLED' },
-  { label: '已拒绝', value: 'REJECTED' }
+  { label: '待报价', value: 'PENDING', dot: '#f59e0b' },
+  { label: '已报价', value: 'QUOTED', dot: '#3b82f6' },
+  { label: '已付定金', value: 'DEPOSIT_PAID', dot: '#6366f1' },
+  { label: '创作中', value: 'IN_PROGRESS', dot: '#ec4899' },
+  { label: '已交付', value: 'DELIVERED', dot: '#10b981' },
+  { label: '已完成', value: 'COMPLETED', dot: '#059669' },
+  { label: '已取消', value: 'CANCELLED', dot: '#94a3b8' },
 ]
 
 const statusTextMap = {
-  PENDING: '待报价',
-  QUOTED: '已报价',
-  DEPOSIT_PAID: '已付定金',
-  IN_PROGRESS: '创作中',
-  DELIVERED: '已交付',
-  COMPLETED: '已完成',
-  CANCELLED: '已取消',
-  REJECTED: '已拒绝'
+  PENDING: '待报价', QUOTED: '已报价', DEPOSIT_PAID: '已付定金',
+  IN_PROGRESS: '创作中', DELIVERED: '已交付', COMPLETED: '已完成',
+  CANCELLED: '已取消', REJECTED: '已拒绝'
 }
 
-const isArtist = computed(() => {
-  return userStore.user?.role === 'ARTIST'
-})
+function getStatusText(s) { return statusTextMap[s] || s }
+function getOtherName(c) { return activeTab.value === 'client' ? c.artistName : c.clientName }
+function getOtherAvatar(c) { return activeTab.value === 'client' ? c.artistAvatar : c.clientAvatar }
 
-onMounted(() => {
-  loadCommissions()
-  loadCounts()
-})
 
 async function loadCommissions() {
   loading.value = true
   try {
-    const params = {
-      role: activeTab.value,
-      page: currentPage.value - 1,
-      size: pageSize.value
-    }
+    const params = { page: page.value, size: pageSize, role: activeTab.value }
     if (currentStatus.value) params.status = currentStatus.value
-
-    const res = await getMyCommissions(params)
-    if (res.code === 200 && res.data) {
-      commissions.value = res.data.content || []
-      total.value = res.data.totalElements || 0
-    }
-  } catch (e) {
-    console.error('加载约稿列表失败', e)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadCounts() {
-  try {
-    const clientRes = await getMyCommissions({ role: 'client', page: 0, size: 1 })
-    if (clientRes.code === 200 && clientRes.data) {
-      clientTotal.value = clientRes.data.totalElements || 0
-    }
-    if (isArtist.value) {
-      const artistRes = await getMyCommissions({ role: 'artist', page: 0, size: 1 })
-      if (artistRes.code === 200 && artistRes.data) {
-        artistTotal.value = artistRes.data.totalElements || 0
-      }
-    }
-  } catch {
-    // 忽略
-  }
-}
-
-function switchTab(tab) {
-  activeTab.value = tab
-  currentPage.value = 1
-  currentStatus.value = ''
-  loadCommissions()
-}
-
-function filterByStatus(status) {
-  currentStatus.value = status
-  currentPage.value = 1
-  loadCommissions()
-}
-
-function getOtherName(c) {
-  return activeTab.value === 'client' ? c.artistName : c.clientName
-}
-function getOtherAvatar(c) {
-  return activeTab.value === 'client' ? c.artistAvatar : c.clientAvatar
-}
-function getStatusText(status) {
-  return statusTextMap[status] || status
-}
-
-function goDetail(c) {
-  router.push(`/commission/${c.id}`)
-}
-
-// === 支付相关 ===
-
-async function handlePayDeposit(c) {
-  payTarget.value = c
-  payType.value = 'DEPOSIT'
-  selectedCouponId.value = null
-  availableCoupons.value = []
-  // 定金不可用优惠券，直接进入费用明细
-  confirmPay(c, 'DEPOSIT', null)
-}
-
-async function handlePayFinal(c) {
-  const finalAmount = (c.totalAmount - c.depositAmount).toFixed(2)
-  payTarget.value = c
-  payType.value = 'FINAL_PAYMENT'
-  selectedCouponId.value = null
-  availableCoupons.value = []
-  try {
-    const res = await getAvailableCouponsForOrder(finalAmount)
-    if (res.code === 200 && res.data && res.data.length > 0) {
-      availableCoupons.value = res.data
-      couponDialogVisible.value = true
-      return
-    }
-  } catch { /* ignore */ }
-  confirmPay(c, 'FINAL_PAYMENT', null)
-}
-
-async function confirmPayWithCoupon() {
-  couponDialogVisible.value = false
-  await confirmPay(payTarget.value, payType.value, selectedCouponId.value)
-}
-
-async function confirmPayNoCoupon() {
-  couponDialogVisible.value = false
-  await confirmPay(payTarget.value, payType.value, null)
-}
-
-async function confirmPay(c, type, userCouponId) {
-  const amount = type === 'DEPOSIT' ? parseFloat(c.depositAmount) : parseFloat((c.totalAmount - c.depositAmount).toFixed(2))
-  const payLabel = type === 'DEPOSIT' ? '约稿定金' : '约稿尾款'
-
-  // 查找选中的优惠券折扣
-  let couponDiscount = 0
-  if (userCouponId) {
-    const coupon = availableCoupons.value.find(cp => cp.userCouponId === userCouponId)
-    if (coupon) couponDiscount = parseFloat(coupon.discountAmount)
-  }
-  const afterCoupon = Math.max(0, amount - couponDiscount)
-
-  // 获取用户会员等级以计算手续费减免
-  let vipLevel = ''
-  let feeDiscountRate = 0
-  try {
-    const memRes = await getMyMembership()
-    if (memRes.code === 200 && memRes.data && !memRes.data.expired) {
-      const level = memRes.data.level
-      if (level === 'SVIP') { vipLevel = 'SVIP'; feeDiscountRate = 0.10 }
-      else if (level === 'VIP') { vipLevel = 'VIP'; feeDiscountRate = 0.05 }
-    }
-  } catch { /* ignore */ }
-
-  const platformFee = parseFloat((afterCoupon * 0.05).toFixed(2))
-  const feeDiscountAmt = parseFloat((platformFee * feeDiscountRate).toFixed(2))
-  const actualFee = parseFloat((platformFee - feeDiscountAmt).toFixed(2))
-  const totalAmount = parseFloat((afterCoupon + actualFee).toFixed(2))
-
-  feeDetail.value = {
-    payLabel,
-    originalAmount: amount.toFixed(2),
-    couponDiscount: couponDiscount,
-    platformFee: platformFee.toFixed(2),
-    feeDiscount: feeDiscountAmt,
-    vipLevel,
-    totalAmount: totalAmount.toFixed(2)
-  }
-  pendingPayCouponId.value = userCouponId
-  feeDialogVisible.value = true
-}
-
-async function handleFeeConfirmPay() {
-  const c = payTarget.value
-  const type = payType.value
-  const userCouponId = pendingPayCouponId.value
-  try {
-    submitting.value = true
-    const data = { commissionId: c.id, paymentType: type }
-    if (userCouponId) data.userCouponId = userCouponId
-    const res = await createPayment(data)
-    if (res.code === 200 && res.data) {
-      feeDialogVisible.value = false
-      submitAlipayForm(res.data)
-    } else {
-      ElMessage.error(res.message || '创建支付订单失败')
-    }
-  } catch {
-    ElMessage.error('支付失败')
-  } finally {
-    submitting.value = false
-  }
-}
-
-function submitAlipayForm(formHtml) {
-  // 支付宝返回的是一段带 <form> 的 HTML，插入页面后自动提交跳转到支付宝
-  const div = document.createElement('div')
-  div.innerHTML = formHtml
-  document.body.appendChild(div)
-  const form = div.querySelector('form')
-  if (form) {
-    form.submit()
-  } else {
-    ElMessage.error('支付表单解析失败，请重试')
-    document.body.removeChild(div)
-  }
-}
-
-// === 报价 ===
-
-function openQuoteDialog(c) {
-  quoteTarget.value = c
-  quoteForm.value = {
-    totalAmount: c.budget || 500,
-    depositRatio: 0.3,
-    estimatedDays: 14,
-    revisionsAllowed: 3,
-    quoteNote: ''
-  }
-  quoteDialogVisible.value = true
-}
-
-async function handleQuote() {
-  if (!quoteForm.value.totalAmount || quoteForm.value.totalAmount <= 0) {
-    ElMessage.warning('请输入报价金额')
-    return
-  }
-  submitting.value = true
-  try {
-    const data = {
-      totalAmount: quoteForm.value.totalAmount,
-      depositRatio: quoteForm.value.depositRatio,
-      revisionsAllowed: quoteForm.value.revisionsAllowed,
-      quoteNote: quoteForm.value.quoteNote
-    }
-    if (quoteForm.value.estimatedDays) {
-      const deadline = new Date()
-      deadline.setDate(deadline.getDate() + quoteForm.value.estimatedDays)
-      data.deadline = deadline.toISOString().substring(0, 19)
-    }
-    const res = await quoteCommission(quoteTarget.value.id, data)
+    const res = await getCommissions(params)
     if (res.code === 200) {
-      ElMessage.success('报价成功，等待委托方确认')
-      quoteDialogVisible.value = false
-      loadCommissions()
-    } else {
-      ElMessage.error(res.message || '报价失败')
+      const d = res.data
+      commissions.value = d.records || []
+      total.value = d.total || 0
+      if (activeTab.value === 'client') clientTotal.value = d.total || 0
+      else artistTotal.value = d.total || 0
     }
-  } catch {
-    ElMessage.error('报价失败')
-  } finally {
-    submitting.value = false
+  } catch (e) { console.error(e) } finally { loading.value = false }
+}
+async function switchTab(tab) { activeTab.value = tab; currentStatus.value = ''; page.value = 1; await loadCommissions() }
+async function filterByStatus(s) { currentStatus.value = s; page.value = 1; await loadCommissions() }
+async function changePage(p) { page.value = p; await loadCommissions() }
+function goDetail(c) { router.push({ name: 'CommissionDetail', params: { id: c.id } }) }
+function formatDate(t) { if (!t) return ''; return new Date(t).toLocaleDateString('zh-CN') }
+function formatRelative(t) {
+  if (!t) return ''
+  const diff = Date.now() - new Date(t).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return '\u521a\u521a'
+  if (mins < 60) return mins + '\u5206\u949f\u524d'
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return hours + '\u5c0f\u65f6\u524d'
+  const days = Math.floor(hours / 24)
+  if (days < 30) return days + '\u5929\u524d'
+  return new Date(t).toLocaleDateString('zh-CN')
+}
+onMounted(async () => {
+  await loadCommissions()
+  if (isArtist.value) {
+    try {
+      const res = await getCommissions({ page: 1, size: 1, role: 'artist' })
+      if (res.code === 200) artistTotal.value = res.data.total || 0
+    } catch {}
   }
-}
-
-// === 其他操作 ===
-
-async function handleReject(c) {
-  try {
-    const { value } = await ElMessageBox.prompt('请输入拒绝原因（可选）', '拒绝约稿', {
-      confirmButtonText: '确认拒绝',
-      cancelButtonText: '取消',
-      inputPlaceholder: '拒绝原因...',
-      type: 'warning'
-    })
-    const res = await rejectCommission(c.id, value)
-    if (res.code === 200) {
-      ElMessage.success('已拒绝')
-      loadCommissions()
-    } else {
-      ElMessage.error(res.message || '操作失败')
-    }
-  } catch {
-    // 取消
-  }
-}
-
-async function handleStart(c) {
-  try {
-    await ElMessageBox.confirm('确认开始创作？', '开始创作', { type: 'info' })
-    const res = await startWork(c.id)
-    if (res.code === 200) {
-      ElMessage.success('已开始创作')
-      loadCommissions()
-    } else {
-      ElMessage.error(res.message || '操作失败')
-    }
-  } catch {}
-}
-
-function showDeliverDialog(c) {
-  deliverTarget.value = c
-  deliverForm.value = { deliveryUrl: '', deliveryNote: '' }
-  deliverDialogVisible.value = true
-}
-
-async function handleDeliver() {
-  if (!deliverForm.value.deliveryUrl.trim()) {
-    ElMessage.warning('请输入作品链接')
-    return
-  }
-  submitting.value = true
-  try {
-    const res = await deliverWork(deliverTarget.value.id, deliverForm.value)
-    if (res.code === 200) {
-      ElMessage.success('作品已交付')
-      deliverDialogVisible.value = false
-      loadCommissions()
-    } else {
-      ElMessage.error(res.message || '交付失败')
-    }
-  } catch {
-    ElMessage.error('交付失败')
-  } finally {
-    submitting.value = false
-  }
-}
-
-async function handleRevision(c) {
-  try {
-    await ElMessageBox.confirm(
-      `确认申请修改？剩余 ${c.revisionsAllowed - c.revisionsUsed} 次修改机会。`,
-      '请求修改',
-      { type: 'info' }
-    )
-    const res = await requestRevision(c.id)
-    if (res.code === 200) {
-      ElMessage.success('已申请修改')
-      loadCommissions()
-    } else {
-      ElMessage.error(res.message || '操作失败')
-    }
-  } catch {}
-}
-
-async function handleCancel(c) {
-  const hasPaid = ['DEPOSIT_PAID', 'IN_PROGRESS', 'DELIVERED'].includes(c.status)
-  const isUserArtist = activeTab.value === 'artist'
-
-  let warningMsg = ''
-  if (isUserArtist) {
-    if (hasPaid) {
-      warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #e6a23c;">' +
-        '<p style="margin:0 0 6px;font-weight:600;color:#e6a23c;">⚠️ 退款提示</p>' +
-        '<p style="margin:0;color:#606266;font-size:13px;">画师主动取消约稿，委托方已支付的<strong>所有款项（包括定金）</strong>将<strong>全额退还</strong>。</p>' +
-        '</div>'
-    }
-    warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
-  } else {
-    if (hasPaid) {
-      warningMsg = '<div style="margin-bottom:12px;padding:12px;background:#fef0e7;border-radius:8px;border-left:4px solid #f56c6c;">' +
-        '<p style="margin:0 0 6px;font-weight:600;color:#f56c6c;">⚠️ 定金不予退还</p>' +
-        '<p style="margin:0;color:#606266;font-size:13px;">委托方主动取消约稿，<strong>定金将不予退还</strong>。</p>' +
-        '<p style="margin:4px 0 0;color:#606266;font-size:13px;">如有已支付的尾款，尾款部分将退还。</p>' +
-        '</div>' +
-        '<div style="margin-bottom:12px;padding:10px;background:#f0f9ff;border-radius:8px;font-size:12px;color:#909399;">' +
-        '💡 如因画师原因需取消，建议与画师协商由画师方发起取消，可获全额退款。' +
-        '</div>'
-    }
-    warningMsg += '<p style="margin:8px 0 0;color:#909399;font-size:13px;">请输入取消原因：</p>'
-  }
-
-  try {
-    const { value } = await ElMessageBox.prompt('', '取消约稿', {
-      message: warningMsg,
-      dangerouslyUseHTMLString: true,
-      inputPlaceholder: '取消原因（可选）',
-      confirmButtonText: hasPaid ? '确认取消并退款' : '确认取消',
-      cancelButtonText: '我再想想',
-      type: 'warning',
-      confirmButtonClass: 'el-button--danger',
-      customClass: 'cancel-commission-dialog'
-    })
-    const res = await cancelCommission(c.id, value)
-    if (res.code === 200) {
-      if (isUserArtist && hasPaid) {
-        ElMessage.success('约稿已取消，款项将退还给委托方')
-      } else if (!isUserArtist && hasPaid) {
-        ElMessage.success('约稿已取消，定金不退还，尾款（如有）将退还')
-      } else {
-        ElMessage.success('约稿已取消')
-      }
-      loadCommissions()
-    } else {
-      ElMessage.error(res.message || '操作失败')
-    }
-  } catch {}
-}
-
-async function handleDelete(c) {
-  try {
-    await ElMessageBox.confirm(
-      '确定删除这条约稿记录？删除后无法恢复。',
-      '删除约稿记录',
-      { confirmButtonText: '确认删除', cancelButtonText: '取消', type: 'warning' }
-    )
-    const res = await deleteCommission(c.id)
-    if (res.code === 200) {
-      ElMessage.success('已删除')
-      loadCommissions()
-      loadCounts()
-    } else {
-      ElMessage.error(res.message || '删除失败')
-    }
-  } catch (e) {
-    if (e !== 'cancel') ElMessage.error('删除失败')
-  }
-}
-
-async function goChat(c) {
-  const targetId = activeTab.value === 'client' ? c.artistId : c.clientId
-  try {
-    const res = await createOrGetConversation(targetId)
-    if (res.code === 200 && res.data) {
-      router.push(`/chat/${res.data.id}`)
-    }
-  } catch {
-    ElMessage.error('打开对话失败')
-  }
-}
-
-function formatDate(d) {
-  if (!d) return '-'
-  return d.substring(0, 10)
-}
+})
 </script>
 
 <style scoped>
-.commission-page {
-  min-height: calc(100vh - 64px);
-  background: #f5f5f5;
-  padding: 24px;
-}
-.commission-container {
-  max-width: 900px;
-  margin: 0 auto;
-}
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 4px;
-}
-.page-desc {
-  font-size: 14px;
-  color: #999;
-  margin: 0;
-}
-
-/* Tabs */
-.tabs-bar {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  background: #fff;
-  border-radius: 10px;
-  padding: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.tab-btn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.tab-btn.active {
-  background: #0096FA;
-  color: #fff;
-}
-.tab-count {
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.1);
-}
-.tab-btn.active .tab-count {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* 状态筛选 */
-.filter-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.filter-btn {
-  padding: 6px 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  background: #fff;
-  font-size: 13px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.filter-btn.active {
-  background: #0096FA;
-  color: #fff;
-  border-color: #0096FA;
-}
-.filter-btn:hover:not(.active) {
-  border-color: #0096FA;
-  color: #0096FA;
-}
-
-/* 卡片列表 */
-.card-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.commission-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s;
-  cursor: pointer;
-}
-.commission-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.card-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.card-role {
-  font-size: 12px;
-  color: #999;
-  display: block;
-}
-.card-target {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 8px;
-}
-.card-desc {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 12px;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* 报价信息 */
-.quote-info {
-  background: #FFF8E1;
-  border: 1px solid #FFE082;
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-}
-.quote-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #F57C00;
-  margin-bottom: 10px;
-}
-.quote-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.quote-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.quote-label {
-  font-size: 12px;
-  color: #999;
-}
-.quote-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #333;
-}
-.quote-value.price {
-  color: #F57C00;
-  font-size: 18px;
-}
-.quote-note {
-  flex-basis: 100%;
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
-  margin-top: 4px;
-}
-
-/* 信息行 */
-.card-info-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 12px 0;
-  border-top: 1px solid #f5f5f5;
-  border-bottom: 1px solid #f5f5f5;
-  margin-bottom: 12px;
-}
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.info-label {
-  font-size: 12px;
-  color: #999;
-}
-.info-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-.info-value.price {
-  color: #0096FA;
-  font-size: 16px;
-}
-.pay-status {
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-.pay-status.paid {
-  background: #e8f5e9;
-  color: #4caf50;
-}
-.pay-status.unpaid {
-  background: #fff3e0;
-  color: #ff9800;
-}
-
-/* 交付信息 */
-.delivery-info {
-  padding: 10px 14px;
-  background: #f0f8ff;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.delivery-label {
-  font-size: 13px;
-  color: #666;
-}
-.delivery-link {
-  color: #0096FA;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-}
-.delivery-link:hover { text-decoration: underline; }
-.delivery-note {
-  font-size: 13px;
-  color: #999;
-  flex-basis: 100%;
-}
-
-/* 等待提示 */
-.waiting-hint {
-  font-size: 13px;
-  color: #FF9800;
-  font-weight: 500;
-  padding: 6px 14px;
-  background: #FFF3E0;
-  border-radius: 20px;
-}
-
-/* 定金预览 */
-.deposit-preview {
-  font-size: 13px;
-  color: #666;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #f9f9f9;
-  border-radius: 6px;
-}
-
-/* 状态徽章 */
-.status-badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-.status-pending { background: #fff3e0; color: #ff9800; }
-.status-quoted { background: #E8F5E9; color: #4CAF50; }
-.status-deposit_paid { background: #e3f2fd; color: #2196f3; }
-.status-in_progress { background: #e8f5e9; color: #4caf50; }
-.status-delivered { background: #f3e5f5; color: #9c27b0; }
-.status-completed { background: #e0f2f1; color: #009688; }
-.status-cancelled { background: #fafafa; color: #999; }
-.status-rejected { background: #ffebee; color: #f44336; }
-
-/* 操作按钮 */
-.card-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.action-btn {
-  padding: 7px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.action-btn.primary {
-  background: #0096FA;
-  color: #fff;
-}
-.action-btn.primary:hover { background: #0080dd; }
-.action-btn.outline {
-  background: #fff;
-  color: #0096FA;
-  border: 1px solid #0096FA;
-}
-.action-btn.outline:hover { background: #e8f4ff; }
-.action-btn.danger-text {
-  background: none;
-  color: #f44336;
-}
-.action-btn.danger-text:hover { background: #ffebee; }
-
-/* 空状态 */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-}
-.empty-state p {
-  font-size: 15px;
-  margin: 16px 0 8px;
-}
-.empty-hint {
-  font-size: 13px;
-  color: #bbb;
-}
-
-/* 加载 */
-.loading-state {
-  display: flex;
-  justify-content: center;
-  padding: 60px;
-}
-.loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #f0f0f0;
-  border-top-color: #0096FA;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* 分页 */
-.pager {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
-}
-
+.commission-page { min-height: calc(100vh - 64px); background: #f0f2f8; }
+.cpage-hero { position: relative; overflow: hidden; padding: 60px 40px 54px; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%); }
+.cph-orbs { position: absolute; inset: 0; pointer-events: none; }
+.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.28; }
+.orb-1 { width: 420px; height: 420px; background: #4f46e5; top: -120px; right: 8%; }
+.orb-2 { width: 280px; height: 280px; background: #7c3aed; bottom: -80px; left: 4%; }
+.orb-3 { width: 180px; height: 180px; background: #0ea5e9; top: 10px; left: 38%; }
+.cph-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; text-align: center; }
+.cph-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: 5px; color: rgba(255,255,255,.4); margin-bottom: 14px; text-transform: uppercase; }
+.cph-title { font-size: 42px; font-weight: 900; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
+.cph-desc { font-size: 15px; color: rgba(255,255,255,.55); margin-bottom: 30px; line-height: 1.6; }
+.cph-stats { display: flex; justify-content: center; align-items: center; gap: 36px; }
+.cph-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cph-num { font-size: 34px; font-weight: 900; color: #fff; line-height: 1; }
+.cph-lbl { font-size: 12px; color: rgba(255,255,255,.45); letter-spacing: 1px; }
+.cph-divider { width: 1px; height: 44px; background: rgba(255,255,255,.18); }
+.main-wrap { max-width: 1120px; margin: 0 auto; padding: 32px 24px 80px; }
+.tab-rail { display: flex; gap: 8px; margin-bottom: 22px; }
+.tab-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border: 2px solid #e2e8f0; border-radius: 999px; background: #fff; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; transition: all .22s; }
+.tab-pill:hover { border-color: #818cf8; color: #4f46e5; background: #eef2ff; }
+.tab-pill.active { background: linear-gradient(135deg, #4f46e5, #7c3aed); border-color: transparent; color: #fff; box-shadow: 0 6px 20px rgba(79,70,229,.35); }
+.tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(255,255,255,.25); }
+.tab-pill:not(.active) .tab-badge { background: #e0e7ff; color: #4f46e5; }
+.filter-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border: 1.5px solid #e2e8f0; border-radius: 999px; background: #fff; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all .18s; }
+.filter-chip:hover { border-color: #818cf8; color: #4f46e5; background: #f5f3ff; }
+.filter-chip.active { background: #eef2ff; border-color: #818cf8; color: #4f46e5; }
+.chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+.order-card { position: relative; background: #fff; border-radius: 18px; padding: 22px; cursor: pointer; border: 1.5px solid #e8edf5; box-shadow: 0 2px 12px rgba(0,0,0,.04); transition: all .28s ease; overflow: hidden; }
+.order-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(79,70,229,.13); border-color: #c7d2fe; }
+.card-status-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.bar-pending { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+.bar-quoted { background: linear-gradient(90deg,#3b82f6,#60a5fa); }
+.bar-deposit_paid { background: linear-gradient(90deg,#6366f1,#818cf8); }
+.bar-in_progress { background: linear-gradient(90deg,#ec4899,#f472b6); }
+.bar-delivered { background: linear-gradient(90deg,#10b981,#34d399); }
+.bar-completed { background: linear-gradient(90deg,#059669,#10b981); }
+.bar-cancelled,.bar-rejected { background: #e2e8f0; }
+.oc-header { display: flex; align-items: center; justify-content: space-between; margin: 10px 0 14px; }
+.oc-party { display: flex; align-items: center; gap: 10px; }
+.party-avatar-wrap { position: relative; }
+.party-online { position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; background: #94a3b8; }
+.online-in_progress { background: #10b981; animation: pulse 2s infinite; }
+.online-pending { background: #f59e0b; }
+.online-quoted { background: #3b82f6; }
+.online-deposit_paid { background: #6366f1; }
+.online-delivered,.online-completed { background: #10b981; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)} 50%{box-shadow:0 0 0 5px rgba(16,185,129,0)} }
+.party-meta { display: flex; flex-direction: column; gap: 3px; }
+.party-role-tag { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; }
+.party-name { font-size: 14px; font-weight: 800; color: #1e293b; }
+.status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .7; }
+.s-pending { background: #fef9c3; color: #a16207; }
+.s-quoted { background: #dbeafe; color: #1d4ed8; }
+.s-deposit_paid { background: #e0e7ff; color: #4338ca; }
+.s-in_progress { background: #fce7f3; color: #be185d; }
+.s-delivered { background: #d1fae5; color: #065f46; }
+.s-completed { background: #dcfce7; color: #15803d; }
+.s-cancelled,.s-rejected { background: #f1f5f9; color: #64748b; }
+.oc-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oc-desc { font-size: 13px; color: #64748b; margin: 0 0 14px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.55; }
+.quote-banner { background: linear-gradient(135deg,#eff6ff,#eef2ff); border: 1px solid #c7d2fe; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+.qb-inner { display: flex; align-items: center; gap: 14px; }
+.qb-col { flex: 1; }
+.qb-label { font-size: 11px; color: #64748b; margin: 0 0 3px; }
+.qb-amount { font-size: 20px; font-weight: 900; color: #4f46e5; margin: 0; }
+.qb-deposit { font-size: 16px; font-weight: 700; color: #6366f1; margin: 0; }
+.qb-sep { width: 1px; height: 36px; background: #c7d2fe; }
+.qb-note { font-size: 12px; color: #64748b; margin: 10px 0 0; }
+.oc-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.meta-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.price-chip { background: #fef3c7; color: #92400e; }
+.date-chip { background: #f0f9ff; color: #0369a1; }
+.progress-chip { background: #fdf2f8; color: #9d174d; }
+.progress-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ec4899; animation: blink 1.4s infinite; margin-right: 2px; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.oc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+.oc-time { font-size: 12px; color: #94a3b8; }
+.oc-arrow { font-size: 22px; color: #cbd5e1; transition: color .2s, transform .2s; }
+.order-card:hover .oc-arrow { color: #6366f1; transform: translateX(3px); }
+.skel-card { animation: shimmer 1.5s infinite; }
+.skel-bar { height: 3px; background: #f1f5f9; margin-bottom: 18px; }
+.skel-head { height: 48px; background: #f1f5f9; border-radius: 8px; margin-bottom: 14px; }
+.skel-body { display: flex; flex-direction: column; gap: 8px; }
+.skel-line { height: 12px; background: #f1f5f9; border-radius: 6px; }
+.w70{width:70%} .w50{width:50%} .w40{width:40%}
+@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.55} }
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 80px 0 60px; gap: 14px; }
+.empty-illustration { opacity: .8; }
+.empty-title { font-size: 18px; font-weight: 800; color: #334155; margin: 0; }
+.empty-sub { font-size: 13px; color: #94a3b8; margin: 0; }
+.empty-cta { margin-top: 4px; padding: 11px 32px; background: linear-gradient(135deg,#4f46e5,#7c3aed); color: #fff; border-radius: 999px; font-size: 14px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 16px rgba(79,70,229,.35); transition: transform .2s; }
+.empty-cta:hover { transform: translateY(-2px); }
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 36px; }
+.page-btn { width: 36px; height: 36px; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; }
+.page-btn:hover:not(:disabled) { border-color: #6366f1; color: #4f46e5; }
+.page-btn.active { background: linear-gradient(135deg,#4f46e5,#7c3aed); border-color: transparent; color: #fff; font-weight: 800; }
+.page-btn:disabled { opacity: .35; cursor: not-allowed; }
 @media (max-width: 768px) {
-  .commission-page { padding: 12px; }
-  .card-info-row { gap: 12px; }
-}
-
-.coupon-list {
-  max-height: 320px;
-  overflow-y: auto;
-  margin-bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.coupon-item {
-  display: flex;
-  align-items: center;
-  border: 2px solid #e8e8e8;
-  border-radius: 12px;
-  padding: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.coupon-item:hover { border-color: #0096FA; background: #f0f8ff; }
-.coupon-item.selected { border-color: #0096FA; background: #e6f4ff; }
-.coupon-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 80px;
-  padding-right: 14px;
-  border-right: 1px dashed #ddd;
-}
-.coupon-discount { font-size: 22px; font-weight: 700; color: #ff4d4f; }
-.coupon-type { font-size: 11px; color: #999; margin-top: 2px; }
-.coupon-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-left: 14px;
-}
-.coupon-name { font-size: 14px; font-weight: 600; color: #333; }
-.coupon-save { font-size: 13px; color: #ff4d4f; font-weight: 500; }
-.coupon-min { font-size: 12px; color: #999; }
-.coupon-expire { font-size: 11px; color: #bbb; }
-.coupon-check { width: 28px; display: flex; justify-content: center; }
-.check-icon { color: #0096FA; font-size: 20px; font-weight: 700; }
-
-/* 费用明细 */
-.fee-breakdown {
-  padding: 8px 0;
-}
-.fee-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-}
-.fee-row.discount {
-  padding: 6px 0;
-}
-.fee-label {
-  font-size: 14px;
-  color: #555;
-}
-.fee-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a2e;
-  font-variant-numeric: tabular-nums;
-}
-.fee-value.green {
-  color: #52c41a;
-}
-.fee-value.accent {
-  font-size: 20px;
-  font-weight: 800;
-  color: #6366f1;
-}
-.fee-divider {
-  border-top: 1px dashed #e0e0e0;
-  margin: 8px 0;
-}
-.fee-tip {
-  background: #fef9e7;
-  color: #b7791f;
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin: 4px 0 8px;
-  line-height: 1.6;
-}
-.fee-row.total .fee-label {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1a1a2e;
+  .cpage-hero { padding: 40px 20px 36px; }
+  .cph-title { font-size: 28px; }
+  .order-grid { grid-template-columns: 1fr; }
+  .main-wrap { padding: 20px 16px 40px; }
 }
 </style>

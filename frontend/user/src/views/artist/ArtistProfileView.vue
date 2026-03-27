@@ -95,7 +95,7 @@
               </button>
               <button
                 class="commission-btn"
-                @click="$router.push(`/commission/create/${artist.id}`)"
+                @click="$router.push({ name: 'CreateCommission', query: { artistId: artist.id } })"
                 v-if="userStore.isAuthenticated && artist.role === 'ARTIST'"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">

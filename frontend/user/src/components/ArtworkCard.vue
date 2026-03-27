@@ -170,10 +170,6 @@ function formatCount(num) {
   inset: 0;
   opacity: 0;
   transition: opacity var(--px-transition-fast, 0.15s ease);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 8px;
   pointer-events: none;
 }
 
@@ -183,7 +179,9 @@ function formatCount(num) {
 
 /* 多图徽标 */
 .multi-badge {
-  align-self: flex-end;
+  position: absolute;
+  top: 8px;
+  right: 8px;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -197,14 +195,17 @@ function formatCount(num) {
 
 /* 底部统计 */
 .overlay-bottom {
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
-  margin: -8px;
-  padding: 24px 12px 8px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  padding: 28px 10px 8px;
 }
 
 .overlay-stats {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .overlay-stat {
@@ -214,6 +215,7 @@ function formatCount(num) {
   color: #fff;
   font-size: 12px;
   font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 /* R18 */

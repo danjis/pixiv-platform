@@ -13,7 +13,7 @@
           :style="{ backgroundImage: `url(${art.thumbnailUrl || art.imageUrl})` }"
         ></div>
       </div>
-      <!-- 主图层：使用 object-fit: contain 保留原始比例，不裁切 -->
+      <!-- 主图层：object-fit: cover 充满轮播框 -->
       <div class="hero-slides">
         <div
           v-for="(art, i) in featuredArtworks.slice(0, 5)"
@@ -200,9 +200,6 @@
                     <button class="mi-btn bookmark-btn" @click.stop="onFavorite(artwork)">
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
                     </button>
-                  </div>
-                  <div v-if="artwork.tags && artwork.tags.length" class="mi-tags">
-                    <span v-for="tag in artwork.tags.slice(0, 3)" :key="tag" class="mi-tag">#{{ tag }}</span>
                   </div>
                 </div>
                 <div v-if="artwork.imageCount > 1" class="mi-multi">
@@ -560,29 +557,23 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .slide-frame {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   opacity: 0;
   transition: opacity 1s ease;
 }
 .slide-frame.active { opacity: 1; }
 .slide-img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
   display: block;
-  border-radius: 0;
-  filter: drop-shadow(0 4px 32px rgba(0,0,0,0.45));
 }
 .hero-dim {
   position: absolute; inset: 0;
@@ -780,11 +771,13 @@ onBeforeUnmount(() => {
 .masonry-item:hover .mi-img { transform: scale(1.04); }
 .mi-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(transparent 40%, rgba(0,0,0,0.52) 100%);
+  background: linear-gradient(transparent 55%, rgba(0,0,0,0.6) 100%);
   opacity: 0; transition: opacity 0.22s ease;
-  display: flex; flex-direction: column; justify-content: space-between; padding: 8px;
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 8px;
+  pointer-events: none;
 }
 .masonry-item:hover .mi-overlay { opacity: 1; }
+.mi-actions { pointer-events: all; }
 .mi-actions { display: flex; justify-content: flex-end; gap: 6px; }
 .mi-btn {
   display: flex; align-items: center; gap: 4px; padding: 5px 10px;
