@@ -1,67 +1,157 @@
 <template>
-  <div class="login-page">
-    <!-- 装饰背景 -->
-    <div class="login-bg">
-      <div class="bg-shape bg-shape-1"></div>
-      <div class="bg-shape bg-shape-2"></div>
-      <div class="bg-shape bg-shape-3"></div>
+  <div class="login-root">
+    <!-- Left: Brand Panel -->
+    <div class="login-left">
+      <div class="left-noise" />
+      <div class="left-grid" />
+      <div class="left-content">
+        <div class="brand-lockup">
+          <div class="brand-logo">
+            <svg
+              viewBox="0 0 44 44"
+              fill="none"
+            >
+              <rect
+                width="44"
+                height="44"
+                rx="12"
+                fill="rgba(255,255,255,0.12)"
+              />
+              <rect
+                width="44"
+                height="44"
+                rx="12"
+                stroke="rgba(255,255,255,0.18)"
+                stroke-width="1"
+              />
+              <path
+                d="M13 22L20 15L27 22L20 29Z"
+                fill="white"
+                opacity="0.95"
+              />
+              <path
+                d="M20 15L27 22L34 15L27 8Z"
+                fill="white"
+                opacity="0.55"
+              />
+            </svg>
+          </div>
+          <h1 class="brand-name">
+            Pixiv Admin
+          </h1>
+        </div>
+        <div class="brand-copy">
+          <p class="brand-tagline">
+            创作平台管理控制台
+          </p>
+          <p class="brand-sub">
+            统一管理用户、内容、交易与系统配置
+          </p>
+        </div>
+        <div class="brand-stats">
+          <div class="bstat">
+            <span class="bstat-num">14</span>
+            <span class="bstat-lbl">功能模块</span>
+          </div>
+          <div class="bstat-divider" />
+          <div class="bstat">
+            <span class="bstat-num">∞</span>
+            <span class="bstat-lbl">数据洞察</span>
+          </div>
+          <div class="bstat-divider" />
+          <div class="bstat">
+            <span class="bstat-num">24/7</span>
+            <span class="bstat-lbl">实时监控</span>
+          </div>
+        </div>
+      </div>
+      <p class="left-footer">
+        Pixiv Platform &copy; {{ year }}
+      </p>
     </div>
 
-    <!-- 登录卡片 -->
-    <div class="login-card">
-      <!-- 品牌区 -->
-      <div class="login-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 40 40" fill="none">
-            <rect width="40" height="40" rx="10" fill="#6366f1"/>
-            <path d="M12 20L18 14L24 20L18 26Z" fill="white" opacity="0.9"/>
-            <path d="M18 14L24 20L30 14L24 8Z" fill="white" opacity="0.6"/>
-          </svg>
+    <!-- Right: Login Form -->
+    <div class="login-right">
+      <div class="form-wrapper">
+        <div class="form-header">
+          <h2 class="form-title">
+            欢迎回来
+          </h2>
+          <p class="form-desc">
+            请使用管理员账号登录
+          </p>
         </div>
-        <h1 class="brand-title">Pixiv Admin</h1>
-        <p class="brand-desc">创作平台管理控制台</p>
+
+        <el-form
+          ref="formRef"
+          :model="loginForm"
+          :rules="rules"
+          class="login-form"
+          @keyup.enter="handleLogin"
+        >
+          <div class="field-group">
+            <label class="field-label">账号</label>
+            <el-form-item prop="username">
+              <el-input
+                v-model="loginForm.username"
+                placeholder="输入管理员账号"
+                size="large"
+                :prefix-icon="User"
+              />
+            </el-form-item>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">密码</label>
+            <el-form-item prop="password">
+              <el-input
+                v-model="loginForm.password"
+                type="password"
+                placeholder="输入登录密码"
+                size="large"
+                show-password
+                :prefix-icon="Lock"
+              />
+            </el-form-item>
+          </div>
+
+          <el-form-item style="margin-top: 8px">
+            <button
+              type="button"
+              class="login-btn"
+              :class="{ loading: loading }"
+              :disabled="loading"
+              @click="handleLogin"
+            >
+              <span
+                v-if="!loading"
+                class="btn-text"
+              >登录</span>
+              <span
+                v-else
+                class="btn-text"
+              >
+                <svg
+                  class="spin-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-dasharray="31.4 31.4"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                登录中...
+              </span>
+            </button>
+          </el-form-item>
+        </el-form>
       </div>
-
-      <!-- 表单 -->
-      <el-form
-        ref="formRef"
-        :model="loginForm"
-        :rules="rules"
-        class="login-form"
-        @keyup.enter="handleLogin"
-      >
-        <el-form-item prop="username">
-          <el-input
-            v-model="loginForm.username"
-            placeholder="管理员账号"
-            size="large"
-            :prefix-icon="User"
-          />
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            v-model="loginForm.password"
-            type="password"
-            placeholder="登录密码"
-            size="large"
-            show-password
-            :prefix-icon="Lock"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            class="login-btn"
-            :loading="loading"
-            @click="handleLogin"
-          >
-            {{ loading ? '登录中...' : '登 录' }}
-          </el-button>
-        </el-form-item>
-      </el-form>
-
-      <p class="login-footer">Pixiv Platform &copy; {{ new Date().getFullYear() }}</p>
     </div>
   </div>
 </template>
@@ -74,15 +164,13 @@ import { User, Lock } from '@element-plus/icons-vue'
 import { login } from '@/api/auth'
 import { useAdminStore } from '@/stores/admin'
 
+const year = new Date().getFullYear()
 const router = useRouter()
 const adminStore = useAdminStore()
 const formRef = ref(null)
 const loading = ref(false)
 
-const loginForm = reactive({
-  username: '',
-  password: ''
-})
+const loginForm = reactive({ username: '', password: '' })
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -105,7 +193,7 @@ const handleLogin = async () => {
       } else {
         ElMessage.error(res.message || '登录失败')
       }
-    } catch {
+    } catch (e) {
       ElMessage.error('登录请求失败')
     } finally {
       loading.value = false
@@ -115,160 +203,256 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-page {
-  position: relative;
+.login-root {
   display: flex;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  background: var(--c-sidebar);
+}
+
+/* ── Left panel ── */
+.login-left {
+  position: relative;
+  width: 420px;
+  flex-shrink: 0;
+  background: #111118;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-/* 装饰背景 */
-.login-bg {
+.left-noise {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
   pointer-events: none;
 }
 
-.bg-shape {
+.left-grid {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
 }
 
-.bg-shape-1 {
-  width: 500px;
-  height: 500px;
-  background: #6366f1;
-  top: -15%;
-  right: -10%;
-  animation: float-1 20s ease-in-out infinite;
-}
-
-.bg-shape-2 {
-  width: 400px;
-  height: 400px;
-  background: #818cf8;
-  bottom: -10%;
-  left: -8%;
-  animation: float-2 25s ease-in-out infinite;
-}
-
-.bg-shape-3 {
-  width: 300px;
-  height: 300px;
-  background: #a5b4fc;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: float-3 18s ease-in-out infinite;
-}
-
-@keyframes float-1 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-40px, 30px); }
-}
-
-@keyframes float-2 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(30px, -40px); }
-}
-
-@keyframes float-3 {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.15); }
-}
-
-/* 卡片 */
-.login-card {
+.left-content {
   position: relative;
-  width: 400px;
-  padding: 48px 40px 36px;
-  background: var(--c-surface);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px 48px;
+  gap: 40px;
 }
 
-/* 品牌 */
-.login-brand {
-  text-align: center;
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+.brand-logo svg { width: 100%; height: 100%; }
+
+.brand-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  letter-spacing: -0.5px;
+}
+
+.brand-copy { display: flex; flex-direction: column; gap: 8px; }
+
+.brand-tagline {
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.25;
+  letter-spacing: -0.6px;
+}
+
+.brand-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.42);
+  line-height: 1.6;
+}
+
+.brand-stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.bstat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bstat-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.88);
+  letter-spacing: -0.4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bstat-lbl {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.bstat-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.1);
+}
+
+.left-footer {
+  position: relative;
+  padding: 24px 48px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* ── Right panel ── */
+.login-right {
+  flex: 1;
+  background: var(--c-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 380px;
+}
+
+.form-header {
   margin-bottom: 36px;
 }
 
-.brand-icon {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 16px;
-}
-
-.brand-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.brand-title {
-  font-size: 24px;
+.form-title {
+  font-size: 26px;
   font-weight: 700;
   color: var(--c-text);
   letter-spacing: -0.5px;
   margin-bottom: 6px;
 }
 
-.brand-desc {
-  font-size: 13px;
+.form-desc {
+  font-size: 14px;
   color: var(--c-text-muted);
 }
 
-/* 表单 */
-.login-form {
-  margin-top: 8px;
+/* Fields */
+.field-group {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 7px;
 }
 
 .login-form :deep(.el-form-item) {
-  margin-bottom: 22px;
+  margin-bottom: 0;
 }
 
 .login-form :deep(.el-input__wrapper) {
-  padding: 4px 14px;
-  border-radius: var(--radius-sm);
-  background: #f8fafc;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm) !important;
+  background: var(--c-surface-2) !important;
   box-shadow: 0 0 0 1px var(--c-border) inset !important;
-  transition: all var(--transition-fast);
+  transition: all var(--t-fast);
 }
 
 .login-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #c0c4cc inset !important;
+  box-shadow: 0 0 0 1px #b8b8bf inset !important;
 }
 
 .login-form :deep(.el-input__wrapper.is-focus) {
-  background: #fff;
-  box-shadow: 0 0 0 1.5px var(--c-primary) inset !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 1.5px var(--c-primary) inset, 0 0 0 4px var(--c-primary-glow) !important;
 }
 
-.login-form :deep(.el-input__prefix .el-icon) {
-  color: var(--c-text-muted);
-  font-size: 16px;
+.login-form :deep(.el-input__inner) {
+  font-size: 14px;
+  font-weight: 400;
 }
 
+/* Custom login button */
 .login-btn {
   width: 100%;
-  height: 44px;
+  height: 46px;
+  background: var(--c-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
   font-size: 15px;
   font-weight: 600;
-  border-radius: var(--radius-sm) !important;
-  letter-spacing: 2px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+  box-shadow: var(--shadow-pri);
+  letter-spacing: 0.02em;
+  margin-top: 8px;
 }
 
-/* 页脚 */
-.login-footer {
-  text-align: center;
-  font-size: 12px;
-  color: var(--c-text-muted);
-  margin-top: 28px;
+.login-btn:hover:not(:disabled) {
+  background: var(--c-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(91,91,214,0.38);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-pri);
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spin-icon {
+  width: 16px;
+  height: 16px;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-left { display: none; }
 }
 </style>

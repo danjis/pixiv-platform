@@ -1,128 +1,96 @@
 <template>
   <div class="admin-layout" :class="{ collapsed: isCollapsed }">
-    <!-- 侧栏 -->
+    <!-- Sidebar -->
     <aside class="sidebar">
       <!-- Logo -->
       <div class="sidebar-logo" @click="$router.push('/dashboard')">
-        <div class="logo-icon">
-          <svg viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#6366f1"/>
-            <path d="M10 16L15 11L20 16L15 21Z" fill="white" opacity="0.9"/>
-            <path d="M15 11L20 16L25 11L20 6Z" fill="white" opacity="0.6"/>
+        <div class="logo-mark">
+          <svg viewBox="0 0 36 36" fill="none">
+            <rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.10)"/>
+            <rect width="36" height="36" rx="9" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+            <path d="M10 18L16 12L22 18L16 24Z" fill="white" opacity="0.95"/>
+            <path d="M16 12L22 18L28 12L22 6Z" fill="white" opacity="0.50"/>
           </svg>
         </div>
         <transition name="fade">
-          <span v-show="!isCollapsed" class="logo-text">Pixiv Admin</span>
+          <div v-show="!isCollapsed" class="logo-text-wrap">
+            <span class="logo-title">Pixiv Admin</span>
+            <span class="logo-version">v2.0</span>
+          </div>
         </transition>
       </div>
 
-      <!-- 导航 -->
+      <!-- Nav -->
       <nav class="sidebar-nav">
-        <div class="nav-section">
-          <span v-show="!isCollapsed" class="nav-label">概览</span>
-          <router-link to="/dashboard" class="nav-item" active-class="active">
-            <el-icon><Odometer /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">数据概览</span>
-          </router-link>
-        </div>
-
-        <div class="nav-section">
-          <span v-show="!isCollapsed" class="nav-label">用户</span>
-          <router-link to="/users" class="nav-item" active-class="active">
-            <el-icon><User /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">用户管理</span>
-          </router-link>
-          <router-link to="/applications" class="nav-item" active-class="active">
-            <el-icon><Stamp /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">画师审核</span>
-            <span v-if="pendingCount > 0 && !isCollapsed" class="nav-badge">{{ pendingCount }}</span>
-            <span v-if="pendingCount > 0 && isCollapsed" class="nav-dot"></span>
-          </router-link>
-          <router-link to="/membership" class="nav-item" active-class="active">
-            <el-icon><Medal /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">会员管理</span>
-          </router-link>
-        </div>
-
-        <div class="nav-section">
-          <span v-show="!isCollapsed" class="nav-label">内容</span>
-          <router-link to="/artworks" class="nav-item" active-class="active">
-            <el-icon><Picture /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">作品管理</span>
-          </router-link>
-          <router-link to="/comments" class="nav-item" active-class="active">
-            <el-icon><ChatDotRound /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">评论管理</span>
-          </router-link>
-          <router-link to="/contests" class="nav-item" active-class="active">
-            <el-icon><Trophy /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">比赛管理</span>
-          </router-link>
-        </div>
-
-        <div class="nav-section">
-          <span v-show="!isCollapsed" class="nav-label">交易</span>
-          <router-link to="/commissions" class="nav-item" active-class="active">
-            <el-icon><Suitcase /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">约稿管理</span>
-          </router-link>
-          <router-link to="/payments" class="nav-item" active-class="active">
-            <el-icon><Money /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">支付管理</span>
-          </router-link>
-          <router-link to="/finance" class="nav-item" active-class="active">
-            <el-icon><Coin /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">财务管理</span>
-          </router-link>
-          <router-link to="/coupons" class="nav-item" active-class="active">
-            <el-icon><Ticket /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">优惠券管理</span>
-          </router-link>
-        </div>
-
-        <div class="nav-section">
-          <span v-show="!isCollapsed" class="nav-label">系统</span>
-          <router-link to="/feedback" class="nav-item" active-class="active">
-            <el-icon><ChatLineSquare /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">反馈管理</span>
-          </router-link>
-          <router-link to="/audit-logs" class="nav-item" active-class="active">
-            <el-icon><Document /></el-icon>
-            <span v-show="!isCollapsed" class="nav-text">审计日志</span>
+        <div v-for="section in navSections" :key="section.label" class="nav-section">
+          <transition name="fade">
+            <span v-show="!isCollapsed" class="nav-label">{{ section.label }}</span>
+          </transition>
+          <router-link
+            v-for="item in section.items"
+            :key="item.path"
+            :to="item.path"
+            class="nav-item"
+            active-class="is-active"
+            :title="isCollapsed ? item.text : ''"
+          >
+            <span class="nav-icon"><el-icon :size="17"><component :is="item.icon" /></el-icon></span>
+            <transition name="fade">
+              <span v-show="!isCollapsed" class="nav-text">{{ item.text }}</span>
+            </transition>
+            <transition name="fade">
+              <span
+                v-if="item.badge && item.badge > 0 && !isCollapsed"
+                class="nav-badge"
+              >{{ item.badge }}</span>
+            </transition>
+            <span
+              v-if="item.badge && item.badge > 0 && isCollapsed"
+              class="nav-dot"
+            ></span>
           </router-link>
         </div>
       </nav>
+
+      <!-- Collapse toggle -->
+      <button class="sidebar-collapse-btn" @click="isCollapsed = !isCollapsed" :title="isCollapsed ? '展开' : '收起'">
+        <el-icon :size="15">
+          <component :is="isCollapsed ? Expand : Fold" />
+        </el-icon>
+        <transition name="fade">
+          <span v-show="!isCollapsed">收起</span>
+        </transition>
+      </button>
     </aside>
 
-    <!-- 主内容区 -->
+    <!-- Main wrapper -->
     <div class="main-wrapper">
-      <!-- 顶栏 -->
+      <!-- Topbar -->
       <header class="topbar">
         <div class="topbar-left">
-          <button class="collapse-btn" @click="isCollapsed = !isCollapsed">
-            <el-icon :size="18">
-              <Fold v-if="!isCollapsed" />
-              <Expand v-else />
-            </el-icon>
-          </button>
-          <div class="breadcrumb-area">
-            <h3 class="page-title">{{ currentTitle }}</h3>
+          <div class="page-breadcrumb">
+            <span class="breadcrumb-home">管理后台</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">{{ currentTitle }}</span>
           </div>
         </div>
         <div class="topbar-right">
-          <div class="admin-info">
-            <div class="admin-avatar">
-              {{ adminName?.charAt(0)?.toUpperCase() || 'A' }}
+          <div class="topbar-time">{{ currentTime }}</div>
+          <div class="topbar-divider"></div>
+          <div class="admin-pill">
+            <div class="admin-avatar">{{ adminInitial }}</div>
+            <div class="admin-meta">
+              <span class="admin-name">{{ adminName }}</span>
+              <span class="admin-role">Super Admin</span>
             </div>
-            <span class="admin-name">{{ adminName || '管理员' }}</span>
           </div>
           <button class="logout-btn" @click="handleLogout" title="退出登录">
-            <el-icon :size="16"><SwitchButton /></el-icon>
+            <el-icon :size="15"><SwitchButton /></el-icon>
           </button>
         </div>
       </header>
 
-      <!-- 页面内容 -->
+      <!-- Content -->
       <main class="content-area">
         <router-view />
       </main>
@@ -131,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import {
@@ -147,25 +115,75 @@ const route = useRoute()
 const adminStore = useAdminStore()
 const isCollapsed = ref(false)
 const pendingCount = ref(0)
+const currentTime = ref('')
 
-const adminName = computed(() => adminStore.adminInfo?.username || '')
+const adminName = computed(() => adminStore.adminInfo?.username || '管理员')
+const adminInitial = computed(() => adminName.value.charAt(0).toUpperCase())
 
 const titleMap = {
-  '/dashboard': '数据概览',
-  '/users': '用户管理',
-  '/applications': '画师审核',
-  '/artworks': '作品管理',
-  '/audit-logs': '审计日志',
-  '/coupons': '优惠券管理',
-  '/comments': '评论管理',
+  '/dashboard':   '数据概览',
+  '/users':       '用户管理',
+  '/applications':'画师审核',
+  '/artworks':    '作品管理',
+  '/comments':    '评论管理',
+  '/contests':    '比赛管理',
   '/commissions': '约稿管理',
-  '/payments': '支付管理',
-  '/finance': '财务管理',
-  '/contests': '比赛管理',
-  '/membership': '会员管理'
+  '/payments':    '支付管理',
+  '/finance':     '财务管理',
+  '/coupons':     '优惠券管理',
+  '/membership':  '会员管理',
+  '/feedback':    '反馈管理',
+  '/audit-logs':  '审计日志'
 }
 
 const currentTitle = computed(() => titleMap[route.path] || '管理后台')
+
+const navSections = computed(() => [
+  {
+    label: '概览',
+    items: [
+      { path: '/dashboard',   text: '数据概览',   icon: markRaw(Odometer) }
+    ]
+  },
+  {
+    label: '用户',
+    items: [
+      { path: '/users',        text: '用户管理',   icon: markRaw(User) },
+      { path: '/applications', text: '画师审核',   icon: markRaw(Stamp), badge: pendingCount.value },
+      { path: '/membership',   text: '会员管理',   icon: markRaw(Medal) }
+    ]
+  },
+  {
+    label: '内容',
+    items: [
+      { path: '/artworks',  text: '作品管理', icon: markRaw(Picture) },
+      { path: '/comments',  text: '评论管理', icon: markRaw(ChatDotRound) },
+      { path: '/contests',  text: '比赛管理', icon: markRaw(Trophy) }
+    ]
+  },
+  {
+    label: '交易',
+    items: [
+      { path: '/commissions', text: '约稿管理',   icon: markRaw(Suitcase) },
+      { path: '/payments',    text: '支付管理',   icon: markRaw(Money) },
+      { path: '/finance',     text: '财务管理',   icon: markRaw(Coin) },
+      { path: '/coupons',     text: '优惠券',     icon: markRaw(Ticket) }
+    ]
+  },
+  {
+    label: '系统',
+    items: [
+      { path: '/feedback',   text: '反馈管理', icon: markRaw(ChatLineSquare) },
+      { path: '/audit-logs', text: '审计日志', icon: markRaw(Document) }
+    ]
+  }
+])
+
+let timer = null
+function updateTime() {
+  const now = new Date()
+  currentTime.value = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+}
 
 const loadPendingCount = async () => {
   try {
@@ -185,7 +203,7 @@ const handleLogout = async () => {
       type: 'warning'
     })
     localStorage.removeItem('admin_token')
-    adminStore.clearAdminInfo()
+    adminStore.logout()
     router.push('/login')
     ElMessage.success('已退出登录')
   } catch { /* cancelled */ }
@@ -193,6 +211,12 @@ const handleLogout = async () => {
 
 onMounted(() => {
   loadPendingCount()
+  updateTime()
+  timer = setInterval(updateTime, 30000)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timer)
 })
 </script>
 
@@ -202,23 +226,26 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-/* ============ 侧栏 ============ */
+/* ═══════════════════════════════
+   SIDEBAR
+═══════════════════════════════ */
 .sidebar {
-  width: 240px;
+  width: var(--sidebar-w);
   background: var(--c-sidebar);
   display: flex;
   flex-direction: column;
-  transition: width var(--transition);
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 100;
   overflow: hidden;
+  transition: width var(--t-slow) var(--ease-out);
+  border-right: 1px solid var(--c-sidebar-border);
 }
 
 .collapsed .sidebar {
-  width: 72px;
+  width: var(--sidebar-w-sm);
 }
 
 /* Logo */
@@ -226,52 +253,62 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 20px 16px;
+  padding: 20px 16px 18px;
   cursor: pointer;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--c-sidebar-border);
+  min-height: 68px;
 }
 
-.logo-icon {
-  width: 34px;
-  height: 34px;
+.logo-mark {
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
 }
+.logo-mark svg { width: 100%; height: 100%; }
 
-.logo-icon svg {
-  width: 100%;
-  height: 100%;
+.logo-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.logo-text {
-  font-size: 17px;
+.logo-title {
+  font-size: 15px;
   font-weight: 700;
-  color: var(--c-text-inverse);
-  white-space: nowrap;
+  color: rgba(255,255,255,0.92);
   letter-spacing: -0.3px;
 }
 
-/* 导航 */
+.logo-version {
+  font-size: 10px;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.5px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* Nav */
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 0;
+  padding: 10px 0 8px;
+  scrollbar-width: none;
 }
-
-.sidebar-nav::-webkit-scrollbar {
-  width: 0;
-}
+.sidebar-nav::-webkit-scrollbar { width: 0; }
 
 .nav-section {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .nav-label {
   display: block;
-  padding: 12px 24px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--c-text-inverse-muted);
+  padding: 12px 18px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-sidebar-label);
   text-transform: uppercase;
   letter-spacing: 1.2px;
   white-space: nowrap;
@@ -280,135 +317,144 @@ onMounted(() => {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
-  margin: 2px 10px;
+  gap: 10px;
+  padding: 9px 14px;
+  margin: 1px 8px;
   border-radius: var(--radius-sm);
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--c-sidebar-item);
   text-decoration: none;
-  font-size: 14px;
-  transition: all var(--transition-fast);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all var(--t-fast);
   position: relative;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .collapsed .nav-item {
   justify-content: center;
-  padding: 10px;
-  margin: 2px 10px;
+  padding: 10px 0;
+  margin: 1px 10px;
 }
 
 .nav-item:hover {
-  background: rgba(99, 102, 241, 0.1);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255,255,255,0.06);
+  color: var(--c-sidebar-item-h);
 }
 
-.nav-item.active {
-  background: rgba(99, 102, 241, 0.18);
-  color: #a5b4fc;
+.nav-item.is-active {
+  background: var(--c-sidebar-active);
+  color: var(--c-sidebar-active-t);
 }
 
-.nav-item.active::before {
+.nav-item.is-active::after {
   content: '';
   position: absolute;
-  left: -10px;
-  top: 8px;
-  bottom: 8px;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   width: 3px;
+  height: 60%;
   border-radius: 0 3px 3px 0;
-  background: #6366f1;
+  background: var(--c-sidebar-active-t);
 }
 
-.collapsed .nav-item.active::before {
-  left: -10px;
-}
-
-.nav-item .el-icon {
-  font-size: 18px;
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 20px;
 }
 
-.nav-text {
-  white-space: nowrap;
-}
+.nav-text { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 
 .nav-badge {
-  margin-left: auto;
-  padding: 0 7px;
-  height: 18px;
-  line-height: 18px;
+  flex-shrink: 0;
+  padding: 0 6px;
+  height: 17px;
+  line-height: 17px;
   border-radius: 9px;
-  background: #ef4444;
+  background: #dc2626;
   color: white;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'DM Mono', monospace;
 }
 
 .nav-dot {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  top: 7px;
+  right: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #ef4444;
+  background: #dc2626;
 }
 
-/* ============ 主内容区 ============ */
+/* Collapse button */
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border: none;
+  background: transparent;
+  color: var(--c-sidebar-label);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-top: 1px solid var(--c-sidebar-border);
+  transition: color var(--t-fast);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.collapsed .sidebar-collapse-btn { justify-content: center; }
+.sidebar-collapse-btn:hover { color: var(--c-sidebar-item-h); }
+
+/* ═══════════════════════════════
+   MAIN WRAPPER
+═══════════════════════════════ */
 .main-wrapper {
   flex: 1;
-  margin-left: 240px;
+  margin-left: var(--sidebar-w);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left var(--transition);
+  transition: margin-left var(--t-slow) var(--ease-out);
 }
 
 .collapsed .main-wrapper {
-  margin-left: 72px;
+  margin-left: var(--sidebar-w-sm);
 }
 
-/* 顶栏 */
+/* Topbar */
 .topbar {
-  height: 60px;
+  height: var(--topbar-h);
   background: var(--c-surface);
   border-bottom: 1px solid var(--c-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 28px;
   position: sticky;
   top: 0;
   z-index: 50;
 }
 
-.topbar-left {
+.topbar-left { display: flex; align-items: center; }
+
+.page-breadcrumb {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+  font-size: 13px;
 }
 
-.collapse-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-sm);
-  color: var(--c-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.collapse-btn:hover {
-  background: var(--c-bg);
-  color: var(--c-text);
-}
-
-.page-title {
-  font-size: 16px;
+.breadcrumb-home { color: var(--c-text-muted); }
+.breadcrumb-sep  { color: var(--c-border); }
+.breadcrumb-current {
   font-weight: 600;
   color: var(--c-text);
 }
@@ -419,63 +465,87 @@ onMounted(() => {
   gap: 16px;
 }
 
-.admin-info {
+.topbar-time {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--c-border);
+}
+
+.admin-pill {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 100px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
 }
 
 .admin-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
+  background: linear-gradient(135deg, var(--c-primary), #7c7ce8);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
+.admin-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
 .admin-name {
   font-size: 13px;
-  color: var(--c-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--c-text);
+  line-height: 1.2;
 }
-
+.admin-role {
+  font-size: 10px;
+  color: var(--c-text-muted);
+  letter-spacing: 0.3px;
+}
 .logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: none;
+  border: 1px solid var(--c-border);
   background: transparent;
   border-radius: var(--radius-sm);
   color: var(--c-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--t-fast);
 }
-
 .logout-btn:hover {
-  background: #fef2f2;
+  background: var(--c-danger-bg);
+  border-color: transparent;
   color: var(--c-danger);
 }
-
-/* 内容区 */
 .content-area {
   flex: 1;
   padding: var(--page-padding);
   background: var(--c-bg);
 }
-
-/* 过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.15s ease;
+  transition: opacity var(--t-fast);
 }
-
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
