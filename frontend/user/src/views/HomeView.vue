@@ -3,17 +3,34 @@
 
     <!-- ===== HERO CAROUSEL ===== -->
     <section class="hero-section">
+      <!-- 高斯模糊背景层（低清缩略图充当背景，不拉伸主图） -->
+      <div class="hero-blur-bg-wrap">
+        <div
+          v-for="(art, i) in featuredArtworks.slice(0, 5)"
+          :key="'bg-'+( art.id || i)"
+          class="hero-blur-bg"
+          :class="{ active: heroIndex === i }"
+          :style="{ backgroundImage: `url(${art.thumbnailUrl || art.imageUrl})` }"
+        ></div>
+      </div>
+      <!-- 主图层：使用 object-fit: contain 保留原始比例，不裁切 -->
       <div class="hero-slides">
         <div
           v-for="(art, i) in featuredArtworks.slice(0, 5)"
           :key="art.id || i"
-          class="slide-bg"
+          class="slide-frame"
           :class="{ active: heroIndex === i }"
-          :style="{ backgroundImage: `url(${art.thumbnailUrl || art.imageUrl})` }"
-        ></div>
-        <div class="hero-dim"></div>
-        <div class="hero-vignette"></div>
+        >
+          <img
+            :src="art.imageUrl || art.thumbnailUrl"
+            :alt="art.title"
+            class="slide-img"
+            loading="eager"
+          />
+        </div>
       </div>
+      <div class="hero-dim"></div>
+      <div class="hero-vignette"></div>
 
       <div class="hero-body">
         <div class="hero-left">
@@ -71,13 +88,17 @@
     <!-- ===== QUICK NAV ===== -->
     <nav class="quick-nav">
       <div class="qnav-inner">
-        <router-link to="/artworks" class="qnav-item"><span class="qi">🎨</span><span>最新作品</span></router-link>
-        <router-link to="/ranking" class="qnav-item"><span class="qi">🏅</span><span>排行榜</span></router-link>
-        <router-link to="/contests" class="qnav-item"><span class="qi">🏆</span><span>比赛专区</span></router-link>
-        <router-link to="/following" class="qnav-item" v-if="userStore.isAuthenticated"><span class="qi">💫</span><span>关注动态</span></router-link>
-        <router-link to="/commissions" class="qnav-item" v-if="userStore.isAuthenticated"><span class="qi">✏️</span><span>我的约稿</span></router-link>
-        <router-link to="/membership" class="qnav-item" v-if="userStore.isAuthenticated"><span class="qi">💎</span><span>会员中心</span></router-link>
-        <router-link to="/artworks?sortBy=popular" class="qnav-item"><span class="qi">🔥</span><span>热门推荐</span></router-link>
+        <router-link to="/artworks" class="qnav-item" active-class="router-link-active"><span class="qi">🎨</span><span>最新作品</span></router-link>
+        <router-link to="/ranking" class="qnav-item" active-class="router-link-active"><span class="qi">🏅</span><span>排行榜</span></router-link>
+        <router-link to="/contests" class="qnav-item" active-class="router-link-active"><span class="qi">🏆</span><span>比赛专区</span></router-link>
+        <router-link to="/following" class="qnav-item" v-if="userStore.isAuthenticated" active-class="router-link-active"><span class="qi">💫</span><span>关注动态</span></router-link>
+        <router-link to="/commissions" class="qnav-item" v-if="userStore.isAuthenticated" active-class="router-link-active"><span class="qi">✏️</span><span>我的约稿</span></router-link>
+        <router-link to="/membership" class="qnav-item" v-if="userStore.isAuthenticated" active-class="router-link-active"><span class="qi">💎</span><span>会员中心</span></router-link>
+        <router-link
+          :to="{ path: '/artworks', query: { sortBy: 'popular' } }"
+          class="qnav-item"
+          active-class=""
+        ><span class="qi">🔥</span><span>热门推荐</span></router-link>
       </div>
     </nav>
 
@@ -515,21 +536,53 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
 }
-.hero-slides { position: absolute; inset: 0; }
-.slide-bg {
+
+/* 高斯模糊背景层 */
+.hero-blur-bg-wrap {
   position: absolute;
   inset: 0;
+  z-index: 0;
+}
+.hero-blur-bg {
+  position: absolute;
+  inset: -20px;
   background-size: cover;
   background-position: center;
   opacity: 0;
   transition: opacity 1s ease;
-  transform: scale(1.04);
-  animation: subtle-zoom 8s ease-in-out infinite alternate;
+  filter: blur(22px) brightness(0.55) saturate(1.2);
+  transform: scale(1.08);
 }
-.slide-bg.active { opacity: 1; }
-@keyframes subtle-zoom {
-  from { transform: scale(1.04); }
-  to   { transform: scale(1.0);  }
+.hero-blur-bg.active { opacity: 1; }
+
+/* 主图层：img 保持原始比例 */
+.hero-slides {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.slide-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.slide-frame.active { opacity: 1; }
+.slide-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 0;
+  filter: drop-shadow(0 4px 32px rgba(0,0,0,0.45));
 }
 .hero-dim {
   position: absolute; inset: 0;

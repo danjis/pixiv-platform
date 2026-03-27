@@ -1,17 +1,47 @@
 <template>
   <div class="artworks-page">
-    <!-- 筛选栏（标签 + 高级筛选 + 排序） -->
+    <!-- 筛选栏（热门 Tag 胶囊 + 高级筛选 + 排序 + 随机漫游） -->
     <div class="filter-bar">
       <div class="filter-inner">
-        <!-- 筛选标签 -->
-        <div class="filter-chips">
+
+        <!-- 页面标题行 -->
+        <div class="discover-header">
+          <div class="discover-title-wrap">
+            <span class="discover-icon">🔭</span>
+            <h1 class="discover-title">深度探索</h1>
+            <span class="discover-sub">发现每一个值得被看见的创作</span>
+          </div>
+          <!-- 随机漫游按钮 -->
           <button
-            v-for="tag in popularTags"
-            :key="tag"
-            class="chip"
-            :class="{ active: selectedTags.includes(tag) }"
-            @click="toggleTag(tag)"
-          >{{ tag }}</button>
+            class="random-btn"
+            :class="{ spinning: randomLoading }"
+            @click="handleRandomExplore"
+            :disabled="randomLoading"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="random-icon">
+              <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+            <span>{{ randomLoading ? '漫游中...' : '随机漫游' }}</span>
+          </button>
+        </div>
+
+        <!-- 热门 Tag 胶囊导航 -->
+        <div class="tag-capsule-row">
+          <span class="tag-capsule-label">热门</span>
+          <div class="tag-capsule-scroll">
+            <button
+              v-for="(tag, idx) in popularTagsEnhanced"
+              :key="tag.name"
+              class="tag-capsule"
+              :class="{ active: selectedTags.includes(tag.name) }"
+              :style="{ '--capsule-color': tag.color }"
+              @click="toggleTag(tag.name)"
+            >
+              <span class="capsule-emoji">{{ tag.emoji }}</span>
+              <span class="capsule-name">{{ tag.name }}</span>
+              <span v-if="selectedTags.includes(tag.name)" class="capsule-check">✓</span>
+            </button>
+          </div>
         </div>
 
         <!-- 排序 + 高级筛选按钮 -->
@@ -151,6 +181,49 @@ const sortOptions = [
   { label: '最多浏览', value: 'most_viewed' }
 ]
 const popularTags = ref(['动漫', '少女', '风景', '插画', '原创', '同人', '二次元', '游戏'])
+
+// 增强版热门 Tag 胶囊（带 emoji + 主题色）
+const popularTagsEnhanced = [
+  { name: '动漫',  emoji: '🎌', color: '#ef4444' },
+  { name: '少女',  emoji: '🌸', color: '#ec4899' },
+  { name: '风景',  emoji: '🏔️', color: '#06b6d4' },
+  { name: '插画',  emoji: '🎨', color: '#8b5cf6' },
+  { name: '原创',  emoji: '✨', color: '#f59e0b' },
+  { name: '同人',  emoji: '💫', color: '#10b981' },
+  { name: '二次元', emoji: '🌟', color: '#3b82f6' },
+  { name: '游戏',  emoji: '🎮', color: '#6366f1' },
+  { name: 'AI生成', emoji: '🤖', color: '#7c3aed' },
+  { name: '奇幻',  emoji: '🐉', color: '#dc2626' },
+  { name: '校园',  emoji: '📚', color: '#0891b2' },
+  { name: '治愈',  emoji: '🌿', color: '#059669' },
+]
+
+// 随机漫游
+const randomLoading = ref(false)
+const handleRandomExplore = async () => {
+  randomLoading.value = true
+  // 随机选一个排序维度 + 随机一个 tag 组合
+  const randomSorts = ['hottest', 'most_liked', 'most_viewed', 'most_favorited']
+  const randomSort = randomSorts[Math.floor(Math.random() * randomSorts.length)]
+  const randomTag = popularTagsEnhanced[Math.floor(Math.random() * popularTagsEnhanced.length)]
+  sortBy.value = randomSort
+  selectedTags.value = [randomTag.name]
+  // 调用现有 getArtworks 接口，路径/入参 100% 保留
+  currentPage.value = 1
+  noMore.value = false
+  try {
+    const response = await getArtworks(buildParams())
+    if (response.code === 200 && response.data) {
+      artworks.value = response.data.records || []
+      total.value = response.data.total || 0
+      noMore.value = artworks.value.length >= total.value
+    }
+  } catch (e) {
+    console.error('随机漫游失败:', e)
+  } finally {
+    randomLoading.value = false
+  }
+}
 
 // 高级筛选状态
 const showAdvanced = ref(false)
@@ -323,11 +396,131 @@ onUnmounted(() => {
   background: var(--px-bg-secondary, #f5f5f5);
 }
 
+/* ===== 发现页标题 ===== */
+.discover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.discover-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.discover-icon { font-size: 22px; }
+.discover-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--px-text-primary);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+.discover-sub {
+  font-size: 13px;
+  color: var(--px-text-tertiary);
+  font-weight: 400;
+}
+
+/* 随机漫游按钮 */
+.random-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: 0 3px 14px rgba(99,102,241,0.38);
+  white-space: nowrap;
+}
+.random-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+}
+.random-btn:disabled { opacity: 0.75; cursor: not-allowed; }
+.random-icon { flex-shrink: 0; }
+.random-btn.spinning .random-icon {
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ===== 热门 Tag 胶囊导航 ===== */
+.tag-capsule-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.tag-capsule-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--px-text-placeholder);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  background: var(--px-bg-tertiary);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.tag-capsule-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  flex: 1;
+}
+.tag-capsule-scroll::-webkit-scrollbar { display: none; }
+.tag-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--px-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  position: relative;
+}
+.tag-capsule:hover {
+  border-color: var(--capsule-color, #6366f1);
+  color: var(--capsule-color, #6366f1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.tag-capsule.active {
+  background: var(--capsule-color, #6366f1);
+  border-color: var(--capsule-color, #6366f1);
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+}
+.capsule-emoji { font-size: 14px; line-height: 1; }
+.capsule-name { font-size: 12px; }
+.capsule-check { font-size: 11px; opacity: 0.9; }
+
 /* ===== 筛选栏 ===== */
 .filter-bar {
   background: #fff;
   border-bottom: 1px solid var(--px-border-light, #f0f0f0);
-  padding: 16px 0 12px;
+  padding: 20px 0 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .filter-inner {
@@ -336,17 +529,8 @@ onUnmounted(() => {
   padding: 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
-
-/* 标签筛选 */
-.filter-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.chip {
   padding: 4px 14px;
   border-radius: 16px;
   border: 1px solid var(--px-border, #e0e0e0);

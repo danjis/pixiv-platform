@@ -95,12 +95,12 @@ request.interceptors.response.use(
           processQueue(new Error('refresh failed'))
           userStore.clearAuth()
           ElMessage.error('登录已过期，请重新登录')
-          router.push({ name: 'Login' })
+          router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } })
         } catch (refreshError) {
           processQueue(refreshError)
           userStore.clearAuth()
           ElMessage.error('登录已过期，请重新登录')
-          router.push({ name: 'Login' })
+          router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } })
           return Promise.reject(refreshError)
         } finally {
           isRefreshing = false
@@ -108,7 +108,7 @@ request.interceptors.response.use(
       } else if (status === 401) {
         ElMessage.error('登录已过期，请重新登录')
         userStore.clearAuth()
-        router.push({ name: 'Login' })
+        router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } })
       } else {
         switch (status) {
           case 403:

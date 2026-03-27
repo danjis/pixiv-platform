@@ -226,7 +226,7 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
-    // 需要认证但未登录，跳转到登录页
+    // 需要认证但未登录，跳转到登录页，携带完整目标路径（含 query）
     next({ name: 'Login', query: { redirect: to.fullPath } })
   } else if (to.meta.requiresArtist && !userStore.isArtist) {
     // 需要画师权限但不是画师，跳转到首页

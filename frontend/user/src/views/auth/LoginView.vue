@@ -262,7 +262,7 @@ const handleLoginSuccess = (response) => {
   userStore.setAuth(authData)
   ElMessage.success('登录成功')
   setTimeout(() => {
-    const redirect = route.query.redirect || '/artworks'
+    const redirect = route.query.redirect || '/'
     router.push(redirect)
   }, 300)
 }

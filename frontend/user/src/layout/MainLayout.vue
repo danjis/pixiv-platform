@@ -41,10 +41,10 @@
         </div>
 
         <nav class="main-nav">
-          <router-link to="/artworks" class="nav-item">发现</router-link>
-          <router-link to="/following" class="nav-item" v-if="userStore.isAuthenticated">关注</router-link>
-          <router-link to="/ranking" class="nav-item">排行榜</router-link>
-          <router-link to="/contests" class="nav-item">比赛</router-link>
+          <router-link to="/artworks" class="nav-item" active-class="router-link-active" exact-active-class="router-link-exact-active">发现</router-link>
+          <router-link to="/following" class="nav-item" v-if="userStore.isAuthenticated" active-class="router-link-active" exact-active-class="router-link-exact-active">关注</router-link>
+          <router-link to="/ranking" class="nav-item" active-class="router-link-active" exact-active-class="router-link-exact-active">排行榜</router-link>
+          <router-link to="/contests" class="nav-item" active-class="router-link-active" exact-active-class="router-link-exact-active">比赛</router-link>
         </nav>
 
         <div class="right-actions">
