@@ -1,7 +1,8 @@
 /* ============================================
-   Artfolio — Global Styles & Reset
+   Pixiv 风格全局重置与基础样式
    ============================================ */
 
+/* --- Reset --- */
 *,
 *::before,
 *::after {
@@ -24,24 +25,10 @@ body {
   background-color: var(--px-bg-secondary);
   line-height: var(--px-lh-base);
   min-height: 100vh;
-  /* Subtle grain texture overlay */
-  position: relative;
-}
-
-/* Grain texture pseudo-overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.028;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
 }
 
 a {
-  color: var(--coral);
+  color: var(--px-blue);
   text-decoration: none;
   transition: color var(--px-transition-fast);
 }
@@ -71,10 +58,10 @@ input, textarea {
   font-family: inherit;
 }
 
-/* ---- Scrollbar ---- */
+/* --- 滚动条美化 --- */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -82,20 +69,20 @@ input, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--ink-400);
-  border-radius: 3px;
+  background: #d0d0d0;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-300);
+  background: #b0b0b0;
 }
 
-/* ---- Utility Classes ---- */
+/* --- 通用工具类 --- */
 .px-container {
   width: 100%;
   max-width: var(--px-max-width);
   margin: 0 auto;
-  padding: 0 var(--px-space-lg);
+  padding: 0 var(--px-space-base);
 }
 
 .px-text-ellipsis {
@@ -112,119 +99,51 @@ input, textarea {
   -webkit-box-orient: vertical;
 }
 
-.px-display {
-  font-family: var(--px-font-display);
-}
+/* --- Element Plus 全局覆盖 --- */
 
-/* ---- Element Plus Dark Overrides ---- */
+/* 按钮 */
 .el-button--primary {
-  --el-button-bg-color: var(--coral);
-  --el-button-border-color: var(--coral);
+  --el-button-bg-color: var(--px-blue);
+  --el-button-border-color: var(--px-blue);
   --el-button-hover-bg-color: var(--px-blue-hover);
   --el-button-hover-border-color: var(--px-blue-hover);
   --el-button-active-bg-color: var(--px-blue-active);
   --el-button-active-border-color: var(--px-blue-active);
-  font-family: var(--px-font-family);
-  font-weight: 500;
 }
 
-/* Input */
+/* 输入框 */
 .el-input__wrapper {
-  background-color: var(--ink-700) !important;
-  box-shadow: 0 0 0 1px var(--px-border) inset !important;
-  border-radius: var(--px-radius-sm) !important;
+  border-radius: var(--px-radius-xs) !important;
   transition: all var(--px-transition-fast) !important;
 }
 
 .el-input__wrapper:hover {
-  box-shadow: 0 0 0 1px var(--ink-300) inset !important;
+  box-shadow: 0 0 0 1px #d0d0d0 inset !important;
 }
 
 .el-input__wrapper.is-focus {
-  box-shadow: 0 0 0 1px var(--coral) inset !important;
+  box-shadow: 0 0 0 1px var(--px-blue) inset !important;
 }
 
-.el-input__inner {
-  color: var(--px-text-primary) !important;
-  background: transparent !important;
-}
-
-.el-input__inner::placeholder {
-  color: var(--px-text-placeholder) !important;
-}
-
-/* Tag */
+/* 标签 */
 .el-tag {
   border-radius: var(--px-radius-xs);
-  background: var(--ink-600);
-  border-color: var(--px-border);
-  color: var(--px-text-secondary);
 }
 
-/* Pagination */
+/* 分页 */
 .el-pagination.is-background .el-pager li.is-active {
-  background-color: var(--coral);
+  background-color: var(--px-blue);
 }
 
-/* Avatar */
+/* 头像 */
 .el-avatar {
-  --el-avatar-bg-color: var(--ink-500);
+  --el-avatar-bg-color: var(--px-bg-tertiary);
 }
 
-/* Dropdown */
-.el-dropdown-menu {
-  background: var(--ink-700) !important;
-  border: 1px solid var(--px-border) !important;
-}
-
-.el-dropdown-menu__item {
-  color: var(--px-text-secondary) !important;
-}
-
-.el-dropdown-menu__item:hover {
-  background: var(--ink-600) !important;
-  color: var(--px-text-primary) !important;
-}
-
-/* Dialog */
-.el-dialog {
-  background: var(--ink-700) !important;
-  border: 1px solid var(--px-border) !important;
-  border-radius: var(--px-radius-lg) !important;
-}
-
-.el-dialog__title {
-  color: var(--px-text-primary) !important;
-}
-
-/* Form */
-.el-form-item__label {
-  color: var(--px-text-secondary) !important;
-}
-
-.el-form-item__error {
-  color: var(--px-danger) !important;
-}
-
-/* Notification */
-.el-notification {
-  background: var(--ink-600) !important;
-  border: 1px solid var(--px-border) !important;
-  border-radius: var(--px-radius-md) !important;
-}
-
-.el-notification__title {
-  color: var(--px-text-primary) !important;
-}
-
-.el-notification__content {
-  color: var(--px-text-secondary) !important;
-}
-
-/* ---- Page Transitions ---- */
+/* --- 页面过渡动画 --- */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.18s ease;
+  transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,
@@ -234,42 +153,15 @@ input, textarea {
 
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
 }
 
 .slide-up-enter-from {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(20px);
 }
 
 .slide-up-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* ---- Reveal Animations ---- */
-@keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes reveal-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 71, 0); }
-  50%       { box-shadow: 0 0 24px 4px rgba(255, 107, 71, 0.2); }
+  transform: translateY(-10px);
 }

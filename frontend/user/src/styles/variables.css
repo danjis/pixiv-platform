@@ -1,103 +1,78 @@
 /* ============================================
-   Artfolio — Dark Editorial Design System
+   Pixiv 风格设计系统 - CSS 变量
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
-
 :root {
-  /* ---- Brand Palette — Ink & Coral ---- */
-  --px-blue: #FF6B47;           /* coral accent (replaces blue — intentional) */
-  --px-blue-light: #2A1F1C;     /* coral tint on dark */
-  --px-blue-hover: #FF8A6A;
-  --px-blue-active: #E5522E;
+  /* ---- 品牌色 ---- */
+  --px-blue: #0096FA;
+  --px-blue-light: #E8F4FD;
+  --px-blue-hover: #007ACC;
+  --px-blue-active: #005FA3;
 
-  /* ---- Ink Backgrounds ---- */
-  --ink-900: #0E0E0F;           /* deepest background */
-  --ink-800: #141416;
-  --ink-700: #1C1C1F;
-  --ink-600: #242428;
-  --ink-500: #2E2E34;
-  --ink-400: #3A3A42;
-  --ink-300: #52525C;
-  --ink-200: #6E6E7A;
-  --ink-100: #9898A6;
-
-  /* ---- Amber / Gold Accent ---- */
-  --amber: #F5C842;
-  --amber-dim: #7A6212;
-  --amber-glow: rgba(245, 200, 66, 0.12);
-
-  /* ---- Coral Accent ---- */
-  --coral: #FF6B47;
-  --coral-dim: #7A2A15;
-  --coral-glow: rgba(255, 107, 71, 0.15);
-
-  /* ---- Functional ---- */
+  /* ---- 功能色 ---- */
   --px-like: #FF4060;
-  --px-like-light: rgba(255, 64, 96, 0.15);
-  --px-bookmark: #F5C842;
-  --px-bookmark-light: rgba(245, 200, 66, 0.15);
-  --px-success: #4ADE80;
-  --px-success-light: rgba(74, 222, 128, 0.12);
-  --px-warning: #FB923C;
-  --px-danger: #F87171;
-  --px-r18: #FF4060;
+  --px-like-light: #FFF0F3;
+  --px-bookmark: #FFB800;
+  --px-bookmark-light: #FFF8E1;
+  --px-success: #4CAF50;
+  --px-success-light: #E8F5E9;
+  --px-warning: #FF9800;
+  --px-danger: #F44336;
+  --px-r18: #FF0000;
 
-  /* ---- Text ---- */
-  --px-text-primary: #F2F2F4;
-  --px-text-secondary: #B8B8C4;
-  --px-text-tertiary: #6E6E7A;
-  --px-text-placeholder: #4A4A54;
-  --px-border: #2E2E34;
-  --px-border-light: #242428;
-  --px-divider: #1C1C1F;
+  /* ---- 中性色 ---- */
+  --px-text-primary: #1F1F1F;
+  --px-text-secondary: #595959;
+  --px-text-tertiary: #8C8C8C;
+  --px-text-placeholder: #BFBFBF;
+  --px-border: #E8E8E8;
+  --px-border-light: #F0F0F0;
+  --px-divider: #F5F5F5;
 
-  /* ---- Backgrounds ---- */
-  --px-bg-primary: #141416;
-  --px-bg-secondary: #0E0E0F;
-  --px-bg-tertiary: #1C1C1F;
-  --px-bg-hover: #242428;
-  --px-bg-mask: rgba(0, 0, 0, 0.75);
+  /* ---- 背景色 ---- */
+  --px-bg-primary: #FFFFFF;
+  --px-bg-secondary: #F7F8FA;
+  --px-bg-tertiary: #F2F3F5;
+  --px-bg-hover: #F5F5F5;
+  --px-bg-mask: rgba(0, 0, 0, 0.5);
 
-  /* ---- Shadows (on dark) ---- */
-  --px-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --px-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --px-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-  --px-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
-  --px-shadow-card-hover: 0 8px 32px rgba(255, 107, 71, 0.2);
-  --px-shadow-glow: 0 0 40px rgba(255, 107, 71, 0.12);
+  /* ---- 阴影 ---- */
+  --px-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --px-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --px-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --px-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
+  --px-shadow-card-hover: 0 6px 20px rgba(0, 0, 0, 0.12);
 
-  /* ---- Border Radius ---- */
-  --px-radius-xs: 3px;
-  --px-radius-sm: 5px;
+  /* ---- 圆角 ---- */
+  --px-radius-xs: 4px;
+  --px-radius-sm: 6px;
   --px-radius-md: 8px;
   --px-radius-lg: 12px;
-  --px-radius-xl: 18px;
+  --px-radius-xl: 16px;
   --px-radius-round: 999px;
 
-  /* ---- Typography ---- */
-  --px-font-display: 'Playfair Display', 'Noto Serif SC', Georgia, serif;
-  --px-font-family: 'DM Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --px-font-mono: 'DM Mono', 'SF Mono', Consolas, monospace;
+  /* ---- 字体 ---- */
+  --px-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+  --px-font-mono: "SF Mono", SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
 
-  /* ---- Type Scale ---- */
-  --px-font-xs: 11px;
+  /* ---- 字号 ---- */
+  --px-font-xs: 12px;
   --px-font-sm: 13px;
   --px-font-base: 14px;
   --px-font-md: 16px;
   --px-font-lg: 18px;
-  --px-font-xl: 22px;
-  --px-font-2xl: 28px;
-  --px-font-3xl: 36px;
-  --px-font-4xl: 48px;
-  --px-font-5xl: 64px;
+  --px-font-xl: 20px;
+  --px-font-2xl: 24px;
+  --px-font-3xl: 30px;
+  --px-font-4xl: 36px;
 
-  /* ---- Line Heights ---- */
-  --px-lh-tight: 1.2;
-  --px-lh-base: 1.55;
-  --px-lh-relaxed: 1.8;
+  /* ---- 行高 ---- */
+  --px-lh-tight: 1.25;
+  --px-lh-base: 1.5;
+  --px-lh-relaxed: 1.75;
 
-  /* ---- Spacing ---- */
+  /* ---- 间距 ---- */
   --px-space-xs: 4px;
   --px-space-sm: 8px;
   --px-space-md: 12px;
@@ -106,17 +81,15 @@
   --px-space-xl: 32px;
   --px-space-2xl: 48px;
   --px-space-3xl: 64px;
-  --px-space-4xl: 96px;
 
-  /* ---- Layout ---- */
-  --px-header-height: 60px;
-  --px-max-width: 1280px;
+  /* ---- 布局 ---- */
+  --px-header-height: 56px;
+  --px-max-width: 1245px;
   --px-sidebar-width: 240px;
 
-  /* ---- Animations ---- */
-  --px-transition-fast: 0.12s ease;
-  --px-transition-base: 0.22s ease;
-  --px-transition-slow: 0.38s ease;
-  --px-transition-spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --px-transition-reveal: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  /* ---- 动画 ---- */
+  --px-transition-fast: 0.15s ease;
+  --px-transition-base: 0.25s ease;
+  --px-transition-slow: 0.35s ease;
+  --px-transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

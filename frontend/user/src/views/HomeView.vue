@@ -1,79 +1,65 @@
 <template>
   <div class="home-page">
-
-    <!-- ===== HERO ===== -->
+    <!-- Hero 横幅区 -->
     <section class="hero-section">
       <div class="hero-bg">
-        <div class="hero-noise"></div>
-        <div class="hero-orb hero-orb-1"></div>
-        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-gradient"></div>
       </div>
-      <div class="hero-inner">
+      <div class="hero-content">
         <div class="hero-text">
-          <p class="hero-eyebrow">✦ 艺术创作社区</p>
           <h1 class="hero-title">
-            <span class="hero-title-line">发现</span>
-            <span class="hero-title-line accent">好作品</span>
+            <span class="hero-logo">pixiv</span>
+            <span class="hero-subtitle-text">发现好作品</span>
           </h1>
-          <p class="hero-desc">在这里遇见最打动你的艺术，连接全球创作者</p>
+          <p class="hero-desc">在这里发现并分享最棒的艺术创作</p>
           <div class="hero-actions">
-            <button class="hero-btn-primary" @click="$router.push('/artworks')">
+            <button class="hero-btn hero-btn-primary" @click="$router.push('/artworks')">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
               探索作品
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
             </button>
             <button
               v-if="!userStore.isAuthenticated"
-              class="hero-btn-ghost"
+              class="hero-btn hero-btn-outline"
               @click="$router.push('/register')"
-            >免费注册</button>
+            >
+              免费注册
+            </button>
           </div>
-          <div class="hero-stats">
-            <div class="hero-stat">
-              <span class="stat-num">10万+</span>
-              <span class="stat-label">原创作品</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="hero-stat">
-              <span class="stat-num">5万+</span>
-              <span class="stat-label">创作者</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="hero-stat">
-              <span class="stat-num">每日</span>
-              <span class="stat-label">持续更新</span>
+        </div>
+        <!-- 精选作品轮播 -->
+        <div class="hero-showcase">
+          <div class="showcase-grid">
+            <div
+              v-for="(art, i) in featuredArtworks"
+              :key="art.id || i"
+              class="showcase-item"
+              :class="'showcase-item-' + i"
+              @click="goToDetail(art.id)"
+            >
+              <img
+                :src="art.thumbnailUrl || art.imageUrl"
+                :alt="art.title"
+                class="showcase-img"
+              />
             </div>
           </div>
         </div>
-
-        <!-- Artwork showcase mosaic -->
-        <div class="hero-mosaic">
-          <div
-            v-for="(art, i) in featuredArtworks"
-            :key="art.id || i"
-            class="mosaic-item"
-            :class="'mosaic-' + i"
-            @click="goToDetail(art.id)"
-          >
-            <img :src="art.thumbnailUrl || art.imageUrl" :alt="art.title" class="mosaic-img" />
-            <div class="mosaic-shine"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Scroll hint -->
-      <div class="scroll-hint">
-        <span class="scroll-line"></span>
-        <span class="scroll-label">向下探索</span>
       </div>
     </section>
 
-    <!-- ===== CONTEST SECTION ===== -->
+    <!-- 比赛精选区域 -->
     <section v-if="contestEntries.length > 0" class="contest-section">
-      <div class="section-wrap">
-        <div class="section-head">
-          <div class="section-label">比赛精选</div>
-          <h2 class="section-title">参赛佳作</h2>
-          <router-link to="/contests" class="section-more">查看全部 →</router-link>
+      <div class="section-container">
+        <div class="section-header">
+          <h2 class="section-title contest-title-icon">比赛精选</h2>
+          <router-link to="/contests" class="section-more">
+            查看全部比赛
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </router-link>
         </div>
         <div class="contest-grid">
           <div
@@ -82,39 +68,46 @@
             class="contest-card"
             @click="goToContestEntry(entry)"
           >
-            <div class="contest-thumb">
+            <div class="contest-card-thumb">
               <img :src="entry.imageUrl" :alt="entry.title" />
-              <div class="contest-meta">
-                <span class="contest-badge">{{ entry.contestTitle }}</span>
-                <span v-if="entry.averageScore > 0" class="contest-score">
-                  ★ {{ entry.averageScore.toFixed(1) }}
-                </span>
+              <div class="contest-ribbon">参赛作品</div>
+              <div v-if="entry.averageScore > 0" class="contest-score">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </svg>
+                {{ entry.averageScore.toFixed(1) }}
               </div>
             </div>
-            <div class="contest-info">
-              <h3 class="contest-name">{{ entry.title }}</h3>
-              <p class="contest-artist">{{ entry.artistName }}</p>
+            <div class="contest-card-info">
+              <h3 class="contest-card-title">{{ entry.title }}</h3>
+              <span class="contest-card-badge">{{ entry.contestTitle }}</span>
+              <p class="contest-card-artist">{{ entry.artistName }}</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== ARTWORKS GRID ===== -->
-    <section class="artworks-section">
-      <div class="section-wrap">
-        <div class="section-head">
-          <div class="section-label">推荐</div>
-          <h2 class="section-title">精选作品</h2>
-          <router-link to="/artworks" class="section-more">更多作品 →</router-link>
+    <!-- 推荐作品区域 -->
+    <section class="recommend-section">
+      <div class="section-container">
+        <div class="section-header">
+          <h2 class="section-title">推荐作品</h2>
+          <router-link to="/artworks" class="section-more">
+            查看更多
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </router-link>
         </div>
 
-        <div v-if="loading" class="artwork-grid">
+        <!-- 作品网格 -->
+        <div v-if="loading" class="grid-loading">
           <div v-for="n in 12" :key="n" class="skeleton-card">
             <div class="skeleton-thumb"></div>
             <div class="skeleton-info">
-              <div class="skeleton-line w70"></div>
-              <div class="skeleton-line w40"></div>
+              <div class="skeleton-title"></div>
+              <div class="skeleton-author"></div>
             </div>
           </div>
         </div>
@@ -130,29 +123,28 @@
         </div>
 
         <div v-else class="empty-state">
-          <svg viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.2">
-            <rect x="8" y="8" width="48" height="48" rx="6"/>
-            <circle cx="24" cy="26" r="5"/>
-            <path d="M8 44l14-14 10 10 12-14 12 12"/>
+          <svg viewBox="0 0 120 120" width="80" height="80" fill="none" stroke="#d0d0d0" stroke-width="1.5">
+            <rect x="20" y="20" width="80" height="80" rx="8" />
+            <circle cx="45" cy="48" r="8" />
+            <path d="M20 80 l25-25 l15 15 l20-20 l20 20 v10 a8 8 0 0 1 -8 8 H28 a8 8 0 0 1 -8-8z" fill="#f0f0f0" stroke="none"/>
           </svg>
           <p>暂无推荐作品</p>
         </div>
       </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <span class="footer-logo"><span class="footer-logo-mark">A</span>rtfolio</span>
-        <span class="footer-copy">© 2026 Artfolio Platform. Built with passion.</span>
+    <!-- 页脚 -->
+    <footer class="px-footer">
+      <div class="footer-content">
+        <span class="footer-logo">pixiv</span>
+        <span class="footer-copy">&copy; 2026 Pixiv Platform</span>
       </div>
     </footer>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getArtworks } from '@/api/artwork'
@@ -161,18 +153,25 @@ import ArtworkCard from '@/components/ArtworkCard.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+
 const artworks = ref([])
 const featuredArtworks = ref([])
 const contestEntries = ref([])
 const loading = ref(true)
 
+// 加载比赛精选
 async function loadContestEntries() {
   try {
     const res = await getFeaturedEntries(8)
-    if (res.code === 200 && res.data) contestEntries.value = res.data
-  } catch (e) { console.error(e) }
+    if (res.code === 200 && res.data) {
+      contestEntries.value = res.data
+    }
+  } catch (e) {
+    console.error('加载比赛精选失败:', e)
+  }
 }
 
+// 加载推荐作品
 async function loadArtworks() {
   loading.value = true
   try {
@@ -180,297 +179,532 @@ async function loadArtworks() {
     if (response.code === 200 && response.data) {
       const records = response.data.records || []
       artworks.value = records
+      // 取前 5 个作为精选展示
       featuredArtworks.value = records.slice(0, 5)
     }
-  } catch (error) { console.error(error) }
-  finally { loading.value = false }
+  } catch (error) {
+    console.error('加载推荐作品失败:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
-function goToDetail(id) { if (id) router.push({ name: 'ArtworkDetail', params: { id } }) }
-function goToArtist(id) { if (id) router.push(`/artist/${id}`) }
-function goToContestEntry(entry) { if (entry.contestId) router.push(`/contests/${entry.contestId}`) }
+function goToDetail(id) {
+  if (!id) return
+  router.push({ name: 'ArtworkDetail', params: { id } })
+}
 
-onMounted(() => { loadArtworks(); loadContestEntries() })
+function goToArtist(id) {
+  if (!id) return
+  router.push(`/artist/${id}`)
+}
+
+function goToContestEntry(entry) {
+  if (entry.contestId) {
+    router.push(`/contests/${entry.contestId}`)
+  }
+}
+
+onMounted(() => {
+  loadArtworks()
+  loadContestEntries()
+})
 </script>
-<style scoped>
-.home-page { min-height: 100vh; background: var(--px-bg-secondary); }
 
-/* ===== HERO ===== */
+<style scoped>
+.home-page {
+  min-height: 100vh;
+  background: var(--px-bg-secondary);
+}
+
+/* ====== Hero 区域 ====== */
 .hero-section {
   position: relative;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
+  padding: 0;
 }
+
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 20% 50%, #1a0f08 0%, var(--ink-900) 60%);
+  background: linear-gradient(135deg, #0096FA 0%, #0052CC 60%, #003D99 100%);
 }
-.hero-noise {
+
+.hero-gradient {
   position: absolute;
   inset: 0;
-  opacity: 0.06;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(0, 180, 255, 0.3) 0%, transparent 70%),
+    radial-gradient(ellipse at 80% 20%, rgba(100, 200, 255, 0.2) 0%, transparent 50%);
 }
-.hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
-.hero-orb-1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(255,107,71,0.18) 0%, transparent 70%);
-  top: -100px; left: -80px;
-}
-.hero-orb-2 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(245,200,66,0.1) 0%, transparent 70%);
-  bottom: 0; right: 10%;
-}
-.hero-inner {
+
+.hero-content {
   position: relative;
   z-index: 1;
-  flex: 1;
   max-width: var(--px-max-width);
   margin: 0 auto;
-  padding: 100px 24px 80px;
+  padding: 60px 24px 48px;
   display: flex;
   align-items: center;
-  gap: 64px;
-  width: 100%;
+  gap: 48px;
 }
-.hero-text { flex: 0 0 420px; }
-.hero-eyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--coral);
-  margin-bottom: 20px;
-  font-family: var(--px-font-mono);
-  animation: reveal-up 0.6s ease both;
+
+.hero-text {
+  flex: 0 0 380px;
 }
+
 .hero-title {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  gap: 4px;
+  margin-bottom: 12px;
 }
-.hero-title-line {
-  font-family: var(--px-font-display);
+
+.hero-logo {
+  font-family: Arial, sans-serif;
   font-weight: 900;
-  font-size: clamp(48px, 6vw, 80px);
-  line-height: 1.0;
-  color: var(--px-text-primary);
-  animation: reveal-up 0.7s ease both;
+  font-size: 48px;
+  color: #fff;
+  letter-spacing: -2px;
+  font-style: italic;
+  line-height: 1;
 }
-.hero-title-line.accent {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--coral);
-  animation-delay: 0.08s;
+
+.hero-subtitle-text {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 2px;
 }
+
 .hero-desc {
   font-size: 15px;
-  color: var(--px-text-tertiary);
-  line-height: 1.7;
-  margin-bottom: 32px;
-  max-width: 340px;
-  animation: reveal-up 0.7s 0.15s ease both;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 28px;
+  line-height: 1.6;
 }
+
 .hero-actions {
   display: flex;
   gap: 12px;
-  margin-bottom: 40px;
-  animation: reveal-up 0.7s 0.22s ease both;
 }
-.hero-btn-primary {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 28px;
-  background: var(--coral); color: #fff;
-  border: none; border-radius: var(--px-radius-round);
-  font-size: 14px; font-weight: 600;
-  font-family: var(--px-font-family);
-  cursor: pointer; transition: all var(--px-transition-base);
-  letter-spacing: 0.3px;
-}
-.hero-btn-primary:hover {
-  background: var(--px-blue-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px var(--coral-glow);
-}
-.hero-btn-ghost {
-  display: inline-flex; align-items: center;
-  padding: 12px 28px;
-  background: transparent;
-  color: var(--px-text-secondary);
-  border: 1px solid var(--px-border);
-  border-radius: var(--px-radius-round);
-  font-size: 14px; font-weight: 500;
-  font-family: var(--px-font-family);
-  cursor: pointer; transition: all var(--px-transition-base);
-}
-.hero-btn-ghost:hover {
-  border-color: var(--px-text-tertiary);
-  color: var(--px-text-primary);
-  transform: translateY(-2px);
-}
-.hero-stats {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  animation: reveal-up 0.7s 0.3s ease both;
-}
-.hero-stat { display: flex; flex-direction: column; gap: 2px; }
-.stat-num { font-family: var(--px-font-display); font-size: 22px; font-weight: 700; color: var(--px-text-primary); }
-.stat-label { font-size: 11px; color: var(--px-text-tertiary); letter-spacing: 0.5px; }
-.stat-divider { width: 1px; height: 32px; background: var(--px-border); }
 
-/* Mosaic */
-.hero-mosaic {
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: var(--px-radius-round);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--px-transition-base);
+  border: none;
+}
+
+.hero-btn-primary {
+  background: #fff;
+  color: var(--px-blue);
+}
+
+.hero-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hero-btn-outline {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.hero-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* 精选展示网格 */
+.hero-showcase {
   flex: 1;
+  min-width: 0;
+}
+
+.showcase-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 140px);
+  grid-template-rows: repeat(2, 120px);
   gap: 8px;
-  animation: reveal-fade 1s 0.3s ease both;
 }
-.mosaic-item {
-  position: relative;
+
+.showcase-item {
   border-radius: var(--px-radius-md);
   overflow: hidden;
   cursor: pointer;
-  background: var(--ink-600);
+  position: relative;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.mosaic-0 { grid-row: 1 / 3; }
-.mosaic-item:hover { transform: scale(1.03); box-shadow: 0 12px 32px rgba(0,0,0,0.5); z-index: 2; }
-.mosaic-img { width: 100%; height: 100%; object-fit: cover; }
-.mosaic-shine {
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
-  pointer-events: none;
+
+.showcase-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 2;
 }
 
-/* Scroll hint */
-.scroll-hint {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding-bottom: 32px;
-  opacity: 0.5;
+/* 第一张占两行高 */
+.showcase-item-0 {
+  grid-row: 1 / 3;
 }
-.scroll-line {
-  width: 1px; height: 48px;
-  background: linear-gradient(to bottom, transparent, var(--coral));
-  animation: pulse-line 2s ease-in-out infinite;
-}
-.scroll-label { font-size: 10px; letter-spacing: 2px; color: var(--px-text-tertiary); font-family: var(--px-font-mono); }
-@keyframes pulse-line { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
-/* ===== CONTEST ===== */
+.showcase-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ====== 比赛精选区域 ====== */
 .contest-section {
-  padding: 80px 0;
-  background: var(--ink-800);
-  border-top: 1px solid var(--px-border);
-  border-bottom: 1px solid var(--px-border);
+  padding: 40px 0 0;
+  background: linear-gradient(180deg, #fffbf0 0%, var(--px-bg-secondary) 100%);
 }
-.section-wrap { max-width: var(--px-max-width); margin: 0 auto; padding: 0 24px; }
-.section-head {
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  margin-bottom: 36px;
+
+.contest-title-icon::after {
+  content: '🏆';
+  margin-left: 8px;
+  font-size: 18px;
 }
-.section-label {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 3px; text-transform: uppercase;
-  color: var(--coral); font-family: var(--px-font-mono);
-  padding-bottom: 4px;
-}
-.section-title {
-  font-family: var(--px-font-display);
-  font-size: clamp(24px, 3vw, 36px);
-  font-weight: 700;
-  color: var(--px-text-primary);
-  flex: 1;
-}
-.section-more {
-  font-size: 12px; font-weight: 500;
-  color: var(--px-text-tertiary);
-  text-decoration: none;
-  transition: color var(--px-transition-fast);
-  padding-bottom: 4px;
-  letter-spacing: 0.3px;
-}
-.section-more:hover { color: var(--coral); }
+
 .contest-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
+
 .contest-card {
-  background: var(--ink-700);
-  border-radius: var(--px-radius-lg);
+  background: #fff;
+  border-radius: var(--px-radius-lg, 12px);
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid var(--px-border);
-  transition: all var(--px-transition-base);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
 }
-.contest-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.5); border-color: var(--ink-400); }
-.contest-thumb { position: relative; width: 100%; padding-bottom: 70%; overflow: hidden; }
-.contest-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-.contest-card:hover .contest-thumb img { transform: scale(1.06); }
-.contest-meta { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
-.contest-badge { font-size: 10px; font-weight: 700; color: var(--amber); background: var(--amber-glow); padding: 2px 8px; border-radius: 3px; font-family: var(--px-font-mono); }
-.contest-score { font-size: 12px; font-weight: 600; color: var(--amber); }
-.contest-info { padding: 12px 12px 14px; }
-.contest-name { font-size: 13px; font-weight: 600; color: var(--px-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
-.contest-artist { font-size: 11px; color: var(--px-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ===== ARTWORKS ===== */
-.artworks-section { padding: 80px 0 96px; background: var(--px-bg-secondary); }
-.artwork-grid { column-count: 5; column-gap: 14px; }
+.contest-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(255, 165, 0, 0.15);
+  border-color: #f0c040;
+}
 
-/* Skeleton */
-.skeleton-card { border-radius: var(--px-radius-md); overflow: hidden; background: var(--ink-700); break-inside: avoid; margin-bottom: 14px; border: 1px solid var(--px-border); }
-.skeleton-thumb { width: 100%; padding-bottom: 100%; background: linear-gradient(90deg, var(--ink-600) 25%, var(--ink-500) 50%, var(--ink-600) 75%); background-size: 200% 100%; animation: shimmer 1.8s infinite; }
-.skeleton-info { padding: 10px 11px 12px; display: flex; flex-direction: column; gap: 6px; }
-.skeleton-line { height: 12px; border-radius: 3px; background: var(--ink-600); }
-.w70 { width: 70%; }
-.w40 { width: 40%; }
+.contest-card-thumb {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+  overflow: hidden;
+}
 
-/* Empty */
-.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 80px 0; color: var(--px-text-tertiary); font-size: 14px; }
+.contest-card-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
 
-/* Footer */
-.site-footer { border-top: 1px solid var(--px-border); background: var(--ink-900); padding: 28px 0; }
-.footer-inner { max-width: var(--px-max-width); margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
-.footer-logo { font-family: var(--px-font-display); font-weight: 700; font-style: italic; font-size: 18px; color: var(--px-text-secondary); }
-.footer-logo-mark { color: var(--coral); font-weight: 900; }
-.footer-copy { font-size: 11px; color: var(--px-text-tertiary); }
+.contest-card:hover .contest-card-thumb img {
+  transform: scale(1.05);
+}
 
-/* Responsive */
+.contest-ribbon {
+  position: absolute;
+  top: 12px;
+  left: -6px;
+  background: linear-gradient(135deg, #f0a030, #e88000);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 12px 3px 14px;
+  border-radius: 0 4px 4px 0;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(240, 160, 48, 0.35);
+}
+
+.contest-ribbon::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  border-style: solid;
+  border-width: 3px 6px 3px 0;
+  border-color: transparent #c06800 transparent transparent;
+}
+
+.contest-score {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  color: #ffc040;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.contest-card-info {
+  padding: 12px 14px 14px;
+}
+
+.contest-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--px-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+
+.contest-card-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e88000;
+  background: #fff7eb;
+  border: 1px solid #ffe0b2;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.contest-card-artist {
+  font-size: 12px;
+  color: var(--px-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ====== 推荐作品区域 ====== */
+.recommend-section {
+  padding: 40px 0 60px;
+}
+
+.section-container {
+  max-width: var(--px-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: var(--px-font-xl);
+  font-weight: 700;
+  color: var(--px-text-primary);
+  position: relative;
+  padding-left: 14px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--px-blue);
+}
+
+.section-more {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--px-font-sm);
+  font-weight: 500;
+  color: var(--px-text-tertiary);
+  transition: color var(--px-transition-fast);
+}
+
+.section-more:hover {
+  color: var(--px-blue);
+}
+
+/* 作品网格 - 瀑布流布局 */
+.artwork-grid {
+  column-count: 5;
+  column-gap: 16px;
+}
+
+/* 骨架屏 */
+.grid-loading {
+  column-count: 5;
+  column-gap: 16px;
+}
+
+.skeleton-card {
+  border-radius: var(--px-radius-md);
+  overflow: hidden;
+  background: #fff;
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+
+.skeleton-thumb {
+  width: 100%;
+  padding-bottom: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-info {
+  padding: 10px 12px;
+}
+
+.skeleton-title {
+  width: 70%;
+  height: 14px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.skeleton-author {
+  width: 40%;
+  height: 12px;
+  border-radius: 4px;
+  background: #f0f0f0;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--px-text-placeholder);
+  font-size: var(--px-font-base);
+}
+
+/* ====== 页脚 ====== */
+.px-footer {
+  border-top: 1px solid var(--px-border-light);
+  background: var(--px-bg-primary);
+  padding: 24px 0;
+}
+
+.footer-content {
+  max-width: var(--px-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-logo {
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--px-blue);
+  font-style: italic;
+  letter-spacing: -1px;
+}
+
+.footer-copy {
+  font-size: var(--px-font-xs);
+  color: var(--px-text-placeholder);
+}
+
+/* ====== 响应式 ====== */
 @media (max-width: 1200px) {
-  .artwork-grid { column-count: 4; }
-  .contest-grid { grid-template-columns: repeat(3, 1fr); }
+  .artwork-grid,
+  .grid-loading {
+    column-count: 4;
+  }
+  .contest-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
+
 @media (max-width: 900px) {
-  .hero-inner { flex-direction: column; padding: 80px 24px 60px; gap: 40px; }
-  .hero-text { flex: none; text-align: center; }
-  .hero-desc { max-width: none; }
-  .hero-actions, .hero-stats { justify-content: center; }
-  .hero-mosaic { grid-template-rows: repeat(2, 110px); width: 100%; }
-  .artwork-grid { column-count: 3; }
-  .contest-grid { grid-template-columns: repeat(2, 1fr); }
-  .section-head { flex-wrap: wrap; }
+  .hero-content {
+    flex-direction: column;
+    padding: 40px 24px 32px;
+    gap: 32px;
+  }
+  .hero-text {
+    flex: none;
+    text-align: center;
+  }
+  .hero-actions {
+    justify-content: center;
+  }
+  .hero-logo {
+    font-size: 36px;
+  }
+  .hero-subtitle-text {
+    font-size: 18px;
+  }
+  .showcase-grid {
+    grid-template-rows: repeat(2, 100px);
+  }
+  .artwork-grid,
+  .grid-loading {
+    column-count: 3;
+  }
+  .contest-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
+
 @media (max-width: 640px) {
-  .hero-mosaic { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 90px); }
-  .mosaic-0 { grid-row: auto; }
-  .mosaic-item:nth-child(n+5) { display: none; }
-  .artwork-grid { column-count: 2; column-gap: 10px; }
-  .contest-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .hero-content {
+    padding: 32px 16px 24px;
+  }
+  .hero-logo {
+    font-size: 30px;
+  }
+  .showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 80px);
+  }
+  .showcase-item-0 {
+    grid-row: auto;
+  }
+  .showcase-item:nth-child(n+5) {
+    display: none;
+  }
+  .artwork-grid,
+  .grid-loading {
+    column-count: 2;
+    column-gap: 10px;
+  }
+  .contest-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .section-container {
+    padding: 0 12px;
+  }
 }
 </style>
