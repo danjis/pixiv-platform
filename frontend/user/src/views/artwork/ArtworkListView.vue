@@ -30,7 +30,7 @@
           <span class="tag-capsule-label">热门</span>
           <div class="tag-capsule-scroll">
             <button
-              v-for="(tag, idx) in popularTagsEnhanced"
+              v-for="tag in popularTagsEnhanced"
               :key="tag.name"
               class="tag-capsule"
               :class="{ active: selectedTags.includes(tag.name) }"
@@ -161,14 +161,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useUserStore } from '@/stores/user'
 import { getArtworks } from '@/api/artwork'
 import { ElMessage } from 'element-plus'
 import ArtworkCard from '@/components/ArtworkCard.vue'
 
 const router = useRouter()
 const route = useRoute()
-const userStore = useUserStore()
 
 const searchKeyword = ref(route.query.keyword || '')
 const selectedTags = ref(route.query.tag ? [route.query.tag] : [])
@@ -180,8 +178,6 @@ const sortOptions = [
   { label: '最多点赞', value: 'most_liked' },
   { label: '最多浏览', value: 'most_viewed' }
 ]
-const popularTags = ref(['动漫', '少女', '风景', '插画', '原创', '同人', '二次元', '游戏'])
-
 // 增强版热门 Tag 胶囊（带 emoji + 主题色）
 const popularTagsEnhanced = [
   { name: '动漫',  emoji: '🎌', color: '#ef4444' },
@@ -353,7 +349,6 @@ const setupObserver = () => {
   observer.observe(sentinelRef.value)
 }
 
-const handleSearch = () => { loadArtworks() }
 const handleFilterChange = () => { loadArtworks() }
 
 const goToDetail = (artwork) => {
@@ -530,26 +525,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-  padding: 4px 14px;
-  border-radius: 16px;
-  border: 1px solid var(--px-border, #e0e0e0);
-  background: #fff;
-  font-size: 13px;
-  color: var(--px-text-secondary, #555);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.chip:hover {
-  border-color: var(--px-blue, #0096FA);
-  color: var(--px-blue, #0096FA);
-}
-
-.chip.active {
-  background: var(--px-blue, #0096FA);
-  border-color: var(--px-blue, #0096FA);
-  color: #fff;
 }
 
 /* 排序 */
