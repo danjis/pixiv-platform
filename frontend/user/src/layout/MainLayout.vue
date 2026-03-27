@@ -15,7 +15,7 @@
               <input
                 v-model="keyword"
                 class="search-input"
-                placeholder="搜索作品、画师、标签�?
+                placeholder="搜索作品、画师、标签..."
                 @keyup.enter="handleSearch"
                 @input="handleSearchInput"
                 @focus="onSearchFocus"
@@ -28,9 +28,9 @@
                 class="suggestion-item"
                 @mousedown.prevent="selectSuggestion(item)"
               >
-                <span class="sug-pill" :class="item.type">{{ item.type === 'tag' ? '#' : '�? }}</span>
+                <span class="sug-pill" :class="item.type">{{ item.type === 'tag' ? '#' : '+' }}</span>
                 <span class="suggestion-text">{{ item.text }}</span>
-                <span v-if="item.type === 'tag' && item.count" class="suggestion-count">{{ item.count }}</span>
+                <span v-if="item.count" class="suggestion-count">{{ item.count }}</span>
               </div>
             </div>
           </div>
@@ -39,7 +39,7 @@
         <nav class="main-nav">
           <router-link to="/artworks" class="nav-item">发现</router-link>
           <router-link to="/following" class="nav-item" v-if="userStore.isAuthenticated">关注</router-link>
-          <router-link to="/ranking" class="nav-item">排行�?/router-link>
+          <router-link to="/ranking" class="nav-item">排行榜</router-link>
           <router-link to="/contests" class="nav-item">比赛</router-link>
         </nav>
 
@@ -69,15 +69,15 @@
                     <el-avatar :size="28" :src="userStore.user && userStore.user.avatarUrl ? userStore.user.avatarUrl : defaultAvatar" />
                     <div>
                       <div class="dh-name">{{ userStore.user && userStore.user.username }}</div>
-                      <div class="dh-role">{{ userStore.isArtist ? '�?画师' : '用户' }}</div>
+                      <div class="dh-role">{{ userStore.isArtist ? '✦ 画师' : '用户' }}</div>
                     </div>
                   </div>
                   <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                  <el-dropdown-item v-if="userStore.isArtist" command="studio">创作者中�?/el-dropdown-item>
+                  <el-dropdown-item v-if="userStore.isArtist" command="studio">创作者中心</el-dropdown-item>
                   <el-dropdown-item command="chat">私信</el-dropdown-item>
                   <el-dropdown-item command="commissions">约稿管理</el-dropdown-item>
                   <el-dropdown-item command="history">浏览记录</el-dropdown-item>
-                  <el-dropdown-item command="coupons">我的优惠�?/el-dropdown-item>
+                  <el-dropdown-item command="coupons">我的优惠券</el-dropdown-item>
                   <el-dropdown-item command="orders">我的订单</el-dropdown-item>
                   <el-dropdown-item command="membership">会员中心</el-dropdown-item>
                   <el-dropdown-item command="notifications">
@@ -94,7 +94,7 @@
                     </el-dropdown-item>
                   </template>
                   <el-dropdown-item command="addAccount"><span class="muted-item">+ 登录其他账号</span></el-dropdown-item>
-                  <el-dropdown-item divided command="logout">退出登�?/el-dropdown-item>
+                  <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -102,7 +102,7 @@
 
           <template v-else>
             <router-link to="/login" class="nav-ghost-link">登录</router-link>
-            <button class="cta-btn" @click="$router.push('/register')">开始创�?/button>
+            <button class="cta-btn" @click="$router.push('/register')">开始创作</button>
           </template>
         </div>
       </div>
@@ -202,7 +202,7 @@ onMounted(async () => {
       const chatConvId = chatMsg.conversationId ? Number(chatMsg.conversationId) : null
       const isOnChatPage = route.path === '/chat' || route.path === `/chat/${chatConvId}`
       if (!isOnChatPage) {
-        ElNotification({ title: '新私�?, message: `${chatMsg.senderName || '用户'}: ${chatMsg.content || '发来一条消�?}`, type: 'info', duration: 4500,
+        ElNotification({ title: '新私信', message: `${chatMsg.senderName || '用户'}: ${chatMsg.content || '发来一条消息'}`, type: 'info', duration: 4500,
           onClick: () => router.push(chatConvId ? `/chat/${chatConvId}` : '/chat') })
       }
     })
