@@ -291,15 +291,18 @@ onBeforeUnmount(() => {
 <style scoped>
 /* Pixiv 风格导航栏样式 */
 .px-header {
-  height: 56px;
-  background-color: #fff;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-}
+    height: 56px;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 1px 12px rgba(0,0,0,0.02);
+  }
 
 .header-content {
   width: 100%;
