@@ -7,7 +7,7 @@
         <p class="page-desc">管理你发布的所有作品</p>
       </div>
       <router-link to="/publish" class="publish-btn">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         投稿新作品
       </router-link>
     </div>
@@ -25,7 +25,7 @@
     <!-- 搜索与筛选 -->
     <div class="toolbar">
       <div class="search-box">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="#bbb"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#bbb" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="20" y2="20"/></svg>
         <input v-model="searchKeyword" placeholder="搜索作品标题..." @input="handleSearch" />
       </div>
       <div v-if="activeTab === 'published'" class="sort-group">
@@ -60,15 +60,15 @@
             <h3 class="card-title" @click="$router.push(`/artworks/${art.id}`)">{{ art.title }}</h3>
             <div class="card-stats">
               <span class="stat">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21C12 21 4 15 4 8.5C4 6 6 3.5 8.5 3.5C10 3.5 11.5 4.5 12 5.5C12.5 4.5 14 3.5 15.5 3.5C18 3.5 20 6 20 8.5C20 15 12 21 12 21Z"/></svg>
                 {{ art.likeCount || 0 }}
               </span>
               <span class="stat">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                 {{ art.viewCount || 0 }}
               </span>
               <span class="stat">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
                 {{ art.commentCount || 0 }}
               </span>
             </div>
@@ -78,10 +78,10 @@
           </div>
           <div class="card-actions">
             <button class="action-btn edit" @click="handleEdit(art)" title="编辑">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/></svg>
             </button>
             <button class="action-btn delete" @click="handleDelete(art)" title="删除">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 3h4a1 1 0 0 1 1 1v2H9V4a1 1 0 0 1 1-1Z"/></svg>
             </button>
           </div>
         </div>
@@ -104,7 +104,7 @@
           <div class="card-image" @click="$router.push(`/publish?draftId=${draft.id}`)">
             <img v-if="draft.thumbnailUrl || draft.imageUrl" :src="draft.thumbnailUrl || draft.imageUrl" :alt="draft.title" loading="lazy" />
             <div v-else class="draft-no-image">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="#ccc"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
               <span>无图片</span>
             </div>
             <div class="image-overlay">
@@ -120,10 +120,10 @@
           </div>
           <div class="card-actions">
             <button class="action-btn publish" @click="handlePublishDraft(draft)" title="发布">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
             <button class="action-btn delete" @click="handleDelete(draft)" title="删除">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 3h4a1 1 0 0 1 1 1v2H9V4a1 1 0 0 1 1-1Z"/></svg>
             </button>
           </div>
         </div>
@@ -155,7 +155,7 @@
         <div class="dialog-header">
           <h3>编辑作品</h3>
           <button class="close-btn" @click="editDialog = false">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         <div class="dialog-body">
@@ -361,47 +361,47 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.artworks-page { max-width: 100%; }
+.artworks-page { max-width: 100%; background: #fff; }
 
 /* 页头 */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
-.page-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
+.page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
 .page-desc { font-size: 14px; color: #999; margin: 0; }
 .publish-btn {
   display: flex; align-items: center; gap: 6px;
-  padding: 10px 20px; background: #0096FA; color: #fff;
-  border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+  padding: 10px 24px; background: #0096FA; color: #fff;
+  border: none; border-radius: 999px; font-size: 14px; font-weight: 600;
   text-decoration: none; cursor: pointer; transition: background 0.2s;
 }
 .publish-btn:hover { background: #0080d5; }
 
-/* 工具栏 */
+/* Tab 栏 */
 .tab-bar {
-  display: flex; gap: 0; margin-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
+  display: flex; gap: 8px; margin-bottom: 20px;
+  border-bottom: none;
 }
 .tab-btn {
-  padding: 10px 20px; border: none; background: none;
-  font-size: 15px; font-weight: 500; color: #999;
+  padding: 8px 20px; border: 1px solid #eee; background: #fff;
+  font-size: 14px; font-weight: 500; color: #999;
   cursor: pointer; transition: all 0.2s;
-  position: relative;
+  position: relative; border-radius: 999px;
 }
-.tab-btn:hover { color: #555; }
-.tab-btn.active { color: #0096FA; font-weight: 600; }
-.tab-btn.active::after {
-  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
-  height: 2px; background: #0096FA; border-radius: 1px;
+.tab-btn:hover { color: #555; border-color: #ddd; }
+.tab-btn.active {
+  color: #fff; font-weight: 600;
+  background: #0096FA; border-color: #0096FA;
 }
+.tab-btn.active::after { display: none; }
 .tab-count {
   display: inline-block; margin-left: 4px; padding: 1px 7px;
-  background: #f0f0f0; border-radius: 10px; font-size: 12px; color: #999;
+  background: #f0f0f0; border-radius: 999px; font-size: 12px; color: #999;
 }
-.tab-btn.active .tab-count { background: rgba(0,150,250,0.1); color: #0096FA; }
+.tab-btn.active .tab-count { background: rgba(255,255,255,0.25); color: #fff; }
 
 .toolbar {
   display: flex; gap: 16px; align-items: center;
@@ -409,24 +409,23 @@ onMounted(() => {
 }
 .search-box {
   display: flex; align-items: center; gap: 8px;
-  background: #fff; padding: 8px 14px; border-radius: 10px;
+  background: #f7f7f8; padding: 9px 16px; border-radius: 999px;
   flex: 1; max-width: 320px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1px solid #eee;
 }
 .search-box input {
   border: none; outline: none; font-size: 14px; color: #333;
   background: transparent; width: 100%;
 }
 .search-box input::placeholder { color: #bbb; }
-.sort-group { display: flex; gap: 4px; }
+.sort-group { display: flex; gap: 6px; }
 .sort-btn {
-  padding: 7px 14px; border: none; background: #fff;
-  border-radius: 8px; font-size: 13px; color: #666;
+  padding: 7px 16px; border: 1px solid #eee; background: #fff;
+  border-radius: 999px; font-size: 13px; color: #666;
   cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-.sort-btn:hover { color: #333; }
-.sort-btn.active { background: #0096FA; color: #fff; box-shadow: 0 2px 8px rgba(0,150,250,0.3); }
+.sort-btn:hover { color: #333; border-color: #ddd; }
+.sort-btn.active { background: #0096FA; color: #fff; border-color: #0096FA; box-shadow: 0 2px 8px rgba(0,150,250,0.18); }
 
 /* 加载 */
 .loading-state { display: flex; justify-content: center; padding: 80px 0; }
@@ -437,24 +436,24 @@ onMounted(() => {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 作品网格 - 瀑布流 */
+/* 作品网格 */
 .artwork-grid {
   column-count: 4;
   column-gap: 16px;
 }
 .artwork-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  transition: all 0.2s;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  transition: all 0.25s;
   position: relative;
   break-inside: avoid;
   margin-bottom: 16px;
 }
 .artwork-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+  transform: translateY(-4px);
 }
 .card-image {
   position: relative;
@@ -500,11 +499,11 @@ onMounted(() => {
 }
 .artwork-card:hover .card-actions { opacity: 1; }
 .action-btn {
-  width: 32px; height: 32px; border: none; border-radius: 8px;
+  width: 32px; height: 32px; border: none; border-radius: 999px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: all 0.15s;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
 }
 .action-btn.edit { color: #0096FA; }
 .action-btn.edit:hover { background: #0096FA; color: #fff; }
@@ -517,8 +516,9 @@ onMounted(() => {
   gap: 12px; padding: 80px 0; color: #bbb; font-size: 14px;
 }
 .empty-action {
-  padding: 8px 20px; background: #0096FA; color: #fff;
-  border-radius: 8px; font-size: 14px; text-decoration: none;
+  padding: 10px 24px; background: #0096FA; color: #fff;
+  border-radius: 999px; font-size: 14px; text-decoration: none;
+  transition: background 0.2s;
 }
 .empty-action:hover { background: #0080d5; }
 
@@ -527,24 +527,24 @@ onMounted(() => {
 /* 编辑弹窗 */
 .dialog-mask {
   position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
   display: flex; align-items: center; justify-content: center;
 }
 .dialog-box {
-  background: #fff; border-radius: 16px; width: 480px; max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  background: #fff; border-radius: 20px; width: 480px; max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.13);
 }
 .dialog-header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 20px 24px 0;
+  padding: 24px 28px 0;
 }
-.dialog-header h3 { font-size: 18px; font-weight: 600; margin: 0; }
+.dialog-header h3 { font-size: 18px; font-weight: 700; margin: 0; }
 .close-btn {
   background: none; border: none; color: #999; cursor: pointer;
-  padding: 4px; border-radius: 6px;
+  padding: 4px; border-radius: 999px;
 }
 .close-btn:hover { background: #f0f0f0; color: #333; }
-.dialog-body { padding: 20px 24px; }
+.dialog-body { padding: 20px 28px; }
 .form-group { margin-bottom: 16px; }
 .form-group label {
   display: block; font-size: 13px; font-weight: 600; color: #555;
@@ -552,26 +552,27 @@ onMounted(() => {
 }
 .hint { font-weight: 400; color: #bbb; }
 .form-input, .form-textarea {
-  width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0;
-  border-radius: 8px; font-size: 14px; color: #333;
+  width: 100%; padding: 10px 14px; border: 1px solid #e8e8e8;
+  border-radius: 12px; font-size: 14px; color: #333;
   transition: border-color 0.2s; box-sizing: border-box;
 }
 .form-input:focus, .form-textarea:focus {
   outline: none; border-color: #0096FA;
+  box-shadow: 0 0 0 3px rgba(0,150,250,0.08);
 }
 .form-textarea { resize: vertical; font-family: inherit; }
 .dialog-footer {
   display: flex; justify-content: flex-end; gap: 10px;
-  padding: 0 24px 20px;
+  padding: 0 28px 24px;
 }
 .btn-cancel {
-  padding: 8px 20px; border: 1px solid #e0e0e0; background: #fff;
-  border-radius: 8px; font-size: 14px; color: #666; cursor: pointer;
+  padding: 9px 22px; border: 1px solid #e0e0e0; background: #fff;
+  border-radius: 999px; font-size: 14px; color: #666; cursor: pointer;
 }
 .btn-cancel:hover { background: #f5f5f5; }
 .btn-save {
-  padding: 8px 24px; border: none; background: #0096FA; color: #fff;
-  border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+  padding: 9px 26px; border: none; background: #0096FA; color: #fff;
+  border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .btn-save:hover { background: #0080d5; }
 .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -580,8 +581,8 @@ onMounted(() => {
 .draft-card { border: 1px dashed #e0e0e0; }
 .draft-badge {
   position: absolute; top: 8px; left: 8px;
-  padding: 2px 10px; background: rgba(255,165,0,0.85); color: #fff;
-  font-size: 11px; font-weight: 600; border-radius: 6px;
+  padding: 3px 12px; background: rgba(255,165,0,0.85); color: #fff;
+  font-size: 11px; font-weight: 600; border-radius: 999px;
   backdrop-filter: blur(4px);
 }
 .draft-no-image {

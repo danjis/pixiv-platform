@@ -7,7 +7,7 @@
           <div class="brand-pattern"></div>
         </div>
         <div class="brand-content">
-          <h1 class="brand-logo" @click="$router.push('/')">pixiv</h1>
+          <h1 class="brand-logo" @click="$router.push('/')">幻画空间</h1>
           <p class="brand-tagline">发现好作品，连接创作者</p>
           <div class="brand-features">
             <div class="brand-feature">

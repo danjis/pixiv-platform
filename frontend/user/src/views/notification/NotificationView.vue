@@ -9,11 +9,11 @@
         </div>
         <div class="header-actions">
           <button class="action-btn" @click="handleMarkAllRead" :disabled="unreadCount === 0" title="全部已读">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/><path d="M4 12l5 5L20 6"/></svg>
             全部已读
           </button>
           <button class="action-btn" @click="loadNotifications" title="刷新">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
           </button>
         </div>
       </div>
@@ -47,11 +47,11 @@
         >
           <!-- 类型图标 -->
           <div class="notif-icon" :class="'type-' + n.type.toLowerCase()">
-            <svg v-if="n.type === 'LIKE'" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <svg v-else-if="n.type === 'COMMENT'" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
-            <svg v-else-if="n.type === 'FOLLOW'" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            <svg v-else-if="n.type === 'COMMISSION'" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
-            <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            <svg v-if="n.type === 'LIKE'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <svg v-else-if="n.type === 'COMMENT'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg v-else-if="n.type === 'FOLLOW'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            <svg v-else-if="n.type === 'COMMISSION'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
 
           <!-- 内容 -->
@@ -69,10 +69,10 @@
           <!-- 操作 -->
           <div class="notif-actions" @click.stop>
             <button v-if="!n.isRead" class="mini-btn read-btn" @click="handleMarkRead(n.id)" title="标记已读">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
             <button class="mini-btn del-btn" @click="handleDelete(n.id)" title="删除">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 3h4a1 1 0 0 1 1 1v2H9V4a1 1 0 0 1 1-1z"/></svg>
             </button>
           </div>
         </div>
@@ -243,7 +243,7 @@ onMounted(() => { loadNotifications(); loadUnreadCount() })
 <style scoped>
 .notification-page {
   min-height: calc(100vh - 56px);
-  background: #f2f4f5;
+  background: #fff;
   padding: 32px 24px;
 }
 .notification-container {
@@ -256,114 +256,112 @@ onMounted(() => { loadNotifications(); loadUnreadCount() })
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .header-left { display: flex; align-items: center; gap: 12px; }
 .page-title { font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0; }
 .unread-badge {
   font-size: 12px; font-weight: 600; color: #fff;
-  background: #0096FA; padding: 2px 10px; border-radius: 12px;
+  background: #0096FA; padding: 2px 10px; border-radius: 999px;
 }
 .header-actions { display: flex; gap: 8px; }
 .action-btn {
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border: none; background: #fff;
-  border-radius: 8px; font-size: 13px; color: #666;
-  cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  transition: all 0.2s;
+  padding: 8px 16px; border: none; background: #F7F8FA;
+  border-radius: 999px; font-size: 13px; color: #666;
+  cursor: pointer; transition: all 0.2s;
 }
-.action-btn:hover { color: #0096FA; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.action-btn:hover { color: #0096FA; background: #EDF6FF; }
 .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* 筛选 */
 .filter-bar {
-  display: flex; gap: 4px;
-  background: #fff; border-radius: 10px; padding: 4px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  display: flex; gap: 8px;
+  margin-bottom: 20px;
 }
 .filter-btn {
-  flex: 1; padding: 8px 16px; border: none; background: transparent;
-  border-radius: 8px; font-size: 13px; font-weight: 500;
+  padding: 8px 20px; border: none; background: #F7F8FA;
+  border-radius: 999px; font-size: 13px; font-weight: 500;
   color: #666; cursor: pointer; transition: all 0.2s;
 }
-.filter-btn:hover { color: #333; }
+.filter-btn:hover { color: #333; background: #EDEEF0; }
 .filter-btn.active {
-  background: #0096FA; color: #fff;
-  box-shadow: 0 2px 8px rgba(0,150,250,0.3);
+  background: #fff; color: #0096FA; font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 /* 加载 */
 .loading-state { display: flex; justify-content: center; padding: 60px 0; }
 .spinner {
-  width: 32px; height: 32px; border: 3px solid #eee;
+  width: 32px; height: 32px; border: 3px solid #F7F8FA;
   border-top-color: #0096FA; border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 列表 */
-.notif-list { display: flex; flex-direction: column; gap: 6px; }
+.notif-list { display: flex; flex-direction: column; gap: 10px; }
 .notif-item {
   display: flex; align-items: center; gap: 14px;
-  background: #fff; border-radius: 12px; padding: 16px 18px;
+  background: #fff; border-radius: 16px; padding: 16px 18px;
   cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
-.notif-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); }
+.notif-item:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); transform: translateY(-1px); }
 .notif-item.unread { border-left: 3px solid #0096FA; }
 
 /* 图标 */
 .notif-icon {
-  width: 40px; height: 40px; border-radius: 10px;
+  width: 42px; height: 42px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.notif-icon.type-like { background: #FFE8EC; color: #FF4D6A; }
-.notif-icon.type-comment { background: #E8F4FF; color: #0096FA; }
-.notif-icon.type-follow { background: #E6F7F0; color: #00C48C; }
-.notif-icon.type-commission { background: #FFF3E0; color: #FF9800; }
-.notif-icon.type-application { background: #F0E6FF; color: #9B59B6; }
-.notif-icon.type-system { background: #F5F5F5; color: #999; }
+.notif-icon.type-like { background: #FFF0F1; color: #FF4D6A; }
+.notif-icon.type-comment { background: #EDF6FF; color: #0096FA; }
+.notif-icon.type-follow { background: #E9F9F2; color: #00C48C; }
+.notif-icon.type-commission { background: #FFF6EB; color: #FF9800; }
+.notif-icon.type-application { background: #F3EDFF; color: #9B59B6; }
+.notif-icon.type-system { background: #F7F8FA; color: #999; }
 
 /* 内容 */
 .notif-body { flex: 1; min-width: 0; }
 .notif-text {
   font-size: 14px; color: #333; line-height: 1.5;
   display: flex; align-items: center; gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .dot { width: 7px; height: 7px; background: #0096FA; border-radius: 50%; flex-shrink: 0; }
 .notif-meta { display: flex; align-items: center; gap: 10px; }
 .notif-time { font-size: 12px; color: #bbb; }
 .notif-type-tag {
-  font-size: 11px; padding: 1px 8px; border-radius: 4px; font-weight: 500;
+  font-size: 11px; padding: 2px 10px; border-radius: 999px; font-weight: 500;
 }
-.tag-like { background: #FFE8EC; color: #FF4D6A; }
-.tag-comment { background: #E8F4FF; color: #0096FA; }
-.tag-follow { background: #E6F7F0; color: #00C48C; }
-.tag-commission { background: #FFF3E0; color: #FF9800; }
-.tag-application { background: #F0E6FF; color: #9B59B6; }
-.tag-system { background: #F5F5F5; color: #999; }
+.tag-like { background: #FFF0F1; color: #FF4D6A; }
+.tag-comment { background: #EDF6FF; color: #0096FA; }
+.tag-follow { background: #E9F9F2; color: #00C48C; }
+.tag-commission { background: #FFF6EB; color: #FF9800; }
+.tag-application { background: #F3EDFF; color: #9B59B6; }
+.tag-system { background: #F7F8FA; color: #999; }
 
 /* 操作 */
 .notif-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .mini-btn {
-  width: 32px; height: 32px; border: none; border-radius: 8px;
+  width: 32px; height: 32px; border: none; border-radius: 999px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: all 0.2s; background: transparent; color: #ccc;
 }
-.read-btn:hover { background: #E8F4FF; color: #0096FA; }
-.del-btn:hover { background: #FFF1F0; color: #FF4D4F; }
+.read-btn:hover { background: #EDF6FF; color: #0096FA; }
+.del-btn:hover { background: #FFF0F1; color: #FF4D4F; }
 
 /* 空 */
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
-  gap: 12px; padding: 80px 0; color: #bbb; font-size: 14px;
+  gap: 16px; padding: 80px 0; color: #bbb; font-size: 14px;
 }
 
-.pager { display: flex; justify-content: center; margin-top: 20px; }
+.pager { display: flex; justify-content: center; margin-top: 24px; }
 
 @media (max-width: 768px) {
+  .notification-page { padding: 20px 12px; }
   .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .notif-item { flex-direction: column; align-items: flex-start; }
   .notif-actions { width: 100%; justify-content: flex-end; }

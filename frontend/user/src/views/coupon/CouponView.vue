@@ -3,8 +3,9 @@
     <!-- 标签切换 -->
     <div class="page-header">
       <h1 class="page-title">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-          <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <circle cx="7" cy="7" r="1"/>
         </svg>
         优惠券
       </h1>
@@ -40,8 +41,9 @@
     <!-- 领券中心 -->
     <div v-else-if="activeTab === 'available'" class="coupon-list">
       <div v-if="availableCoupons.length === 0" class="empty-state">
-        <svg viewBox="0 0 24 24" width="64" height="64" fill="#ddd">
-          <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42z"/>
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <circle cx="7" cy="7" r="1"/>
         </svg>
         <p>暂无可领取的优惠券</p>
       </div>
@@ -98,8 +100,9 @@
       </div>
 
       <div v-if="myCoupons.length === 0" class="empty-state">
-        <svg viewBox="0 0 24 24" width="64" height="64" fill="#ddd">
-          <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42z"/>
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <circle cx="7" cy="7" r="1"/>
         </svg>
         <p>{{ statusFilter === 'all' ? '还没有优惠券' : '没有相关优惠券' }}</p>
         <button class="go-claim-btn" @click="switchTab('available')">去领券</button>
@@ -290,20 +293,21 @@ onMounted(() => {
   max-width: 900px;
   margin: 0 auto;
   padding: 32px 20px;
+  background: #fff;
 }
 
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .page-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0;
@@ -316,67 +320,77 @@ onMounted(() => {
 
 .code-input {
   width: 200px;
-  padding: 8px 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 9px 16px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 999px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .code-input:focus {
-  border-color: #0096fa;
+  border-color: #165DFF;
+  background: #fff;
 }
 
 .redeem-btn {
-  padding: 8px 20px;
-  background: #0096fa;
+  padding: 9px 24px;
+  background: #165DFF;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .redeem-btn:hover:not(:disabled) {
-  background: #0080d4;
+  background: #1249d6;
 }
 
 .redeem-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Tab 栏 */
+/* Tab 栏 - pill shaped */
 .tab-bar {
   display: flex;
-  gap: 4px;
-  border-bottom: 2px solid #f0f0f0;
+  gap: 8px;
   margin-bottom: 24px;
+  border-bottom: none;
+  background: #f5f5f5;
+  border-radius: 999px;
+  padding: 4px;
+  width: fit-content;
 }
 
 .tab-item {
-  padding: 12px 24px;
+  padding: 8px 24px;
   background: none;
   border: none;
-  color: #666;
-  font-size: 15px;
+  color: #888;
+  font-size: 14px;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  border-radius: 999px;
   transition: all 0.2s;
+  margin-bottom: 0;
+  border-bottom: none;
+  font-weight: 500;
 }
 
 .tab-item.active {
-  color: #0096fa;
-  border-bottom-color: #0096fa;
+  color: #fff;
+  background: #165DFF;
   font-weight: 600;
+  border-bottom-color: transparent;
 }
 
 .tab-count {
   font-size: 12px;
-  color: #999;
+  color: inherit;
+  opacity: 0.75;
 }
 
 /* 加载中 */
@@ -390,7 +404,7 @@ onMounted(() => {
   width: 36px;
   height: 36px;
   border: 3px solid #f0f0f0;
-  border-top: 3px solid #0096fa;
+  border-top: 3px solid #165DFF;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -404,27 +418,33 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 0;
-  color: #999;
+  padding: 72px 0;
+  color: #bbb;
 }
 
 .empty-state p {
   margin-top: 16px;
   font-size: 15px;
+  color: #aaa;
 }
 
 .go-claim-btn {
   margin-top: 16px;
-  padding: 8px 28px;
-  background: #0096fa;
+  padding: 9px 28px;
+  background: #165DFF;
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
   cursor: pointer;
   font-size: 14px;
+  transition: background 0.2s;
 }
 
-/* 筛选栏 */
+.go-claim-btn:hover {
+  background: #1249d6;
+}
+
+/* 筛选栏 - pill shaped */
 .filter-bar {
   display: flex;
   gap: 8px;
@@ -432,18 +452,22 @@ onMounted(() => {
 }
 
 .filter-btn {
-  padding: 6px 16px;
+  padding: 6px 18px;
   background: #f5f5f5;
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
   color: #666;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
+.filter-btn:hover {
+  background: #eee;
+}
+
 .filter-btn.active {
-  background: #0096fa;
+  background: #165DFF;
   color: #fff;
 }
 
@@ -458,24 +482,24 @@ onMounted(() => {
   display: flex;
   align-items: stretch;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  transition: all 0.3s;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  transition: box-shadow 0.3s;
   position: relative;
 }
 
 .coupon-card:hover {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
 .coupon-card.used,
 .coupon-card.expired {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .coupon-card.claimed {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 /* 左侧金额区 */
@@ -489,14 +513,15 @@ onMounted(() => {
   color: #fff;
   flex-shrink: 0;
   position: relative;
+  border-radius: 20px 0 0 20px;
 }
 
 .coupon-left.type-fixed {
-  background: linear-gradient(135deg, #ff6b35, #ff4d4f);
+  background: linear-gradient(135deg, #ff7a45, #ff4d6a);
 }
 
 .coupon-left.type-percent {
-  background: linear-gradient(135deg, #0096fa, #6366f1);
+  background: linear-gradient(135deg, #165DFF, #7c5cfc);
 }
 
 /* 锯齿边缘效果 */
@@ -536,7 +561,7 @@ onMounted(() => {
 .discount-label {
   font-size: 12px;
   margin-top: 6px;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 /* 右侧信息 */
@@ -549,15 +574,15 @@ onMounted(() => {
 }
 
 .coupon-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: #1a1a2e;
   margin: 0;
 }
 
 .coupon-desc {
   font-size: 13px;
-  color: #666;
+  color: #888;
   margin: 0;
 }
 
@@ -565,51 +590,52 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   font-size: 12px;
-  color: #999;
+  color: #aaa;
 }
 
 .max-discount {
-  color: #ff6b35;
+  color: #ff7a45;
 }
 
 .coupon-time {
   font-size: 12px;
-  color: #bbb;
+  color: #ccc;
 }
 
 .coupon-stock {
   font-size: 12px;
-  color: #bbb;
+  color: #ccc;
 }
 
-/* 领取按钮 */
+/* 领取按钮 - pill */
 .claim-btn {
   position: absolute;
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
   padding: 8px 24px;
-  background: #ff6b35;
+  background: #165DFF;
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
   white-space: nowrap;
 }
 
 .claim-btn:hover:not(.disabled) {
-  background: #e55a2b;
+  background: #1249d6;
 }
 
 .claim-btn.disabled {
-  background: #ccc;
+  background: #d9d9d9;
+  color: #fff;
   cursor: not-allowed;
 }
 
-/* 状态标志 */
+/* 状态标志 - pill */
 .status-badge {
   position: absolute;
   right: 20px;
@@ -619,23 +645,23 @@ onMounted(() => {
 
 .badge {
   padding: 6px 16px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
 }
 
 .badge.unused {
-  background: #e6f7ff;
-  color: #0096fa;
+  background: #e8f3ff;
+  color: #165DFF;
 }
 
 .badge.used {
   background: #f5f5f5;
-  color: #999;
+  color: #aaa;
 }
 
 .badge.expired {
-  background: #fff2f0;
+  background: #fff1f0;
   color: #ff4d4f;
 }
 

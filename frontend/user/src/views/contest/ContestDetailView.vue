@@ -6,8 +6,10 @@
         <div class="contest-cover-area">
           <img v-if="contest.coverImage" :src="contest.coverImage" alt="" class="cover-img" />
           <div v-else class="cover-placeholder">
-            <svg viewBox="0 0 24 24" width="64" height="64" fill="currentColor" opacity="0.3">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7l-3 3.72L9 13l-3 4h12l-4-5z"/>
+            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
             </svg>
           </div>
           <div class="status-badge" :class="'status-' + contest.status">{{ statusLabel(contest.status) }}</div>
@@ -137,8 +139,8 @@
                 <button class="toggle-reviews-btn" @click="toggleReviews(entry)">
                   {{ expandedEntries[entry.id] ? '收起评价' : '查看评价' }}
                   <span class="review-count">({{ entry.voteCount }}条)</span>
-                  <svg :class="{ rotated: expandedEntries[entry.id] }" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                  <svg :class="{ rotated: expandedEntries[entry.id] }" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
                   </svg>
                 </button>
               </div>
@@ -214,8 +216,9 @@
               accept="image/*"
             >
               <div class="upload-trigger">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" opacity="0.4">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
                 <span>点击上传作品图片</span>
               </div>
@@ -461,7 +464,7 @@ onMounted(async () => {
 <style scoped>
 .contest-detail-page {
   min-height: 100vh;
-  background: var(--px-bg-secondary, #f7f8fa);
+  background: #fff;
 }
 
 .page-container {
@@ -474,9 +477,9 @@ onMounted(async () => {
   display: flex;
   gap: 32px;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   margin-bottom: 32px;
 }
 
@@ -485,9 +488,9 @@ onMounted(async () => {
   flex-shrink: 0;
   width: 320px;
   height: 240px;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e8ecf4 0%, #d5dce8 100%);
 }
 
 .cover-img {
@@ -502,23 +505,23 @@ onMounted(async () => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: #fff;
+  color: #8c8c8c;
 }
 
 .status-badge {
   position: absolute;
   top: 12px;
   right: 12px;
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: 4px 14px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   color: #fff;
 }
 
 .status-UPCOMING { background: rgba(144,147,153,0.85); }
-.status-ACTIVE { background: rgba(103,194,58,0.9); }
-.status-VOTING { background: rgba(230,162,60,0.9); }
+.status-ACTIVE { background: rgba(82,196,26,0.9); }
+.status-VOTING { background: rgba(250,173,20,0.9); }
 .status-ENDED { background: rgba(96,98,102,0.85); }
 .status-CANCELLED { background: rgba(245,108,108,0.9); }
 
@@ -569,8 +572,8 @@ onMounted(async () => {
 }
 
 .section-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--px-text-secondary, #595959);
   margin: 0 0 4px;
 }
@@ -587,17 +590,25 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
+.action-area :deep(.el-button) {
+  border-radius: 999px;
+}
+
+.vote-area :deep(.el-button) {
+  border-radius: 999px;
+}
+
 /* 参赛作品区域 */
 .entries-section {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 .section-title {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--px-text-primary, #1f1f1f);
   margin: 0 0 20px;
 }
@@ -619,14 +630,14 @@ onMounted(async () => {
   gap: 20px;
   padding: 16px;
   border: 1px solid var(--px-border, #e8e8e8);
-  border-radius: 12px;
+  border-radius: 16px;
   position: relative;
   transition: all 0.2s;
 }
 
 .entry-card:hover {
   border-color: var(--px-blue, #0096FA);
-  box-shadow: 0 2px 8px rgba(0,150,250,0.08);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 .rank-medal {
@@ -659,7 +670,7 @@ onMounted(async () => {
   flex-shrink: 0;
   width: 200px;
   height: 150px;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   background: #f5f5f5;
@@ -820,8 +831,8 @@ onMounted(async () => {
 .reviews-section {
   margin-top: 12px;
   padding: 12px;
-  background: var(--px-bg-secondary, #f7f8fa);
-  border-radius: 8px;
+  background: #f9fafb;
+  border-radius: 12px;
 }
 
 .reviews-loading {
@@ -907,7 +918,7 @@ onMounted(async () => {
   position: relative;
   width: 240px;
   height: 180px;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--px-border, #e8e8e8);
 }
@@ -946,7 +957,7 @@ onMounted(async () => {
   width: 240px;
   height: 180px;
   border: 2px dashed var(--px-border, #ddd);
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1001,5 +1012,20 @@ onMounted(async () => {
   .vote-comment {
     max-width: 100%;
   }
+}
+
+/* 幻画空间 pill buttons */
+:deep(.el-dialog__footer .el-button) {
+  border-radius: 999px;
+}
+
+:deep(.el-tag) {
+  border-radius: 999px;
+}
+
+:deep(.el-pagination .btn-prev),
+:deep(.el-pagination .btn-next),
+:deep(.el-pagination .el-pager li) {
+  border-radius: 999px;
 }
 </style>

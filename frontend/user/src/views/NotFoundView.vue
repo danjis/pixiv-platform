@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f4f5;
+  background: #fff;
 }
 
 .not-found-content {
@@ -43,7 +43,7 @@
 .error-code {
   font-size: 120px;
   font-weight: 900;
-  color: #e0e0e0;
+  color: #EFF6FF;
   line-height: 1;
   margin-bottom: 8px;
   font-family: Arial, sans-serif;

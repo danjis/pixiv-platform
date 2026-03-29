@@ -3,14 +3,17 @@
     <header class="px-header">
       <div class="header-content">
         <router-link to="/" class="logo-link">
-          <span class="logo-text">pixiv</span>
+          <svg class="logo-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span class="logo-text">幻画空间</span>
         </router-link>
 
         <div class="search-container" ref="searchContainerRef">
           <div class="search-wrapper">
             <el-input
               v-model="keyword"
-              placeholder="搜索作品、标签..."
+              placeholder="搜索插画、画师或约稿企划..."
               @keyup.enter="handleSearch"
               @input="handleSearchInput"
               @focus="showSuggestions = suggestions.length > 0"
@@ -112,7 +115,7 @@
           <template v-else>
             <router-link to="/login" class="nav-link">登录</router-link>
             <el-button type="primary" round class="register-btn" @click="$router.push('/register')">
-              注册账号
+              快速注册
             </el-button>
           </template>
         </div>
@@ -313,13 +316,14 @@ onBeforeUnmount(() => {
   justify-content: space-between;
 }
 
+.logo-icon {
+  color: var(--px-blue);
+}
 .logo-text {
-  font-family: Arial, sans-serif;
-  font-weight: 900;
-  font-size: 24px;
-  color: #0096fa; /* Pixiv 蓝 */
-  letter-spacing: -1px;
-  font-style: italic;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--px-text-primary);
+  letter-spacing: 1px;
 }
 
 .search-container {

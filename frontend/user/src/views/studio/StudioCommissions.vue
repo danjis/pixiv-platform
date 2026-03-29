@@ -103,7 +103,7 @@
         <!-- 交付信息 -->
         <div v-if="c.deliveryUrl" class="delivery-section">
           <div class="delivery-header">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="#00C48C"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00C48C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>已交付作品</span>
           </div>
           <a :href="c.deliveryUrl" target="_blank" class="delivery-link">查看交付作品</a>
@@ -114,7 +114,7 @@
         <div class="card-actions">
           <!-- PENDING: 报价或拒绝 -->
           <button v-if="c.status === 'PENDING'" class="action-btn primary" @click="openQuoteDialog(c)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             报价
           </button>
           <button v-if="c.status === 'PENDING'" class="action-btn danger-text" @click="handleReject(c)">
@@ -123,13 +123,13 @@
 
           <!-- 开始创作: DEPOSIT_PAID → IN_PROGRESS -->
           <button v-if="c.status === 'DEPOSIT_PAID'" class="action-btn primary" @click="handleStartWork(c)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             开始创作
           </button>
 
           <!-- 交付作品: IN_PROGRESS → DELIVERED -->
           <button v-if="c.status === 'IN_PROGRESS'" class="action-btn primary" @click="openDeliverDialog(c)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             交付作品
           </button>
 
@@ -140,7 +140,7 @@
 
           <!-- 联系委托方 -->
           <button v-if="!['COMPLETED','CANCELLED','REJECTED'].includes(c.status)" class="action-btn secondary" @click="handleChat(c)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             联系委托方
           </button>
 
@@ -176,7 +176,7 @@
         <div class="dialog-header">
           <h3>报价</h3>
           <button class="close-btn" @click="quoteDialog = false">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         <div class="dialog-body">
@@ -231,7 +231,7 @@
         <div class="dialog-header">
           <h3>交付作品</h3>
           <button class="close-btn" @click="deliverDialog = false">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         <div class="dialog-body">
@@ -541,29 +541,28 @@ onMounted(loadCommissions)
 </script>
 
 <style scoped>
-.commissions-page { max-width: 100%; }
+.commissions-page { max-width: 100%; background: #fff; }
 
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
+.page-header { margin-bottom: 28px; }
+.page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
 .page-desc { font-size: 14px; color: #999; margin: 0; }
 
 /* 筛选 */
 .filter-bar {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  margin-bottom: 20px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 .filter-btn {
   display: flex; align-items: center; gap: 5px;
-  padding: 7px 14px; border: none; background: #fff;
-  border-radius: 8px; font-size: 13px; color: #666;
+  padding: 7px 16px; border: none; background: #f5f5f5;
+  border-radius: 999px; font-size: 13px; color: #666;
   cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-.filter-btn:hover { color: #333; }
-.filter-btn.active { background: #0096FA; color: #fff; box-shadow: 0 2px 8px rgba(0,150,250,0.3); }
+.filter-btn:hover { color: #333; background: #ebebeb; }
+.filter-btn.active { background: #0096FA; color: #fff; box-shadow: 0 2px 8px rgba(0,150,250,0.18); }
 .filter-count {
-  font-size: 11px; background: rgba(0,0,0,0.08); padding: 1px 6px;
-  border-radius: 10px; font-weight: 600;
+  font-size: 11px; background: rgba(0,0,0,0.06); padding: 1px 7px;
+  border-radius: 999px; font-weight: 600;
 }
 .filter-btn.active .filter-count { background: rgba(255,255,255,0.3); }
 
@@ -579,11 +578,11 @@ onMounted(loadCommissions)
 /* 列表 */
 .commission-list { display: flex; flex-direction: column; gap: 16px; }
 .commission-card {
-  background: #fff; border-radius: 14px; padding: 20px 22px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  background: #fff; border-radius: 16px; padding: 22px 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   transition: box-shadow 0.2s;
 }
-.commission-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.commission-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
 
 .card-top {
   display: flex; justify-content: space-between; align-items: center;
@@ -595,7 +594,7 @@ onMounted(loadCommissions)
 .client-name { font-size: 14px; font-weight: 500; color: #333; }
 
 .status-badge {
-  font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; padding: 4px 14px; border-radius: 999px;
 }
 .status-pending { background: #FFF3E0; color: #FF9800; }
 .status-quoted { background: #E8F5E9; color: #4CAF50; }
@@ -615,8 +614,8 @@ onMounted(loadCommissions)
 
 /* 委托方请求信息 */
 .client-request-info {
-  padding: 12px 16px; background: #FFF8E1; border: 1px solid #FFE082;
-  border-radius: 10px; margin-bottom: 14px;
+  padding: 14px 18px; background: #FFFBF0; border: 1px solid #FFE082;
+  border-radius: 16px; margin-bottom: 14px;
   display: flex; flex-wrap: wrap; gap: 16px;
 }
 .request-item { display: flex; flex-direction: column; gap: 2px; }
@@ -627,8 +626,8 @@ onMounted(loadCommissions)
 
 /* 已发送报价 */
 .quote-sent-info {
-  padding: 12px 16px; background: #E8F5E9; border: 1px solid #C8E6C9;
-  border-radius: 10px; margin-bottom: 14px;
+  padding: 14px 18px; background: #F0FAF5; border: 1px solid #C8E6C9;
+  border-radius: 16px; margin-bottom: 14px;
 }
 .quote-sent-header {
   font-size: 13px; font-weight: 600; color: #4CAF50; margin-bottom: 6px;
@@ -639,7 +638,7 @@ onMounted(loadCommissions)
 
 .card-info {
   display: flex; flex-wrap: wrap; gap: 16px;
-  padding: 14px 16px; background: #f9fafb; border-radius: 10px;
+  padding: 14px 18px; background: #f9fafb; border-radius: 16px;
   margin-bottom: 14px;
 }
 .info-item { display: flex; flex-direction: column; gap: 2px; }
@@ -648,17 +647,17 @@ onMounted(loadCommissions)
 .info-value.price { color: #0096FA; font-weight: 700; }
 .info-value.text-danger { color: #FF4D4F; }
 .pay-tag {
-  font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-top: 2px;
+  font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 600; margin-top: 2px;
 }
 .pay-tag.paid { background: #E6F7F0; color: #00C48C; }
 .pay-tag.unpaid { background: #FFF1F0; color: #FF4D4F; }
 .overdue-tag {
-  font-size: 10px; background: #FF4D4F; color: #fff; padding: 1px 6px;
-  border-radius: 4px; margin-left: 4px;
+  font-size: 10px; background: #FF4D4F; color: #fff; padding: 2px 8px;
+  border-radius: 999px; margin-left: 4px;
 }
 
 .delivery-section {
-  padding: 12px 16px; background: #F0FAF5; border-radius: 10px;
+  padding: 14px 18px; background: #F0FAF5; border-radius: 16px;
   margin-bottom: 14px;
 }
 .delivery-header {
@@ -676,7 +675,7 @@ onMounted(loadCommissions)
 }
 .action-btn {
   display: flex; align-items: center; gap: 5px;
-  padding: 8px 16px; border: none; border-radius: 8px;
+  padding: 8px 18px; border: none; border-radius: 999px;
   font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
 }
 .action-btn.primary { background: #0096FA; color: #fff; }
@@ -687,7 +686,7 @@ onMounted(loadCommissions)
 .action-btn.danger-text:hover { background: #FFF1F0; }
 .revision-hint {
   font-size: 12px; color: #FF9800; font-weight: 500;
-  padding: 4px 10px; background: #FFF3E0; border-radius: 6px;
+  padding: 4px 12px; background: #FFF3E0; border-radius: 999px;
 }
 
 /* 空状态 */
@@ -698,8 +697,8 @@ onMounted(loadCommissions)
 
 /* 预算提示 */
 .budget-hint {
-  padding: 10px 14px; background: #FFF8E1; border: 1px solid #FFE082;
-  border-radius: 8px; margin-bottom: 16px; font-size: 14px;
+  padding: 10px 14px; background: #FFFBF0; border: 1px solid #FFE082;
+  border-radius: 12px; margin-bottom: 16px; font-size: 14px;
   color: #F57C00; font-weight: 600;
 }
 
@@ -708,7 +707,7 @@ onMounted(loadCommissions)
   display: flex; gap: 8px; margin-top: 6px;
 }
 .ratio-btn {
-  padding: 6px 14px; border: 1px solid #e0e0e0; border-radius: 8px;
+  padding: 6px 14px; border: 1px solid #e0e0e0; border-radius: 999px;
   background: #fff; font-size: 13px; color: #666; cursor: pointer;
   transition: all 0.15s;
 }
@@ -719,7 +718,7 @@ onMounted(loadCommissions)
 
 .deposit-preview {
   font-size: 13px; color: #666; margin-top: 8px;
-  padding: 8px 12px; background: #f9f9f9; border-radius: 6px;
+  padding: 8px 12px; background: #f9f9f9; border-radius: 10px;
 }
 
 .form-row { display: flex; gap: 16px; }
@@ -728,39 +727,39 @@ onMounted(loadCommissions)
 /* 弹窗 */
 .dialog-mask {
   position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
   display: flex; align-items: center; justify-content: center;
 }
 .dialog-box {
-  background: #fff; border-radius: 16px; width: 460px; max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  background: #fff; border-radius: 20px; width: 460px; max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
 }
 .dialog-header {
-  display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 0;
+  display: flex; justify-content: space-between; align-items: center; padding: 22px 26px 0;
 }
-.dialog-header h3 { font-size: 18px; font-weight: 600; margin: 0; }
-.close-btn { background: none; border: none; color: #999; cursor: pointer; padding: 4px; border-radius: 6px; }
+.dialog-header h3 { font-size: 18px; font-weight: 700; margin: 0; }
+.close-btn { background: none; border: none; color: #999; cursor: pointer; padding: 4px; border-radius: 50%; }
 .close-btn:hover { background: #f0f0f0; color: #333; }
-.dialog-body { padding: 20px 24px; }
+.dialog-body { padding: 20px 26px; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
 .required { color: #FF4D4F; }
 .form-input, .form-textarea {
   width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0;
-  border-radius: 8px; font-size: 14px; color: #333;
+  border-radius: 12px; font-size: 14px; color: #333;
   transition: border-color 0.2s; box-sizing: border-box;
 }
 .form-input:focus, .form-textarea:focus { outline: none; border-color: #0096FA; }
 .form-textarea { resize: vertical; font-family: inherit; }
-.dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 0 24px 20px; }
+.dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 0 26px 22px; }
 .btn-cancel {
-  padding: 8px 20px; border: 1px solid #e0e0e0; background: #fff;
-  border-radius: 8px; font-size: 14px; color: #666; cursor: pointer;
+  padding: 8px 22px; border: 1px solid #e0e0e0; background: #fff;
+  border-radius: 999px; font-size: 14px; color: #666; cursor: pointer;
 }
 .btn-cancel:hover { background: #f5f5f5; }
 .btn-save {
-  padding: 8px 24px; border: none; background: #0096FA; color: #fff;
-  border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+  padding: 8px 26px; border: none; background: #0096FA; color: #fff;
+  border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;
 }
 .btn-save:hover { background: #0080d5; }
 .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }

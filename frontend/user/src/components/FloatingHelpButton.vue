@@ -46,7 +46,7 @@
 
         <div class="panel-footer">
           <p>工作时间：周一至周五 9:00-18:00</p>
-          <p>邮箱：support@pixiv-platform.com</p>
+          <p>邮箱：support@huanhua.com</p>
         </div>
       </div>
     </transition>

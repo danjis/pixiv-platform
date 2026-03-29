@@ -56,8 +56,8 @@
           >
             <span class="day-label">{{ weekLabels[idx] }}</span>
             <div class="day-circle">
-              <svg v-if="checked" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+              <svg v-if="checked" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
               </svg>
               <span v-else-if="idx >= todayIndex" class="day-points">+{{ getDayPoints(idx) }}</span>
               <span v-else class="day-missed">-</span>
@@ -78,8 +78,8 @@
             立即签到
           </el-button>
           <div v-else class="checkin-done">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#52c41a">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#52c41a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="9 12 11.5 14.5 16 9.5"/>
             </svg>
             <span>今日已签到，获得 <strong>{{ checkin.pointsEarned }}</strong> 积分</span>
           </div>
@@ -202,7 +202,7 @@
 
       <!-- 积分商城 -->
       <section class="shop-card">
-        <h3 class="card-title">🛒 积分商城</h3>
+        <h3 class="card-title">积分商城</h3>
         <p class="shop-desc">使用签到积分兑换约稿优惠券，让您的创作之旅更划算！</p>
         <div class="shop-grid">
           <div v-for="item in shopItems" :key="item.id" class="shop-item">
@@ -486,20 +486,20 @@ onMounted(() => {
 <style scoped>
 .membership-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #fff;
 }
 
 /* ====== 头部 ====== */
 .membership-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #EFF6FF, #ECFDF5, #F5F3FF);
   padding: 40px 0;
-  color: #fff;
+  color: #1a1a1a;
 }
 .membership-header.level-vip {
-  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  background: linear-gradient(135deg, #EFF6FF, #ECFDF5, #F5F3FF);
 }
 .membership-header.level-svip {
-  background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 50%, #f6d365 100%);
+  background: linear-gradient(135deg, #EFF6FF, #ECFDF5, #F5F3FF);
 }
 
 .header-content {
@@ -529,15 +529,16 @@ onMounted(() => {
   font-size: 10px;
   font-weight: 800;
   padding: 1px 8px;
-  border-radius: 10px;
+  border-radius: 999px;
   letter-spacing: 1px;
 }
-.vip-badge.vip { background: #ffc107; color: #7b5e00; }
-.vip-badge.svip { background: linear-gradient(90deg, #ff6fd8, #ffc107); color: #fff; }
+.vip-badge.vip { background: #f59e0b; color: #fff; }
+.vip-badge.svip { background: #8b5cf6; color: #fff; }
 
 .member-name {
   font-size: 22px;
   font-weight: 700;
+  color: #1a1a1a;
   margin-bottom: 6px;
 }
 
@@ -547,15 +548,16 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 700;
   padding: 3px 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.25);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+  color: #555;
 }
-.level-tag.vip { background: #ffc107; color: #7b5e00; }
-.level-tag.svip { background: linear-gradient(90deg, #ff6fd8, #ffc107); color: #fff; }
+.level-tag.vip { background: #fef3c7; color: #b45309; }
+.level-tag.svip { background: #ede9fe; color: #7c3aed; }
 
 .expire-time {
   font-size: 13px;
-  opacity: 0.85;
+  color: #666;
 }
 
 .points-summary {
@@ -571,17 +573,18 @@ onMounted(() => {
   display: block;
   font-size: 28px;
   font-weight: 800;
+  color: #1a1a1a;
 }
 
 .points-label {
   font-size: 12px;
-  opacity: 0.8;
+  color: #666;
 }
 
 /* ====== 主体 ====== */
 .membership-body {
   max-width: 960px;
-  margin: -20px auto 40px;
+  margin: 24px auto 40px;
   padding: 0 24px;
   display: flex;
   flex-direction: column;
@@ -591,9 +594,9 @@ onMounted(() => {
 /* ====== 签到卡片 ====== */
 .checkin-card, .benefits-card, .records-card, .shop-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 .card-header {
@@ -604,7 +607,7 @@ onMounted(() => {
 }
 
 .card-header h3 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
 }
@@ -614,7 +617,7 @@ onMounted(() => {
   color: #999;
 }
 .consecutive-info strong {
-  color: #f0a030;
+  color: #f59e0b;
   font-size: 16px;
 }
 
@@ -646,22 +649,22 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  background: #f5f5f5;
+  background: #f9fafb;
   color: #bbb;
   font-size: 11px;
   transition: all 0.3s;
 }
 
 .checkin-day.checked .day-circle {
-  background: linear-gradient(135deg, #52c41a, #73d13d);
-  color: #fff;
+  background: #ecfdf5;
+  color: #10b981;
 }
 
 .checkin-day.today .day-circle {
-  border: 2px solid #0096fa;
+  border: 2px solid #6366f1;
 }
 .checkin-day.today.checked .day-circle {
-  border-color: #52c41a;
+  border-color: #10b981;
 }
 
 .day-points {
@@ -688,6 +691,7 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 600;
   height: 44px;
+  border-radius: 999px;
 }
 
 .checkin-done {
@@ -695,20 +699,20 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #52c41a;
+  color: #10b981;
   font-size: 15px;
 }
-.checkin-done strong { color: #f0a030; }
+.checkin-done strong { color: #f59e0b; }
 
 .multiplier-tip {
   margin-top: 12px;
   font-size: 13px;
-  color: #f0a030;
+  color: #f59e0b;
 }
 
 /* ====== 特权展示 ====== */
 .card-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 20px;
@@ -722,15 +726,15 @@ onMounted(() => {
 
 .benefit-item {
   padding: 20px;
-  border-radius: 12px;
-  background: #fafafa;
-  border: 1px solid #f0f0f0;
+  border-radius: 20px;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
   text-align: center;
   transition: all 0.3s;
 }
 .benefit-item:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
 }
 
 .benefit-icon {
@@ -756,10 +760,10 @@ onMounted(() => {
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 8px;
+  border-radius: 999px;
 }
-.benefit-tag.vip { background: #fff7e6; color: #d48806; }
-.benefit-tag.svip { background: #f9f0ff; color: #722ed1; }
+.benefit-tag.vip { background: #fef3c7; color: #b45309; }
+.benefit-tag.svip { background: #ede9fe; color: #7c3aed; }
 
 /* ====== 积分商城 ====== */
 .shop-desc {
@@ -776,16 +780,16 @@ onMounted(() => {
 
 .shop-item {
   padding: 20px 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #fafafa, #f0f5ff);
-  border: 1px solid #e8e8e8;
+  border-radius: 20px;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
   text-align: center;
   transition: all 0.3s;
 }
 .shop-item:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-  border-color: #0096fa;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+  border-color: #c7d2fe;
 }
 
 .shop-icon {
@@ -814,7 +818,7 @@ onMounted(() => {
 .cost-points {
   font-size: 22px;
   font-weight: 800;
-  color: #f0a030;
+  color: #f59e0b;
 }
 
 .cost-label {
@@ -826,9 +830,9 @@ onMounted(() => {
 /* ====== 开通会员卡片 ====== */
 .subscribe-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 .plan-tabs {
@@ -844,26 +848,26 @@ onMounted(() => {
   justify-content: center;
   gap: 8px;
   padding: 14px;
-  border-radius: 12px;
-  border: 2px solid #e8e8e8;
+  border-radius: 20px;
+  border: 2px solid #e5e7eb;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
   color: #666;
   transition: all 0.3s;
 }
-.plan-tab:hover { border-color: #d4a853; }
-.plan-tab.active { border-color: #d4a853; background: #fffbe6; color: #b8860b; }
+.plan-tab:hover { border-color: #f59e0b; }
+.plan-tab.active { border-color: #f59e0b; background: #fffbeb; color: #b45309; }
 
 .plan-tab-badge {
   font-size: 11px;
   font-weight: 800;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 999px;
   letter-spacing: 1px;
 }
-.plan-tab-badge.vip { background: #ffc107; color: #7b5e00; }
-.plan-tab-badge.svip { background: linear-gradient(90deg, #ff6fd8, #ffc107); color: #fff; }
+.plan-tab-badge.vip { background: #fef3c7; color: #b45309; }
+.plan-tab-badge.svip { background: #ede9fe; color: #7c3aed; }
 
 .duration-options {
   display: grid;
@@ -875,26 +879,26 @@ onMounted(() => {
 .duration-card {
   position: relative;
   padding: 20px 12px;
-  border-radius: 12px;
-  border: 2px solid #f0f0f0;
+  border-radius: 20px;
+  border: 2px solid #f3f4f6;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
-  background: #fafafa;
+  background: #f9fafb;
 }
-.duration-card:hover { border-color: #d4a853; }
-.duration-card.selected { border-color: #d4a853; background: #fffbe6; }
+.duration-card:hover { border-color: #f59e0b; }
+.duration-card.selected { border-color: #f59e0b; background: #fffbeb; }
 
 .best-tag {
   position: absolute;
   top: -10px;
   right: -6px;
-  background: #ff4d4f;
+  background: #ef4444;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 8px;
+  border-radius: 999px;
 }
 
 .duration-period {
@@ -906,12 +910,12 @@ onMounted(() => {
 .price-symbol {
   font-size: 14px;
   font-weight: 600;
-  color: #d4a853;
+  color: #f59e0b;
 }
 .price-amount {
   font-size: 28px;
   font-weight: 800;
-  color: #d4a853;
+  color: #f59e0b;
 }
 
 .duration-avg {
@@ -925,8 +929,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: #fffbe6;
-  border-radius: 12px;
+  background: #fffbeb;
+  border-radius: 20px;
 }
 
 .subscribe-summary {
@@ -940,7 +944,7 @@ onMounted(() => {
 .subscribe-total {
   font-size: 24px;
   font-weight: 800;
-  color: #d4a853;
+  color: #f59e0b;
 }
 
 .subscribe-btn {
@@ -948,6 +952,7 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 700;
   height: 48px;
+  border-radius: 999px;
 }
 
 /* ====== 积分记录 ====== */
@@ -975,10 +980,10 @@ onMounted(() => {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 999px;
 }
-.record-type.earn { background: #e6f7ff; color: #0096fa; }
-.record-type.spend { background: #fff2e8; color: #fa8c16; }
+.record-type.earn { background: #ecfdf5; color: #059669; }
+.record-type.spend { background: #fef3c7; color: #d97706; }
 
 .record-desc {
   font-size: 14px;
@@ -995,8 +1000,8 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 700;
 }
-.record-points.positive { color: #52c41a; }
-.record-points.negative { color: #ff4d4f; }
+.record-points.positive { color: #10b981; }
+.record-points.negative { color: #ef4444; }
 
 .record-time {
   font-size: 12px;

@@ -32,11 +32,11 @@
               <img :src="artist.avatarUrl || defaultAvatar" alt="avatar" class="avatar-img" />
             </div>
             <div v-if="artist.role === 'ARTIST'" class="role-tag artist">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
               认证画师
             </div>
             <div v-else class="role-tag user">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg>
               普通用户
             </div>
           </div>
@@ -75,11 +75,11 @@
                 @click="handleFollow"
                 v-if="userStore.isAuthenticated"
               >
-                <svg v-if="!isFollowing" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <svg v-if="!isFollowing" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/><line x1="19" y1="4" x2="19" y2="10"/><line x1="16" y1="7" x2="22" y2="7"/>
                 </svg>
-                <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 {{ isFollowing ? '已关注' : '关注' }}
               </button>
@@ -88,8 +88,8 @@
                 @click="handleMessage"
                 v-if="userStore.isAuthenticated"
               >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
                 私信
               </button>
@@ -98,8 +98,8 @@
                 @click="$router.push({ name: 'CreateCommission', query: { artistId: artist.id } })"
                 v-if="userStore.isAuthenticated && artist.role === 'ARTIST'"
               >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
                 发起约稿
               </button>
@@ -107,7 +107,7 @@
             <!-- 自己的主页 -->
             <div class="action-row" v-else>
               <button class="edit-btn" @click="$router.push('/profile')">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 编辑资料
               </button>
             </div>
@@ -123,7 +123,7 @@
               :class="{ active: activeTab === 'artworks' }"
               @click="switchTab('artworks')"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               作品
             </button>
             <button
@@ -132,7 +132,7 @@
               :class="{ active: activeTab === 'favorites' }"
               @click="switchTab('favorites')"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
               收藏
             </button>
             <button
@@ -141,7 +141,7 @@
               :class="{ active: activeTab === 'following' }"
               @click="switchTab('following')"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg>
               关注
             </button>
           </div>
@@ -183,8 +183,8 @@
           <!-- 收藏 Tab（隐私受限） -->
           <div v-show="activeTab === 'favorites'" class="tab-panel">
             <div v-if="artist.hideFavorites && !isSelf" class="privacy-hint">
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="#ccc">
-                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <p>该用户已隐藏收藏列表</p>
             </div>
@@ -210,8 +210,8 @@
           <!-- 关注 Tab（隐私受限） -->
           <div v-show="activeTab === 'following'" class="tab-panel">
             <div v-if="artist.hideFollowing && !isSelf" class="privacy-hint">
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="#ccc">
-                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <p>该用户已隐藏关注列表</p>
             </div>
@@ -461,7 +461,7 @@ onMounted(() => {
 <style scoped>
 .artist-profile-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #fff;
 }
 
 /* 加载状态 */
@@ -475,7 +475,7 @@ onMounted(() => {
   width: 36px;
   height: 36px;
   border: 3px solid #e0e0e0;
-  border-top-color: #0096fa;
+  border-top-color: #1a1a1a;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -502,25 +502,27 @@ onMounted(() => {
 .back-btn {
   padding: 8px 24px;
   border: none;
-  border-radius: 20px;
-  background: #0096fa;
+  border-radius: 999px;
+  background: #1a1a1a;
   color: #fff;
   cursor: pointer;
   font-size: 14px;
+  transition: background 0.2s;
 }
+.back-btn:hover { background: #333; }
 
 /* Banner */
 .profile-banner {
   height: 200px;
   position: relative;
-  background: linear-gradient(135deg, #0096fa 0%, #0057b8 50%, #003d7a 100%);
+  background: linear-gradient(135deg, #e8e0f0 0%, #d4e4f7 50%, #e0ecf5 100%);
   overflow: hidden;
 }
 .banner-pattern {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 40%);
+  background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.2) 0%, transparent 40%);
 }
 .banner-fade {
   position: absolute;
@@ -528,7 +530,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 80px;
-  background: linear-gradient(to top, #f5f5f5, transparent);
+  background: linear-gradient(to top, #fff, transparent);
 }
 
 /* 主内容区 */
@@ -545,9 +547,9 @@ onMounted(() => {
   display: flex;
   gap: 24px;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 28px 32px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 .avatar-area {
@@ -558,11 +560,11 @@ onMounted(() => {
   flex-shrink: 0;
 }
 .avatar-ring {
-  width: 96px;
-  height: 96px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   padding: 3px;
-  background: linear-gradient(135deg, #0096fa, #00d4ff);
+  background: linear-gradient(135deg, #c8b6e2, #a8d0e6);
   overflow: hidden;
 }
 .avatar-img {
@@ -578,17 +580,17 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
 .role-tag.artist {
-  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-  color: #e65100;
+  background: #fef7ed;
+  color: #c2710c;
 }
 .role-tag.user {
-  background: #f0f0f0;
+  background: #f5f5f5;
   color: #666;
 }
 
@@ -645,20 +647,20 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 20px;
+  padding: 8px 24px;
   border: none;
-  border-radius: 20px;
-  background: #0096fa;
+  border-radius: 999px;
+  background: #1a1a1a;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
-.follow-btn:hover { background: #0080d8; }
+.follow-btn:hover { background: #333; }
 .follow-btn.following {
-  background: #e8f4fd;
-  color: #0096fa;
+  background: #f5f5f5;
+  color: #1a1a1a;
 }
 .follow-btn.following:hover {
   background: #fee2e2;
@@ -669,9 +671,9 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 20px;
-  border: 1.5px solid #ddd;
-  border-radius: 20px;
+  padding: 8px 24px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 999px;
   background: #fff;
   color: #333;
   font-size: 14px;
@@ -680,18 +682,18 @@ onMounted(() => {
   transition: all 0.2s;
 }
 .message-btn:hover {
-  border-color: #0096fa;
-  color: #0096fa;
+  border-color: #1a1a1a;
+  color: #1a1a1a;
 }
 
 .commission-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 20px;
-  border: 1.5px solid #0096fa;
-  border-radius: 20px;
-  background: #0096fa;
+  padding: 8px 24px;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 999px;
+  background: #1a1a1a;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -699,55 +701,58 @@ onMounted(() => {
   transition: all 0.2s;
 }
 .commission-btn:hover {
-  background: #0080d5;
-  border-color: #0080d5;
+  background: #333;
+  border-color: #333;
 }
 
 .edit-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 20px;
-  border: 1.5px solid #ddd;
-  border-radius: 20px;
+  padding: 8px 24px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 999px;
   background: #fff;
   color: #333;
   font-size: 14px;
   cursor: pointer;
+  transition: all 0.2s;
 }
-.edit-btn:hover { border-color: #0096fa; color: #0096fa; }
+.edit-btn:hover { border-color: #1a1a1a; color: #1a1a1a; }
 
 /* Tabs */
 .tabs-section {
   margin-top: 24px;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   overflow: hidden;
 }
 .tabs-nav {
   display: flex;
+  gap: 8px;
+  padding: 16px 24px 12px;
   border-bottom: 1px solid #f0f0f0;
-  padding: 0 24px;
 }
 .tab-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 14px 20px;
+  padding: 8px 20px;
   border: none;
-  background: none;
+  background: #f5f5f5;
   color: #999;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  border-radius: 999px;
+  border-bottom: none;
   transition: all 0.2s;
 }
-.tab-item:hover { color: #333; }
+.tab-item:hover { color: #333; background: #eee; }
 .tab-item.active {
-  color: #0096fa;
-  border-bottom-color: #0096fa;
+  color: #fff;
+  background: #1a1a1a;
 }
 
 .tab-panel {
@@ -773,11 +778,11 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s;
 }
-.following-card:hover { background: #f5f5f5; }
+.following-card:hover { background: #f9f9f9; }
 .following-name {
   font-size: 13px;
   color: #333;

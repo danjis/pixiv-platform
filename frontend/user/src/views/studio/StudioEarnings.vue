@@ -21,7 +21,7 @@
           <div class="wallet-content">
             <div class="wallet-top">
               <span class="wallet-label">可用余额</span>
-              <span class="wallet-icon">💰</span>
+              <span class="wallet-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
             </div>
             <div class="wallet-balance">
               <span class="balance-symbol">¥</span>
@@ -48,7 +48,7 @@
         <div class="stats-cards">
           <div class="stat-card">
             <div class="stat-icon total-icon">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <div class="stat-info">
               <span class="stat-value">¥{{ formatMoney(walletData.totalIncome) }}</span>
@@ -57,7 +57,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon month-icon">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
             <div class="stat-info">
               <span class="stat-value">¥{{ formatMoney(walletData.monthIncome) }}</span>
@@ -66,7 +66,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon count-icon">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div class="stat-info">
               <span class="stat-value">{{ completedCount }}</span>
@@ -75,7 +75,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon pending-icon">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <div class="stat-info">
               <span class="stat-value">{{ pendingCount }}</span>
@@ -124,7 +124,7 @@
         </div>
 
         <div v-else class="empty-state">
-          <div class="empty-icon">📋</div>
+          <div class="empty-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
           <h4>{{ activePeriod === 'all' ? '暂无约稿收入记录' : '该时间段暂无记录' }}</h4>
           <p>接到约稿并完成后，收入将自动记录在这里</p>
           <button class="empty-action" @click="$router.push('/studio/plans')">
@@ -160,7 +160,7 @@
           </div>
         </div>
         <div v-else class="empty-state">
-          <div class="empty-icon">📤</div>
+          <div class="empty-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
           <h4>暂无提现记录</h4>
           <p>申请提现后，记录将显示在这里</p>
         </div>
@@ -169,21 +169,21 @@
       <!-- 提示信息 -->
       <div class="info-cards">
         <div class="info-card">
-          <div class="info-icon">💡</div>
+          <div class="info-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0096FA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
           <div class="info-content">
             <h4>收入结算规则</h4>
             <p>委托方确认完稿后，约稿金额将在扣除平台手续费（5%）后自动入账到你的可用余额。VIP 画师享受手续费优惠。</p>
           </div>
         </div>
         <div class="info-card">
-          <div class="info-icon">🔒</div>
+          <div class="info-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0096FA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
           <div class="info-content">
             <h4>资金安全</h4>
             <p>进行中的约稿金额将被冻结保管，确保交易安全。约稿完成后冻结金额将自动释放到可用余额。</p>
           </div>
         </div>
         <div class="info-card">
-          <div class="info-icon">📤</div>
+          <div class="info-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0096FA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
           <div class="info-content">
             <h4>提现说明</h4>
             <p>提现申请提交后需管理员审批，审批通过后将转账至你的支付宝账户。通常1-3个工作日内处理完成。</p>
@@ -376,10 +376,10 @@ async function handleWithdraw() {
 </script>
 
 <style scoped>
-.earnings-page { max-width: 100%; }
+.earnings-page { max-width: 100%; background: #fff; }
 
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
+.page-header { margin-bottom: 28px; }
+.page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
 .page-desc { font-size: 14px; color: #999; margin: 0; }
 
 .loading-state {
@@ -399,12 +399,12 @@ async function handleWithdraw() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .wallet-main-card {
   background: linear-gradient(135deg, #0096FA 0%, #0070D9 50%, #004AAD 100%);
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 28px 32px;
   color: #fff;
   position: relative;
@@ -447,8 +447,8 @@ async function handleWithdraw() {
   background: rgba(255,255,255,0.2);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.4);
-  border-radius: 8px;
-  padding: 6px 20px;
+  border-radius: 999px;
+  padding: 7px 22px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
@@ -477,17 +477,17 @@ async function handleWithdraw() {
 }
 .stat-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 18px 20px;
+  border-radius: 20px;
+  padding: 20px 22px;
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   transition: box-shadow 0.2s;
 }
-.stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
 .stat-icon {
-  width: 44px; height: 44px; border-radius: 12px;
+  width: 44px; height: 44px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .total-icon { background: #E6F7F0; color: #00C48C; }
@@ -501,23 +501,23 @@ async function handleWithdraw() {
 /* === 明细区 === */
 .detail-section {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px 28px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   margin-bottom: 20px;
 }
 .section-header {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 18px;
 }
-.section-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin: 0; }
-.period-filter { display: flex; gap: 4px; }
+.section-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0; }
+.period-filter { display: flex; gap: 6px; }
 .period-btn {
-  padding: 5px 14px; border: none; background: #f5f5f5;
-  border-radius: 8px; font-size: 12px; color: #666;
+  padding: 6px 16px; border: none; background: #f5f5f5;
+  border-radius: 999px; font-size: 12px; color: #666;
   cursor: pointer; transition: all 0.15s;
 }
-.period-btn:hover { color: #333; background: #eee; }
+.period-btn:hover { color: #333; background: #ebebeb; }
 .period-btn.active { background: #0096FA; color: #fff; }
 
 /* 表格 */
@@ -545,8 +545,8 @@ async function handleWithdraw() {
 
 .status-badge {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
+  padding: 3px 12px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
 }
@@ -568,7 +568,7 @@ async function handleWithdraw() {
   display: flex; flex-direction: column; align-items: center;
   padding: 48px 0; text-align: center;
 }
-.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.6; }
+.empty-icon { margin-bottom: 12px; opacity: 0.6; }
 .empty-state h4 {
   font-size: 16px; font-weight: 600; color: #999; margin: 0 0 6px 0;
 }
@@ -576,8 +576,8 @@ async function handleWithdraw() {
   font-size: 13px; color: #bbb; margin: 0 0 18px 0;
 }
 .empty-action {
-  padding: 8px 20px; border: 1px solid #0096FA; background: transparent;
-  color: #0096FA; border-radius: 8px; font-size: 13px; font-weight: 600;
+  padding: 8px 22px; border: 1px solid #0096FA; background: transparent;
+  color: #0096FA; border-radius: 999px; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
 .empty-action:hover { background: #0096FA; color: #fff; }
@@ -590,13 +590,13 @@ async function handleWithdraw() {
 }
 .info-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 20px 22px;
+  border-radius: 20px;
+  padding: 22px 24px;
   display: flex;
   gap: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
-.info-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+.info-icon { flex-shrink: 0; margin-top: 2px; }
 .info-content h4 {
   font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0 0 6px 0;
 }

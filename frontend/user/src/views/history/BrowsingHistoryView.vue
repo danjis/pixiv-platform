@@ -2,16 +2,20 @@
   <div class="history-page">
     <div class="page-header">
       <h1 class="page-title">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-          <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15.5 14"/>
+          <path d="M1 12h3M4.5 5.5L6.5 7.5"/>
         </svg>
         浏览记录
       </h1>
       <div class="page-actions">
         <span class="history-count" v-if="!loading">共 {{ total }} 条记录</span>
         <button v-if="historyList.length > 0" class="clear-btn" @click="handleClearAll">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 3h4a1 1 0 0 1 1 1v2H9V4a1 1 0 0 1 1-1z"/>
           </svg>
           清空全部
         </button>
@@ -26,8 +30,9 @@
 
     <!-- 空状态 -->
     <div v-else-if="historyList.length === 0" class="empty-state">
-      <svg viewBox="0 0 24 24" width="80" height="80" fill="#ddd">
-        <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+      <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#ddd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12 7 12 12 15.5 14"/>
       </svg>
       <p class="empty-text">暂无浏览记录</p>
       <p class="empty-hint">去发现一些精彩的作品吧</p>
@@ -53,8 +58,10 @@
                 loading="lazy"
               />
               <div v-else class="unavailable-placeholder">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="#ccc">
-                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
                 </svg>
               </div>
               <div class="card-overlay">
@@ -70,19 +77,19 @@
                 </div>
                 <div class="stats">
                   <span class="stat">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     {{ item.likeCount || 0 }}
                   </span>
                   <span class="stat">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
                     {{ item.viewCount || 0 }}
                   </span>
                 </div>
               </div>
             </div>
             <button class="delete-btn" @click.stop="handleDelete(item)" title="删除此记录">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
           </div>
@@ -238,6 +245,7 @@ onMounted(loadHistory)
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 20px;
+  background: #fff;
 }
 
 .page-header {
@@ -253,7 +261,7 @@ onMounted(loadHistory)
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0;
@@ -274,11 +282,11 @@ onMounted(loadHistory)
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 20px;
   background: none;
   border: 1px solid #ff4d4f;
   color: #ff4d4f;
-  border-radius: 20px;
+  border-radius: 999px;
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
@@ -336,7 +344,7 @@ onMounted(loadHistory)
   padding: 10px 32px;
   background: #0096fa;
   color: #fff;
-  border-radius: 24px;
+  border-radius: 999px;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -353,9 +361,9 @@ onMounted(loadHistory)
 }
 
 .date-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
   margin-bottom: 16px;
   padding-left: 4px;
 }
@@ -370,15 +378,15 @@ onMounted(loadHistory)
 .history-card {
   position: relative;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   transition: all 0.3s;
 }
 
 .history-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
 }
 
 .history-card.unavailable {
@@ -392,6 +400,7 @@ onMounted(loadHistory)
   cursor: pointer;
   overflow: hidden;
   background: #f5f5f5;
+  border-radius: 16px 16px 0 0;
 }
 
 .card-image img {
@@ -441,7 +450,7 @@ onMounted(loadHistory)
 .card-title {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: #1a1a2e;
   margin: 0 0 8px;
   cursor: pointer;
   display: -webkit-box;
@@ -540,7 +549,7 @@ onMounted(loadHistory)
   padding: 10px 40px;
   background: #fff;
   border: 1px solid #ddd;
-  border-radius: 24px;
+  border-radius: 999px;
   color: #666;
   font-size: 14px;
   cursor: pointer;

@@ -6,7 +6,7 @@
         <p class="header-desc">设置你的约稿方案，让用户更容易发起约稿</p>
       </div>
       <button class="btn-create" @click="openCreate">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         新建方案
       </button>
     </div>
@@ -205,16 +205,17 @@ async function handleDelete(p) {
 <style scoped>
 .studio-plans-page {
   padding: 0;
+  background: #fff;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .page-header h2 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 4px;
@@ -229,15 +230,16 @@ async function handleDelete(p) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 20px;
+  padding: 10px 24px;
   border: none;
   background: #0096FA;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.2s;
 }
 .btn-create:hover { background: #0080d5; }
 
@@ -245,23 +247,26 @@ async function handleDelete(p) {
 .plan-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 .plan-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 22px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  transition: all 0.25s;
 }
-.plan-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-.plan-card.inactive { opacity: 0.6; }
+.plan-card:hover {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+  transform: translateY(-3px);
+}
+.plan-card.inactive { opacity: 0.55; }
 
 .plan-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .plan-head h3 {
   font-size: 16px;
@@ -271,8 +276,8 @@ async function handleDelete(p) {
 }
 .plan-status {
   font-size: 12px;
-  padding: 2px 10px;
-  border-radius: 20px;
+  padding: 3px 12px;
+  border-radius: 999px;
   font-weight: 600;
 }
 .plan-status.on { background: #f0fdf4; color: #16a34a; }
@@ -281,8 +286,8 @@ async function handleDelete(p) {
 .plan-desc {
   font-size: 13px;
   color: #888;
-  margin: 0 0 10px;
-  line-height: 1.4;
+  margin: 0 0 12px;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -303,23 +308,24 @@ async function handleDelete(p) {
   gap: 14px;
   font-size: 12px;
   color: #aaa;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .plan-actions {
   display: flex;
   gap: 8px;
   border-top: 1px solid #f0f0f0;
-  padding-top: 12px;
+  padding-top: 14px;
 }
 .act-btn {
-  padding: 6px 16px;
-  border: 1px solid #e0e0e0;
+  padding: 7px 18px;
+  border: 1px solid #e8e8e8;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 13px;
   color: #666;
   cursor: pointer;
+  transition: all 0.2s;
 }
 .act-btn:hover { background: #f5f5f5; }
 .act-btn.danger { color: #ff4d4f; border-color: #ffccc7; }
@@ -328,7 +334,7 @@ async function handleDelete(p) {
 /* Empty */
 .empty-state {
   text-align: center;
-  padding: 60px 0;
+  padding: 70px 0;
   color: #ccc;
 }
 .empty-state p { margin: 0; font-size: 16px; }
@@ -346,12 +352,13 @@ async function handleDelete(p) {
 }
 .modal-body {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 28px;
   width: 90%;
   max-width: 520px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.13);
 }
-.modal-body h3 { margin: 0 0 20px; font-size: 18px; font-weight: 700; }
+.modal-body h3 { margin: 0 0 20px; font-size: 20px; font-weight: 700; }
 
 .modal-form { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -362,35 +369,40 @@ async function handleDelete(p) {
 
 .form-input {
   padding: 10px 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
   font-size: 14px;
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
+  transition: border-color 0.2s;
 }
-.form-input:focus { outline: none; border-color: #0096FA; box-shadow: 0 0 0 3px rgba(0,150,250,0.1); }
+.form-input:focus { outline: none; border-color: #0096FA; box-shadow: 0 0 0 3px rgba(0,150,250,0.08); }
 
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .btn-cancel {
   padding: 10px 24px;
   border: 1px solid #e0e0e0;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 14px;
   color: #666;
   cursor: pointer;
+  transition: background 0.2s;
 }
+.btn-cancel:hover { background: #f5f5f5; }
 .btn-submit {
   padding: 10px 28px;
   border: none;
   background: #0096FA;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
+.btn-submit:hover { background: #0080d5; }
 .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (max-width: 768px) {

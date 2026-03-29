@@ -3,8 +3,8 @@
     <div class="page-container">
       <!-- 页面标题 -->
       <div class="page-header">
-        <h1 class="page-title">比赛大厅</h1>
-        <p class="page-desc">参与创作比赛，展示你的才华</p>
+        <h1 class="page-title">创作比赛</h1>
+        <p class="page-desc">参与幻画空间创作比赛，展示你的才华</p>
       </div>
 
       <!-- 状态筛选 -->
@@ -30,8 +30,10 @@
           <div class="contest-cover">
             <img v-if="contest.coverImage" :src="contest.coverImage" alt="" />
             <div v-else class="cover-placeholder">
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" opacity="0.3">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7l-3 3.72L9 13l-3 4h12l-4-5z"/>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
               </svg>
             </div>
             <div class="contest-status-badge" :class="'status-' + contest.status">
@@ -43,11 +45,11 @@
             <p class="contest-desc">{{ contest.description || '暂无描述' }}</p>
             <div class="contest-meta">
               <div class="meta-item">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span>{{ contest.entryCount || 0 }} 件参赛</span>
               </div>
               <div class="meta-item">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <span v-if="contest.status === 'ACTIVE'">投稿截止: {{ formatDate(contest.endTime) }}</span>
                 <span v-else-if="contest.status === 'VOTING'">投票截止: {{ formatDate(contest.votingEndTime) }}</span>
                 <span v-else-if="contest.status === 'UPCOMING'">开始: {{ formatDate(contest.startTime) }}</span>
@@ -135,7 +137,7 @@ onMounted(() => {
 <style scoped>
 .contests-page {
   min-height: 100vh;
-  background: var(--px-bg-secondary, #f7f8fa);
+  background: #fff;
 }
 
 .page-container {
@@ -149,7 +151,7 @@ onMounted(() => {
 }
 
 .page-title {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--px-text-primary, #1f1f1f);
   margin: 0 0 8px;
@@ -173,7 +175,7 @@ onMounted(() => {
 
 .filter-tab {
   padding: 8px 20px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 500;
   background: #fff;
@@ -202,16 +204,16 @@ onMounted(() => {
 
 .contest-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 .contest-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
 }
 
 .contest-cover {
@@ -219,7 +221,7 @@ onMounted(() => {
   width: 100%;
   height: 180px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #EFF6FF, #ECFDF5, #F5F3FF);
 }
 
 .contest-cover img {
@@ -234,7 +236,7 @@ onMounted(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: #fff;
+  color: #999;
 }
 
 .contest-status-badge {
@@ -242,7 +244,7 @@ onMounted(() => {
   top: 12px;
   right: 12px;
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   color: #fff;
@@ -310,7 +312,7 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
   .page-title {
-    font-size: 22px;
+    font-size: 18px;
   }
 }
 </style>

@@ -7,7 +7,7 @@
           <div class="brand-pattern"></div>
         </div>
         <div class="brand-content">
-          <h1 class="brand-logo" @click="$router.push('/')">pixiv</h1>
+          <h1 class="brand-logo" @click="$router.push('/')">幻画空间</h1>
           <p class="brand-tagline">创建你的账号，开始创作之旅</p>
           <div class="brand-features">
             <div class="brand-feature">
@@ -30,7 +30,7 @@
       <div class="auth-form-wrapper">
         <div class="auth-form-box">
           <h2 class="form-title">注册</h2>
-          <p class="form-subtitle">创建你的 pixiv 账号</p>
+          <p class="form-subtitle">创建你的幻画空间账号</p>
 
           <el-form
             ref="registerFormRef"

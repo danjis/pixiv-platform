@@ -450,10 +450,10 @@ onMounted(loadSettings)
 </script>
 
 <style scoped>
-.settings-page { max-width: 100%; }
+.settings-page { max-width: 100%; background: #fff; }
 
 .page-header { margin-bottom: 24px; }
-.page-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
+.page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px 0; }
 .page-desc { font-size: 14px; color: #999; margin: 0; }
 
 .loading-state { display: flex; justify-content: center; padding: 80px 0; }
@@ -475,15 +475,14 @@ onMounted(loadSettings)
 /* 设置卡片 */
 .setting-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 20px;
   padding: 22px 24px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  border: 1px solid #f0f0f5;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   transition: box-shadow 0.2s;
 }
 .setting-card:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
 }
 .card-header {
   display: flex;
@@ -491,7 +490,7 @@ onMounted(loadSettings)
   align-items: flex-start;
 }
 .card-title-area { flex: 1; }
-.card-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin: 0; }
+.card-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0; }
 .card-desc { font-size: 13px; color: #999; margin: 4px 0 0; }
 .card-body { margin-top: 16px; }
 
@@ -504,7 +503,7 @@ onMounted(loadSettings)
   padding: 8px 18px;
   border: 2px solid #e0e0e0;
   background: #f5f5f5;
-  border-radius: 24px;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.3s;
   font-size: 13px;
@@ -534,7 +533,7 @@ onMounted(loadSettings)
 }
 .form-input, .form-textarea, .form-select {
   width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0;
-  border-radius: 8px; font-size: 14px; color: #333;
+  border-radius: 12px; font-size: 14px; color: #333;
   transition: border-color 0.2s; box-sizing: border-box;
   background: #fff;
 }
@@ -552,13 +551,13 @@ onMounted(loadSettings)
 .tags-area {
   display: flex; flex-wrap: wrap; gap: 8px;
   padding: 10px 14px;
-  border: 1px solid #e0e0e0; border-radius: 8px;
+  border: 1px solid #e0e0e0; border-radius: 12px;
   min-height: 44px; align-items: center;
 }
 .tag {
   display: flex; align-items: center; gap: 4px;
-  padding: 4px 10px; background: #EBF5FF; color: #0096FA;
-  border-radius: 6px; font-size: 13px; font-weight: 500;
+  padding: 4px 12px; background: #EBF5FF; color: #0096FA;
+  border-radius: 999px; font-size: 13px; font-weight: 500;
 }
 .tag-remove {
   background: none; border: none; color: #0096FA; font-size: 16px;
@@ -578,8 +577,8 @@ onMounted(loadSettings)
 }
 .preset-label { font-size: 12px; color: #bbb; }
 .preset-btn {
-  padding: 3px 10px; border: 1px solid #e8e8e8; background: #fff;
-  border-radius: 14px; font-size: 12px; color: #888;
+  padding: 3px 12px; border: 1px solid #e8e8e8; background: #fff;
+  border-radius: 999px; font-size: 12px; color: #888;
   cursor: pointer; transition: all 0.15s;
 }
 .preset-btn:hover { border-color: #0096FA; color: #0096FA; }
@@ -600,7 +599,7 @@ onMounted(loadSettings)
   margin-top: 16px;
   padding: 14px 16px;
   background: #f8f9fb;
-  border-radius: 10px;
+  border-radius: 14px;
   border: 1px dashed #e0e0e0;
 }
 .preview-label {
@@ -633,7 +632,7 @@ onMounted(loadSettings)
   gap: 10px;
   padding: 12px 14px;
   border: 2px solid #f0f0f0;
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
   background: #fff;
@@ -659,7 +658,7 @@ onMounted(loadSettings)
 .check-item {
   padding: 5px 14px;
   border: 1px solid #e0e0e0;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 13px;
   color: #888;
   cursor: pointer;
@@ -685,11 +684,11 @@ onMounted(loadSettings)
 }
 .save-btn {
   padding: 12px 36px; border: none; background: #0096FA; color: #fff;
-  border-radius: 10px; font-size: 15px; font-weight: 600;
-  cursor: pointer; transition: background 0.2s;
+  border-radius: 999px; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s, transform 0.15s;
 }
-.save-btn:hover { background: #0080d5; }
-.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.save-btn:hover { background: #0080d5; transform: translateY(-1px); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .save-hint { font-size: 12px; color: #bbb; }
 
 /* 隐私设置 */

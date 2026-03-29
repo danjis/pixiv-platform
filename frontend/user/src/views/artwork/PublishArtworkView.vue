@@ -23,13 +23,13 @@
                 <span v-if="index === 0" class="cover-badge">封面</span>
                 <div class="grid-item-actions">
                   <button v-if="index > 0" class="grid-action-btn" @click="moveImage(index, -1)" title="前移">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                   </button>
                   <button v-if="index < imageList.length - 1" class="grid-action-btn" @click="moveImage(index, 1)" title="后移">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </button>
                   <button class="grid-action-btn delete-btn" @click="removeImage(index)" title="删除">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
               </div>
@@ -41,7 +41,7 @@
               class="image-grid-item add-more"
               @click="triggerUpload"
             >
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="#bbb"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#bbb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span class="add-more-text">添加图片</span>
             </div>
           </div>
@@ -156,8 +156,8 @@
                 </div>
 
                 <div class="tags-tip">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="#999">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#999" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                   </svg>
                   发布后系统会自动生成智能标签
                 </div>
@@ -495,7 +495,7 @@ onMounted(async () => {
 <style scoped>
 .publish-page {
   min-height: calc(100vh - 56px);
-  background: #f2f4f5;
+  background: #fff;
   padding: 32px 24px;
 }
 .publish-container {
@@ -506,7 +506,7 @@ onMounted(async () => {
   margin-bottom: 24px;
 }
 .page-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 4px;
@@ -527,9 +527,9 @@ onMounted(async () => {
 /* 上传区 */
 .upload-area {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .upload-zone {
   display: flex;
@@ -537,7 +537,7 @@ onMounted(async () => {
   justify-content: center;
   min-height: 400px;
   border: 2px dashed #ddd;
-  border-radius: 12px;
+  border-radius: 16px;
   margin: 16px;
   cursor: pointer;
   transition: all 0.2s;
@@ -575,7 +575,7 @@ onMounted(async () => {
 }
 .image-grid-item {
   position: relative;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   aspect-ratio: 1;
   background: #f0f0f0;
@@ -609,7 +609,7 @@ onMounted(async () => {
   color: #fff;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 .grid-item-actions {
   display: flex;
@@ -625,7 +625,7 @@ onMounted(async () => {
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   background: rgba(255,255,255,0.2);
   backdrop-filter: blur(4px);
   color: #fff;
@@ -671,9 +671,9 @@ onMounted(async () => {
 /* 表单区 */
 .form-area {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .form-area :deep(.el-form-item__label) {
   font-weight: 600;
@@ -712,7 +712,7 @@ onMounted(async () => {
   color: #666;
   padding: 3px 10px;
   background: #f5f5f5;
-  border-radius: 12px;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s;
 }

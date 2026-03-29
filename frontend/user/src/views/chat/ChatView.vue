@@ -12,7 +12,7 @@
         </div>
 
         <div v-else-if="conversations.length === 0" class="list-empty">
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="#ccc"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p>暂无私信</p>
           <span class="empty-hint">在作品详情页点击"私信"开始对话</span>
         </div>
@@ -46,7 +46,7 @@
       <div class="message-panel" :class="{ 'mobile-hidden': !activeConversation }">
         <!-- 未选中状态 -->
         <div v-if="!activeConversation" class="no-conversation">
-          <svg viewBox="0 0 24 24" width="64" height="64" fill="#ddd"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#ddd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p>选择一个对话开始聊天</p>
         </div>
 
@@ -55,7 +55,7 @@
           <!-- 消息头部 -->
           <div class="msg-header">
             <button class="back-btn" @click="activeConversation = null">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <el-avatar :size="36" :src="activeConversation.otherUserAvatar || defaultAvatar">
               {{ activeConversation.otherUserName?.charAt(0) }}
@@ -98,7 +98,7 @@
                 maxlength="2000"
               />
               <button class="send-btn" @click="handleSend" :disabled="!messageInput.trim() || sending">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
             </div>
           </div>
@@ -312,7 +312,7 @@ function formatTime(dateStr) {
 <style scoped>
 .chat-page {
   min-height: calc(100vh - 64px);
-  background: #f5f5f5;
+  background: #fff;
   padding: 24px;
 }
 .chat-container {
@@ -321,22 +321,22 @@ function formatTime(dateStr) {
   display: flex;
   height: calc(100vh - 112px);
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
 }
 
 /* === 左侧对话列表 === */
 .conversation-list {
   width: 320px;
   min-width: 320px;
-  border-right: 1px solid #f0f0f0;
+  border-right: 1px solid #f2f2f2;
   display: flex;
   flex-direction: column;
 }
 .list-header {
   padding: 20px 20px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f2f2f2;
 }
 .list-title {
   font-size: 20px;
@@ -360,18 +360,20 @@ function formatTime(dateStr) {
 .conversation-items {
   flex: 1;
   overflow-y: auto;
+  padding: 6px;
 }
 .conversation-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px;
+  padding: 12px 14px;
   cursor: pointer;
-  transition: background 0.15s;
-  border-bottom: 1px solid #fafafa;
+  transition: background 0.2s;
+  border-radius: 16px;
+  margin-bottom: 2px;
 }
-.conversation-item:hover { background: #f8f9fa; }
-.conversation-item.active { background: #e8f4ff; }
+.conversation-item:hover { background: #f5f6f7; }
+.conversation-item.active { background: #f0f5ff; }
 .conv-info {
   flex: 1;
   min-width: 0;
@@ -409,12 +411,12 @@ function formatTime(dateStr) {
   flex: 1;
 }
 .conv-unread {
-  background: #0096FA;
+  background: #6366f1;
   color: #fff;
   font-size: 11px;
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: 10px;
+  border-radius: 999px;
   flex-shrink: 0;
   margin-left: 8px;
 }
@@ -425,6 +427,7 @@ function formatTime(dateStr) {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: #fafafa;
 }
 .no-conversation {
   flex: 1;
@@ -443,7 +446,7 @@ function formatTime(dateStr) {
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f2f2f2;
   background: #fff;
 }
 .back-btn {
@@ -453,7 +456,10 @@ function formatTime(dateStr) {
   color: #666;
   cursor: pointer;
   padding: 4px;
+  border-radius: 999px;
+  transition: background 0.2s;
 }
+.back-btn:hover { background: #f0f0f0; }
 .msg-header-name {
   font-size: 16px;
   font-weight: 600;
@@ -467,7 +473,7 @@ function formatTime(dateStr) {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 .messages-loading {
   display: flex;
@@ -504,18 +510,20 @@ function formatTime(dateStr) {
 }
 .msg-content {
   padding: 10px 14px;
-  border-radius: 12px;
-  background: #f0f0f0;
+  border-radius: 16px;
+  background: #fff;
   font-size: 14px;
   line-height: 1.5;
   color: #1a1a1a;
   word-break: break-word;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 .msg-content p { margin: 0; }
 .message-item.mine .msg-content {
-  background: #0096FA;
+  background: #6366f1;
   color: #fff;
   border-bottom-right-radius: 4px;
+  box-shadow: 0 1px 6px rgba(99, 102, 241, 0.18);
 }
 .message-item:not(.mine) .msg-content {
   border-bottom-left-radius: 4px;
@@ -523,7 +531,7 @@ function formatTime(dateStr) {
 .msg-image {
   max-width: 240px;
   max-height: 240px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   object-fit: cover;
 }
@@ -539,7 +547,7 @@ function formatTime(dateStr) {
 /* 输入区域 */
 .msg-input-area {
   padding: 16px 20px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #f2f2f2;
   background: #fff;
 }
 .input-row {
@@ -549,20 +557,22 @@ function formatTime(dateStr) {
 .msg-input {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 24px;
+  border: 1px solid #ebebeb;
+  border-radius: 999px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
 }
 .msg-input:focus {
-  border-color: #0096FA;
+  border-color: #6366f1;
+  background: #fff;
 }
 .send-btn {
   width: 42px;
   height: 42px;
-  border-radius: 50%;
-  background: #0096FA;
+  border-radius: 999px;
+  background: #6366f1;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -572,15 +582,15 @@ function formatTime(dateStr) {
   transition: background 0.2s;
   flex-shrink: 0;
 }
-.send-btn:hover { background: #0080dd; }
-.send-btn:disabled { background: #ccc; cursor: not-allowed; }
+.send-btn:hover { background: #4f46e5; }
+.send-btn:disabled { background: #d4d4d8; cursor: not-allowed; }
 
 /* Loading spinner */
 .loading-spinner {
   width: 28px;
   height: 28px;
   border: 3px solid #f0f0f0;
-  border-top-color: #0096FA;
+  border-top-color: #6366f1;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

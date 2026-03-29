@@ -81,7 +81,7 @@ const isInView = ref(true) // 简化处理，默认可见
 function formatCount(num) {
   if (!num) return '0'
   if (num >= 10000) return (num / 10000).toFixed(1) + '万'
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
+  if (num >= 1000) return (num / 1000).toFixed(1) + '千'
   return String(num)
 }
 </script>
@@ -89,7 +89,7 @@ function formatCount(num) {
 <style scoped>
 .artwork-card {
   cursor: pointer;
-  border-radius: var(--px-radius-md, 8px);
+  border-radius: 16px;
   overflow: hidden;
   background: var(--px-bg-primary, #fff);
   break-inside: avoid;

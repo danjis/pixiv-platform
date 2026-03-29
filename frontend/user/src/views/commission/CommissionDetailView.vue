@@ -3,7 +3,7 @@
     <div class="page-container" v-if="commission">
       <!-- 返回 -->
       <button class="back-btn" @click="$router.back()">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l6-6M5 12l6 6"/></svg>
         返回
       </button>
 
@@ -775,7 +775,7 @@ async function sendMsg() {
 <style scoped>
 .commission-detail-page {
   min-height: calc(100vh - 64px);
-  background: #f5f5f5;
+  background: #fff;
   padding: 24px;
 }
 .page-container {
@@ -787,17 +787,18 @@ async function sendMsg() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 20px;
   border: none;
-  background: #fff;
-  border-radius: 8px;
+  background: #f5f7fa;
+  border-radius: 999px;
   font-size: 14px;
   color: #666;
   cursor: pointer;
   margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  transition: all 0.2s;
 }
-.back-btn:hover { color: #333; background: #f0f0f0; }
+.back-btn:hover { color: #333; background: #eef0f4; }
 
 .detail-layout {
   display: flex;
@@ -808,13 +809,13 @@ async function sendMsg() {
 
 .card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 20px;
   padding: 24px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .card-title {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 16px;
@@ -833,8 +834,8 @@ async function sendMsg() {
 /* 状态 badge */
 .status-badge {
   display: inline-block;
-  padding: 3px 12px;
-  border-radius: 20px;
+  padding: 4px 14px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -877,8 +878,8 @@ async function sendMsg() {
 .quote-note {
   margin: 14px 0 0;
   padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
+  background: #f5f7fa;
+  border-radius: 12px;
   font-size: 13px;
   color: #666;
   line-height: 1.5;
@@ -887,9 +888,9 @@ async function sendMsg() {
 /* 支付 */
 .payment-list { display: flex; flex-direction: column; gap: 10px; }
 .payment-item {
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 10px;
+  padding: 14px;
+  background: #f5f7fa;
+  border-radius: 14px;
 }
 .payment-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .payment-type { font-weight: 600; font-size: 14px; color: #333; }
@@ -901,11 +902,11 @@ async function sendMsg() {
 .ps-CLOSED { color: #999; }
 
 .continue-pay-btn {
-  padding: 2px 12px;
+  padding: 2px 14px;
   background: #0096FA;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 12px;
   cursor: pointer;
   transition: background .2s;
@@ -925,8 +926,8 @@ async function sendMsg() {
 .cancel-info { display: flex; flex-direction: column; gap: 10px; }
 .cancel-role-badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
+  padding: 4px 14px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   width: fit-content;
@@ -942,15 +943,18 @@ async function sendMsg() {
 
 /* 消息 */
 .empty-msg { text-align: center; color: #ccc; padding: 20px; font-size: 14px; }
-.msg-list { max-height: 300px; overflow-y: auto; }
+.msg-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
 .msg-item {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 10px 14px;
+  background: #f5f7fa;
+  border-radius: 16px;
   font-size: 13px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
+.msg-item.mine { background: #e8f4ff; }
 .msg-item.mine .msg-sender { color: #0096FA; }
 .msg-sender { font-weight: 600; color: #333; white-space: nowrap; }
 .msg-content { flex: 1; color: #555; }
@@ -958,21 +962,24 @@ async function sendMsg() {
 .msg-send { display: flex; gap: 8px; margin-top: 12px; }
 .msg-input {
   flex: 1;
-  padding: 10px 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  padding: 10px 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 999px;
   font-size: 14px;
+  background: #f5f7fa;
 }
-.msg-input:focus { outline: none; border-color: #0096FA; }
+.msg-input:focus { outline: none; border-color: #0096FA; background: #fff; }
 .msg-btn {
-  padding: 10px 20px;
+  padding: 10px 24px;
   border: none;
   background: #0096FA;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s;
 }
+.msg-btn:hover { background: #007ad9; }
 .msg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* 右侧 */
@@ -990,7 +997,7 @@ async function sendMsg() {
 .action-btn {
   width: 100%;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -1018,22 +1025,22 @@ async function sendMsg() {
   top: 28px;
   width: 2px;
   height: calc(100% - 12px);
-  background: #e8e8e8;
+  background: #dce6f0;
 }
-.timeline-step.done:not(:last-child)::after { background: #52c41a; }
+.timeline-step.done:not(:last-child)::after { background: #7eb8e0; }
 .timeline-dot {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid #e8e8e8;
+  border: 2px solid #dce6f0;
   background: #fff;
   flex-shrink: 0;
   z-index: 1;
 }
-.timeline-step.done .timeline-dot { border-color: #52c41a; background: #52c41a; }
-.timeline-step.active .timeline-dot { border-color: #0096FA; background: #0096FA; }
+.timeline-step.done .timeline-dot { border-color: #7eb8e0; background: #7eb8e0; }
+.timeline-step.active .timeline-dot { border-color: #0096FA; background: #0096FA; box-shadow: 0 0 0 4px rgba(0,150,250,0.15); }
 .timeline-label { font-size: 13px; color: #999; }
-.timeline-step.done .timeline-label { color: #52c41a; }
+.timeline-step.done .timeline-label { color: #5a9ec7; }
 .timeline-step.active .timeline-label { color: #0096FA; font-weight: 600; }
 
 /* loading */
@@ -1049,7 +1056,7 @@ async function sendMsg() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.3);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1057,41 +1064,48 @@ async function sendMsg() {
 }
 .modal-body {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 28px;
   width: 90%;
   max-width: 460px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
 }
-.modal-body h3 { margin: 0 0 18px; font-size: 18px; }
+.modal-body h3 { margin: 0 0 18px; font-size: 20px; font-weight: 700; }
 .modal-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
 .modal-form label { font-size: 13px; font-weight: 600; color: #555; }
 .form-input {
   padding: 10px 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
   font-size: 14px;
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
+  background: #f5f7fa;
+  transition: border-color 0.2s, background 0.2s;
 }
-.form-input:focus { outline: none; border-color: #0096FA; }
+.form-input:focus { outline: none; border-color: #0096FA; background: #fff; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .btn-cancel {
   padding: 8px 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e8e8e8;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
+  transition: background 0.2s;
 }
+.btn-cancel:hover { background: #f5f7fa; }
 .btn-submit {
   padding: 8px 24px;
   border: none;
   background: #0096FA;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 999px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
+.btn-submit:hover { background: #007ad9; }
 
 @media (max-width: 768px) {
   .commission-detail-page { padding: 12px; }
@@ -1108,7 +1122,7 @@ async function sendMsg() {
   display: flex;
   align-items: center;
   border: 2px solid #e8e8e8;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 14px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1144,8 +1158,8 @@ async function sendMsg() {
   color: #ff4d4f;
   background: #fff1f0;
   border: 1px solid #ffccc7;
-  border-radius: 4px;
-  padding: 1px 6px;
+  border-radius: 999px;
+  padding: 1px 8px;
   margin-left: 8px;
 }
 
@@ -1162,13 +1176,13 @@ async function sendMsg() {
 .fee-value { font-size: 14px; font-weight: 600; color: #1a1a2e; font-variant-numeric: tabular-nums; }
 .fee-value.green { color: #52c41a; }
 .fee-value.accent { font-size: 20px; font-weight: 800; color: #0096FA; }
-.fee-divider { border-top: 1px dashed #e0e0e0; margin: 8px 0; }
+.fee-divider { border-top: 1px dashed #e8e8e8; margin: 8px 0; }
 .fee-tip {
   background: #fef9e7;
   color: #b7791f;
   font-size: 12px;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 12px;
   margin: 4px 0 8px;
   line-height: 1.6;
 }

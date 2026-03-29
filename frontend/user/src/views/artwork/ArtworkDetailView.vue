@@ -65,7 +65,7 @@
           <!-- 图片导航 -->
           <div class="image-nav">
             <button class="nav-arrow" :disabled="currentImageIndex === 0" @click="currentImageIndex--">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <div class="image-dots">
               <span
@@ -78,7 +78,7 @@
             </div>
             <span class="image-counter">{{ currentImageIndex + 1 }} / {{ artworkImages.length }}</span>
             <button class="nav-arrow" :disabled="currentImageIndex >= artworkImages.length - 1" @click="currentImageIndex++">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
           <!-- 缩略图条 -->
@@ -120,15 +120,15 @@
         <!-- 作品数据卡片 -->
         <div class="image-stats-card">
           <div class="stat-item">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <span>{{ formatNumber(artwork.viewCount) }} 浏览</span>
           </div>
           <div class="stat-item">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="#FF4060" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF4060" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <span>{{ formatNumber(artwork.likeCount) }} 喜欢</span>
           </div>
           <div class="stat-item">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="#FFB800" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FFB800" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             <span>{{ formatNumber(artwork.favoriteCount) }} 收藏</span>
           </div>
           <div class="stat-item" v-if="artwork.isAigc">
@@ -155,7 +155,7 @@
               <div class="mini-card-info">
                 <span class="mini-card-title">{{ item.title }}</span>
                 <span class="mini-card-stats">
-                  <svg viewBox="0 0 24 24" width="11" height="11" fill="#FF4060"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FF4060" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   {{ formatNumber(item.likeCount) }}
                 </span>
               </div>
@@ -174,7 +174,7 @@
             @click="handleLike"
             :disabled="!userStore.isAuthenticated"
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" :fill="artwork.isLiked ? '#FF4060' : 'none'" :stroke="artwork.isLiked ? '#FF4060' : 'currentColor'" stroke-width="2">
+            <svg viewBox="0 0 24 24" width="20" height="20" :fill="artwork.isLiked ? '#FF4060' : 'none'" :stroke="artwork.isLiked ? '#FF4060' : 'currentColor'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
             <span>{{ formatNumber(artwork.likeCount) }}</span>
@@ -185,13 +185,13 @@
             @click="handleFavorite"
             :disabled="!userStore.isAuthenticated"
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" :fill="artwork.isFavorited ? '#FFB800' : 'none'" :stroke="artwork.isFavorited ? '#FFB800' : 'currentColor'" stroke-width="2">
+            <svg viewBox="0 0 24 24" width="20" height="20" :fill="artwork.isFavorited ? '#FFB800' : 'none'" :stroke="artwork.isFavorited ? '#FFB800' : 'currentColor'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
             </svg>
             <span>{{ formatNumber(artwork.favoriteCount) }}</span>
           </button>
           <button class="action-btn" disabled>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
             </svg>
             <span>{{ formatNumber(artwork.viewCount) }}</span>
@@ -253,7 +253,7 @@
         <div class="comment-section">
           <div class="comment-header">
             <h3 class="comment-title">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 4px; color: #0096FA;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 4px; color: #0096FA;">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               评论
@@ -285,8 +285,8 @@
                 :disabled="!commentContent.trim() || submittingComment"
                 @click="handleAddComment"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
               </button>
             </div>
@@ -301,7 +301,7 @@
             <span>加载评论中...</span>
           </div>
           <div v-else-if="comments.length === 0" class="comments-empty">
-            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#d5d5d5" stroke-width="1.5">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#d5d5d5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
             <span>还没有评论，来说两句吧</span>
@@ -323,7 +323,7 @@
                   <div class="comment-footer">
                     <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
                     <button v-if="userStore.isAuthenticated" class="comment-action-btn" @click="startReply(comment)">
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                       回复
                     </button>
                     <button v-if="comment.userId === userStore.user?.id" class="comment-action-btn comment-delete-btn" @click="handleDeleteComment(comment.id)">
@@ -345,7 +345,7 @@
                       <span v-if="reply.membershipLevel === 'VIP'" class="vip-badge small">VIP</span>
                       <span v-if="reply.membershipLevel === 'SVIP'" class="vip-badge svip small">SVIP</span>
                       <span v-if="reply.replyToUsername" class="reply-to-tag">
-                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                         <span class="reply-to-name">{{ reply.replyToUsername }}</span>
                       </span>
                       <p class="reply-content">{{ reply.content }}</p>
@@ -353,7 +353,7 @@
                     <div class="comment-footer">
                       <span class="comment-time">{{ formatDate(reply.createdAt) }}</span>
                       <button v-if="userStore.isAuthenticated" class="comment-action-btn" @click="startReply(comment, reply)">
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         回复
                       </button>
                       <button v-if="reply.userId === userStore.user?.id" class="comment-action-btn comment-delete-btn" @click="handleDeleteComment(reply.id)">
@@ -383,7 +383,7 @@
 
     <!-- 404 状态 -->
     <div v-else class="error-state">
-      <svg viewBox="0 0 120 120" width="80" height="80" fill="none" stroke="#d0d0d0" stroke-width="1.5">
+      <svg viewBox="0 0 120 120" width="80" height="80" fill="none" stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <rect x="20" y="20" width="80" height="80" rx="8" />
         <circle cx="45" cy="48" r="8" />
         <path d="M20 80 l25-25 l15 15 l20-20 l20 20 v10 a8 8 0 0 1 -8 8 H28 a8 8 0 0 1 -8-8z" fill="#f0f0f0" stroke="none"/>
@@ -783,9 +783,9 @@ onBeforeUnmount(() => {
   grid-column: 1;
   grid-row: 1;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .image-wrapper {
   display: flex;
@@ -865,7 +865,7 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   width: 56px;
   height: 56px;
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
@@ -897,8 +897,8 @@ onBeforeUnmount(() => {
   gap: 20px;
   padding: 14px 20px;
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .stat-item {
   display: flex;
@@ -910,7 +910,7 @@ onBeforeUnmount(() => {
 .aigc-tag {
   display: inline-block;
   padding: 1px 8px;
-  border-radius: 4px;
+  border-radius: 999px;
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
   font-size: 11px;
@@ -921,9 +921,9 @@ onBeforeUnmount(() => {
 /* 画师其他作品 */
 .more-works {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   padding: 18px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .more-works-header {
   display: flex;
@@ -932,8 +932,8 @@ onBeforeUnmount(() => {
   margin-bottom: 14px;
 }
 .more-works-title {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #1a1a1a;
   margin: 0;
 }
@@ -955,14 +955,14 @@ onBeforeUnmount(() => {
 }
 .mini-card {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   background: #fafafa;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .mini-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
 .mini-card-thumb {
   position: relative;
@@ -1012,9 +1012,9 @@ onBeforeUnmount(() => {
   max-height: calc(100vh - 100px);
   overflow-y: auto;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .info-panel::-webkit-scrollbar { width: 4px; }
 .info-panel::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
@@ -1036,7 +1036,7 @@ onBeforeUnmount(() => {
   padding: 10px 0;
   border: none;
   background: #f8f8f8;
-  border-radius: 8px;
+  border-radius: 16px;
   cursor: pointer;
   color: #666;
   font-size: 13px;
@@ -1078,7 +1078,7 @@ onBeforeUnmount(() => {
   background: #e8f4ff;
   color: #0096fa;
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: 999px;
   margin-left: 2px;
   vertical-align: super;
 }
@@ -1090,7 +1090,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding: 16px;
   background: #fafafa;
-  border-radius: 10px;
+  border-radius: 16px;
   margin-bottom: 20px;
 }
 .artist-left {
@@ -1098,7 +1098,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 4px;
   margin: -4px;
   transition: background 0.2s;
@@ -1114,7 +1114,7 @@ onBeforeUnmount(() => {
 .artist-name { font-size: 15px; font-weight: 600; color: #1a1a1a; }
 .follow-btn {
   padding: 6px 20px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1130,7 +1130,7 @@ onBeforeUnmount(() => {
 .follow-btn.following:hover { color: #FF4060; border-color: #FF4060; }
 .message-btn {
   padding: 6px 20px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1153,21 +1153,21 @@ onBeforeUnmount(() => {
   margin-bottom: 16px;
 }
 .comment-title {
-  font-size: 16px; font-weight: 600; color: #1a1a1a;
+  font-size: 16px; font-weight: 700; color: #1a1a1a;
   margin: 0;
   display: flex; align-items: center;
 }
 .comment-count-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 20px; height: 20px; padding: 0 6px;
-  border-radius: 10px; background: #e8f4ff; color: #0096FA;
+  border-radius: 999px; background: #e8f4ff; color: #0096FA;
   font-size: 11px; font-weight: 700;
 }
 
 /* 评论输入框 */
 .comment-composer {
   margin-bottom: 20px;
-  border-radius: 12px;
+  border-radius: 16px;
   background: #f8f9fa;
   padding: 12px;
   transition: all 0.25s;
@@ -1199,7 +1199,7 @@ onBeforeUnmount(() => {
   flex: 1;
 }
 .composer-input-wrap :deep(.el-textarea__inner) {
-  border-radius: 8px; padding: 8px 12px; font-size: 13px;
+  border-radius: 16px; padding: 8px 12px; font-size: 13px;
   background: #fff; border-color: #e8e8e8; line-height: 1.5;
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
@@ -1217,7 +1217,7 @@ onBeforeUnmount(() => {
 
 .login-hint {
   text-align: center; padding: 16px; font-size: 13px;
-  color: #999; background: #fafafa; border-radius: 10px; margin-bottom: 16px;
+  color: #999; background: #fafafa; border-radius: 16px; margin-bottom: 16px;
 }
 .login-hint a { color: #0096FA; text-decoration: none; font-weight: 600; }
 
@@ -1246,7 +1246,7 @@ onBeforeUnmount(() => {
 .comment-avatar { flex-shrink: 0; }
 .comment-main { flex: 1; min-width: 0; }
 .comment-bubble {
-  background: #f5f6f7; border-radius: 0 10px 10px 10px;
+  background: #f5f6f7; border-radius: 0 16px 16px 16px;
   padding: 10px 14px;
 }
 .comment-author {
@@ -1260,7 +1260,7 @@ onBeforeUnmount(() => {
   font-size: 10px;
   font-weight: 700;
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: 999px;
   background: linear-gradient(135deg, #ff9800, #ff5722);
   color: #fff;
   margin-left: 6px;
@@ -1331,7 +1331,7 @@ onBeforeUnmount(() => {
 .reply-avatar { flex-shrink: 0; }
 .reply-main { flex: 1; min-width: 0; }
 .reply-bubble {
-  background: #fafbfc; border-radius: 0 8px 8px 8px;
+  background: #fafbfc; border-radius: 0 16px 16px 16px;
   padding: 8px 12px;
 }
 .reply-author {

@@ -4,105 +4,125 @@
     <aside class="sidebar">
       <!-- Logo -->
       <div class="sidebar-logo" @click="$router.push('/dashboard')">
-        <div class="logo-mark">
-          <svg viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="9" fill="url(#gLogo)"/>
-            <path d="M11 18L17 12L23 18L17 24Z" fill="white" opacity="0.92"/>
-            <path d="M17 12L23 18L29 12L23 6Z" fill="white" opacity="0.55"/>
-            <defs>
-              <linearGradient id="gLogo" x1="0" y1="0" x2="36" y2="36">
-                <stop offset="0%" stop-color="#a88930"/>
-                <stop offset="100%" stop-color="#e8c96e"/>
-              </linearGradient>
-            </defs>
+        <div class="logo-icon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#6366f1"/>
+            <path d="M10 16L15 11L20 16L15 21Z" fill="white" opacity="0.9"/>
+            <path d="M15 11L20 16L25 11L20 6Z" fill="white" opacity="0.6"/>
           </svg>
         </div>
-        <transition name="slide-fade">
-          <div v-show="!isCollapsed" class="logo-text-group">
-            <span class="logo-title">Pixiv</span>
-            <span class="logo-sub">Admin Console</span>
-          </div>
+        <transition name="fade">
+          <span v-show="!isCollapsed" class="logo-text">Pixiv Admin</span>
         </transition>
       </div>
 
-      <!-- 金线分割 -->
-      <div class="sidebar-divider"></div>
-
       <!-- 导航 -->
       <nav class="sidebar-nav">
-        <div v-for="group in navGroups" :key="group.label" class="nav-group">
-          <transition name="fade">
-            <span v-show="!isCollapsed" class="nav-group-label">{{ group.label }}</span>
-          </transition>
-          <router-link
-            v-for="item in group.items"
-            :key="item.to"
-            :to="item.to"
-            class="nav-item"
-            active-class="nav-item--active"
-          >
-            <span class="nav-icon">
-              <component :is="item.icon" />
-            </span>
-            <transition name="fade">
-              <span v-show="!isCollapsed" class="nav-label">{{ item.label }}</span>
-            </transition>
-            <transition name="fade">
-              <span
-                v-if="!isCollapsed && item.badge && pendingCount > 0"
-                class="nav-badge"
-              >{{ pendingCount }}</span>
-            </transition>
-            <span
-              v-if="isCollapsed && item.badge && pendingCount > 0"
-              class="nav-dot"
-            ></span>
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">概览</span>
+          <router-link to="/dashboard" class="nav-item" active-class="active">
+            <el-icon><Odometer /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">数据概览</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">用户</span>
+          <router-link to="/users" class="nav-item" active-class="active">
+            <el-icon><User /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">用户管理</span>
+          </router-link>
+          <router-link to="/applications" class="nav-item" active-class="active">
+            <el-icon><Stamp /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">画师审核</span>
+            <span v-if="pendingCount > 0 && !isCollapsed" class="nav-badge">{{ pendingCount }}</span>
+            <span v-if="pendingCount > 0 && isCollapsed" class="nav-dot"></span>
+          </router-link>
+          <router-link to="/membership" class="nav-item" active-class="active">
+            <el-icon><Medal /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">会员管理</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">内容</span>
+          <router-link to="/artworks" class="nav-item" active-class="active">
+            <el-icon><Picture /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">作品管理</span>
+          </router-link>
+          <router-link to="/comments" class="nav-item" active-class="active">
+            <el-icon><ChatDotRound /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">评论管理</span>
+          </router-link>
+          <router-link to="/contests" class="nav-item" active-class="active">
+            <el-icon><Trophy /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">比赛管理</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">交易</span>
+          <router-link to="/commissions" class="nav-item" active-class="active">
+            <el-icon><Suitcase /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">约稿管理</span>
+          </router-link>
+          <router-link to="/payments" class="nav-item" active-class="active">
+            <el-icon><Money /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">支付管理</span>
+          </router-link>
+          <router-link to="/finance" class="nav-item" active-class="active">
+            <el-icon><Coin /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">财务管理</span>
+          </router-link>
+          <router-link to="/coupons" class="nav-item" active-class="active">
+            <el-icon><Ticket /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">优惠券管理</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
+          <span v-show="!isCollapsed" class="nav-label">系统</span>
+          <router-link to="/feedback" class="nav-item" active-class="active">
+            <el-icon><ChatLineSquare /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">反馈管理</span>
+          </router-link>
+          <router-link to="/audit-logs" class="nav-item" active-class="active">
+            <el-icon><Document /></el-icon>
+            <span v-show="!isCollapsed" class="nav-text">审计日志</span>
           </router-link>
         </div>
       </nav>
-
-      <!-- 底部折叠按钮 -->
-      <div class="sidebar-footer">
-        <button class="collapse-toggle" @click="isCollapsed = !isCollapsed">
-          <el-icon :size="16">
-            <Fold v-if="!isCollapsed" />
-            <Expand v-else />
-          </el-icon>
-          <transition name="fade">
-            <span v-show="!isCollapsed" class="collapse-label">收起侧栏</span>
-          </transition>
-        </button>
-      </div>
     </aside>
 
-    <!-- 主区域 -->
+    <!-- 主内容区 -->
     <div class="main-wrapper">
       <!-- 顶栏 -->
       <header class="topbar">
         <div class="topbar-left">
-          <div class="breadcrumb-line">
-            <span class="bread-root">管理后台</span>
-            <span class="bread-sep">/</span>
-            <span class="bread-current">{{ currentTitle }}</span>
+          <button class="collapse-btn" @click="isCollapsed = !isCollapsed">
+            <el-icon :size="18">
+              <Fold v-if="!isCollapsed" />
+              <Expand v-else />
+            </el-icon>
+          </button>
+          <div class="breadcrumb-area">
+            <h3 class="page-title">{{ currentTitle }}</h3>
           </div>
         </div>
         <div class="topbar-right">
-          <div class="admin-chip">
-            <div class="admin-avatar-ring">
-              <div class="admin-avatar">{{ adminInitial }}</div>
+          <div class="admin-info">
+            <div class="admin-avatar">
+              {{ adminName?.charAt(0)?.toUpperCase() || 'A' }}
             </div>
-            <div class="admin-text">
-              <span class="admin-name">{{ adminName }}</span>
-              <span class="admin-role">超级管理员</span>
-            </div>
+            <span class="admin-name">{{ adminName || '管理员' }}</span>
           </div>
           <button class="logout-btn" @click="handleLogout" title="退出登录">
-            <el-icon :size="15"><SwitchButton /></el-icon>
+            <el-icon :size="16"><SwitchButton /></el-icon>
           </button>
         </div>
       </header>
 
-      <!-- 内容 -->
+      <!-- 页面内容 -->
       <main class="content-area">
         <router-view />
       </main>
@@ -111,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, markRaw } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import {
@@ -123,70 +143,36 @@ import { useAdminStore } from '@/stores/admin'
 import { getPendingApplications } from '@/api/artist'
 
 const router = useRouter()
-const route  = useRoute()
+const route = useRoute()
 const adminStore = useAdminStore()
 const isCollapsed = ref(false)
 const pendingCount = ref(0)
 
-const adminName    = computed(() => adminStore.adminInfo?.username || '管理员')
-const adminInitial = computed(() => adminName.value?.charAt(0)?.toUpperCase() || 'A')
-
-const navGroups = [
-  {
-    label: '概览',
-    items: [
-      { to: '/dashboard', label: '数据概览', icon: markRaw(Odometer) }
-    ]
-  },
-  {
-    label: '用户',
-    items: [
-      { to: '/users',        label: '用户管理', icon: markRaw(User) },
-      { to: '/applications', label: '画师审核', icon: markRaw(Stamp), badge: true },
-      { to: '/membership',   label: '会员管理', icon: markRaw(Medal) }
-    ]
-  },
-  {
-    label: '内容',
-    items: [
-      { to: '/artworks',  label: '作品管理', icon: markRaw(Picture) },
-      { to: '/comments',  label: '评论管理', icon: markRaw(ChatDotRound) },
-      { to: '/contests',  label: '比赛管理', icon: markRaw(Trophy) }
-    ]
-  },
-  {
-    label: '交易',
-    items: [
-      { to: '/commissions', label: '约稿管理', icon: markRaw(Suitcase) },
-      { to: '/payments',    label: '支付管理', icon: markRaw(Money) },
-      { to: '/finance',     label: '财务管理', icon: markRaw(Coin) },
-      { to: '/coupons',     label: '优惠券',   icon: markRaw(Ticket) }
-    ]
-  },
-  {
-    label: '系统',
-    items: [
-      { to: '/feedback',   label: '反馈管理', icon: markRaw(ChatLineSquare) },
-      { to: '/audit-logs', label: '审计日志', icon: markRaw(Document) }
-    ]
-  }
-]
+const adminName = computed(() => adminStore.adminInfo?.username || '')
 
 const titleMap = {
-  '/dashboard': '数据概览', '/users': '用户管理', '/applications': '画师审核',
-  '/artworks': '作品管理', '/audit-logs': '审计日志', '/coupons': '优惠券管理',
-  '/comments': '评论管理', '/commissions': '约稿管理', '/payments': '支付管理',
-  '/finance': '财务管理', '/contests': '比赛管理', '/membership': '会员管理',
-  '/feedback': '反馈管理'
+  '/dashboard': '数据概览',
+  '/users': '用户管理',
+  '/applications': '画师审核',
+  '/artworks': '作品管理',
+  '/audit-logs': '审计日志',
+  '/coupons': '优惠券管理',
+  '/comments': '评论管理',
+  '/commissions': '约稿管理',
+  '/payments': '支付管理',
+  '/finance': '财务管理',
+  '/contests': '比赛管理',
+  '/membership': '会员管理'
 }
+
 const currentTitle = computed(() => titleMap[route.path] || '管理后台')
 
 const loadPendingCount = async () => {
   try {
     const res = await getPendingApplications()
     if (res.code === 200) {
-      const d = res.data
-      pendingCount.value = d?.total || d?.length || 0
+      const data = res.data
+      pendingCount.value = data?.total || data?.length || 0
     }
   } catch { /* ignore */ }
 }
@@ -194,7 +180,9 @@ const loadPendingCount = async () => {
 const handleLogout = async () => {
   try {
     await ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
-      confirmButtonText: '退出', cancelButtonText: '取消', type: 'warning'
+      confirmButtonText: '退出',
+      cancelButtonText: '取消',
+      type: 'warning'
     })
     localStorage.removeItem('admin_token')
     adminStore.clearAdminInfo()
@@ -203,7 +191,9 @@ const handleLogout = async () => {
   } catch { /* cancelled */ }
 }
 
-onMounted(() => { loadPendingCount() })
+onMounted(() => {
+  loadPendingCount()
+})
 </script>
 
 <style scoped>
@@ -212,69 +202,52 @@ onMounted(() => { loadPendingCount() })
   min-height: 100vh;
 }
 
-/* ===== 侧栏 ===== */
+/* ============ 侧栏 ============ */
 .sidebar {
-  width: var(--sidebar-width);
+  width: 240px;
   background: var(--c-sidebar);
-  border-right: 1px solid var(--c-sidebar-border);
   display: flex;
   flex-direction: column;
+  transition: width var(--transition);
   position: fixed;
-  top: 0; left: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
   z-index: 100;
   overflow: hidden;
-  transition: width var(--transition);
 }
-.collapsed .sidebar { width: var(--sidebar-collapsed); }
+
+.collapsed .sidebar {
+  width: 72px;
+}
 
 /* Logo */
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 18px 16px 14px;
+  gap: 12px;
+  padding: 20px 20px 16px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: opacity var(--transition-fast);
 }
-.sidebar-logo:hover { opacity: 0.85; }
 
-.logo-mark {
-  width: 36px; height: 36px;
+.logo-icon {
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 8px rgba(201,168,76,.35));
 }
-.logo-mark svg { width: 100%; height: 100%; }
 
-.logo-text-group {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
 }
-.logo-title {
-  font-size: 16px;
+
+.logo-text {
+  font-size: 17px;
   font-weight: 700;
-  color: var(--c-text-gold-bright);
-  letter-spacing: 1px;
-  font-family: 'Noto Serif SC', serif;
-}
-.logo-sub {
-  font-size: 9px;
-  font-weight: 500;
-  color: var(--c-text-inverse-muted);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-top: 1px;
-}
-
-/* 金线分割 */
-.sidebar-divider {
-  height: 1px;
-  margin: 0 16px;
-  background: linear-gradient(90deg, transparent, var(--c-border-gold), transparent);
-  flex-shrink: 0;
+  color: var(--c-text-inverse);
+  white-space: nowrap;
+  letter-spacing: -0.3px;
 }
 
 /* 导航 */
@@ -282,138 +255,124 @@ onMounted(() => { loadPendingCount() })
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 0 4px;
+  padding: 8px 0;
 }
-.sidebar-nav::-webkit-scrollbar { width: 0; }
 
-.nav-group { padding: 6px 0 2px; }
+.sidebar-nav::-webkit-scrollbar {
+  width: 0;
+}
 
-.nav-group-label {
+.nav-section {
+  padding: 4px 0;
+}
+
+.nav-label {
   display: block;
-  padding: 8px 20px 4px;
-  font-size: 10px;
-  font-weight: 700;
+  padding: 12px 24px 6px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--c-text-inverse-muted);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   white-space: nowrap;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 9px 14px;
-  margin: 1px 8px;
+  gap: 12px;
+  padding: 10px 20px;
+  margin: 2px 10px;
   border-radius: var(--radius-sm);
-  color: var(--c-text-inverse-secondary);
+  color: rgba(255, 255, 255, 0.55);
   text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
   transition: all var(--transition-fast);
   position: relative;
   white-space: nowrap;
-  overflow: hidden;
 }
+
 .collapsed .nav-item {
   justify-content: center;
   padding: 10px;
-  margin: 1px 8px;
+  margin: 2px 10px;
 }
+
 .nav-item:hover {
-  background: var(--c-sidebar-hover);
-  color: var(--c-text-gold);
+  background: rgba(99, 102, 241, 0.1);
+  color: rgba(255, 255, 255, 0.85);
 }
-.nav-item--active {
-  background: var(--c-sidebar-active) !important;
-  color: var(--c-primary-bright) !important;
+
+.nav-item.active {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
 }
-.nav-item--active::before {
+
+.nav-item.active::before {
   content: '';
   position: absolute;
-  left: 0; top: 6px; bottom: 6px;
-  width: 2.5px;
-  border-radius: 0 2px 2px 0;
-  background: var(--c-primary);
-  box-shadow: 0 0 8px var(--c-primary-glow);
+  left: -10px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #6366f1;
 }
 
-.nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px; height: 18px;
+.collapsed .nav-item.active::before {
+  left: -10px;
+}
+
+.nav-item .el-icon {
+  font-size: 18px;
   flex-shrink: 0;
-  font-size: 17px;
 }
 
-.nav-label { flex: 1; }
+.nav-text {
+  white-space: nowrap;
+}
 
 .nav-badge {
   margin-left: auto;
-  padding: 1px 6px;
-  height: 17px;
-  line-height: 15px;
+  padding: 0 7px;
+  height: 18px;
+  line-height: 18px;
   border-radius: 9px;
-  background: var(--c-danger);
+  background: #ef4444;
   color: white;
-  font-size: 10px;
-  font-weight: 700;
-  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
 }
+
 .nav-dot {
   position: absolute;
-  top: 7px; right: 7px;
-  width: 6px; height: 6px;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--c-danger);
-  box-shadow: 0 0 5px var(--c-danger);
+  background: #ef4444;
 }
 
-/* 底部折叠 */
-.sidebar-footer {
-  flex-shrink: 0;
-  padding: 10px 8px 14px;
-  border-top: 1px solid var(--c-sidebar-border);
-}
-.collapse-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-sm);
-  color: var(--c-text-inverse-muted);
-  cursor: pointer;
-  font-size: 12px;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  overflow: hidden;
-}
-.collapse-toggle:hover {
-  background: var(--c-sidebar-hover);
-  color: var(--c-text-gold);
-}
-.collapse-label { font-size: 12px; }
-
-/* ===== 主区域 ===== */
+/* ============ 主内容区 ============ */
 .main-wrapper {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: 240px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   transition: margin-left var(--transition);
 }
-.collapsed .main-wrapper { margin-left: var(--sidebar-collapsed); }
+
+.collapsed .main-wrapper {
+  margin-left: 72px;
+}
 
 /* 顶栏 */
 .topbar {
-  height: var(--topbar-height);
-  background: var(--c-topbar);
-  border-bottom: 1px solid var(--c-topbar-border);
+  height: 60px;
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -421,77 +380,76 @@ onMounted(() => { loadPendingCount() })
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(12px);
 }
 
-.topbar-left { display: flex; align-items: center; }
-.breadcrumb-line {
+.topbar-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 16px;
 }
-.bread-root { color: var(--c-text-muted); }
-.bread-sep  { color: var(--c-border-gold); font-size: 11px; }
-.bread-current {
-  color: var(--c-text-inverse);
+
+.collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--c-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.collapse-btn:hover {
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+.page-title {
+  font-size: 16px;
   font-weight: 600;
-  font-size: 14px;
+  color: var(--c-text);
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.admin-chip {
+.admin-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 5px 12px 5px 5px;
-  background: var(--c-surface-2);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--c-border);
 }
-.admin-avatar-ring {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  padding: 1.5px;
-  background: linear-gradient(135deg, var(--c-primary-active), var(--c-primary-bright));
-}
+
 .admin-avatar {
-  width: 100%; height: 100%;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--c-sidebar);
-  color: var(--c-primary-bright);
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
-.admin-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-}
+
 .admin-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--c-text);
-}
-.admin-role {
-  font-size: 10px;
-  color: var(--c-text-muted);
-  letter-spacing: 0.3px;
+  font-size: 13px;
+  color: var(--c-text-secondary);
+  font-weight: 500;
 }
 
 .logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: transparent;
   border-radius: var(--radius-sm);
@@ -499,8 +457,9 @@ onMounted(() => { loadPendingCount() })
   cursor: pointer;
   transition: all var(--transition-fast);
 }
+
 .logout-btn:hover {
-  background: var(--c-danger-bg);
+  background: #fef2f2;
   color: var(--c-danger);
 }
 
@@ -512,9 +471,13 @@ onMounted(() => { loadPendingCount() })
 }
 
 /* 过渡动画 */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-.slide-fade-enter-active { transition: all 0.18s ease; }
-.slide-fade-leave-active { transition: all 0.12s ease; }
-.slide-fade-enter-from, .slide-fade-leave-to { opacity: 0; transform: translateX(-6px); }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

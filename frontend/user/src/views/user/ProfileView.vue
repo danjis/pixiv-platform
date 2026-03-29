@@ -46,7 +46,7 @@
             <div class="avatar-ring" @click="handleAvatarClick">
               <img :src="userProfile.avatarUrl || defaultAvatar" alt="avatar" class="avatar-img" />
               <div class="avatar-hover">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" opacity="0"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 <span>更换头像</span>
               </div>
               <input
@@ -59,11 +59,11 @@
             </div>
             <!-- 角色标签 -->
             <div v-if="userProfile.role === 'ARTIST'" class="role-tag artist">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
               认证画师
             </div>
             <div v-else class="role-tag user">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               普通用户
             </div>
           </div>
@@ -75,7 +75,7 @@
               <span v-if="userProfile.membershipLevel === 'VIP'" class="vip-badge vip">VIP</span>
               <span v-else-if="userProfile.membershipLevel === 'SVIP'" class="vip-badge svip">SVIP</span>
               <button class="edit-btn" @click="handleEditProfile">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 编辑资料
               </button>
             </div>
@@ -103,15 +103,15 @@
             <!-- 操作按钮 -->
             <div class="action-row">
               <button v-if="userProfile.role !== 'ARTIST'" class="primary-btn" @click="handleApplyArtist">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
                 申请成为画师
               </button>
               <button v-if="userProfile.role === 'ARTIST' && !userProfile.acceptingCommissions" class="outline-btn" @click="handleToggleCommissions">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 开启约稿
               </button>
               <button v-if="userProfile.role === 'ARTIST' && userProfile.acceptingCommissions" class="success-btn" @click="handleToggleCommissions">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 约稿中
               </button>
             </div>
@@ -127,7 +127,7 @@
               :class="{ active: activeTab === 'artworks' }"
               @click="switchTab('artworks')"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
               作品
             </button>
             <button
@@ -135,7 +135,7 @@
               :class="{ active: activeTab === 'favorites' }"
               @click="switchTab('favorites')"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               收藏
             </button>
             <button
@@ -143,7 +143,7 @@
               :class="{ active: activeTab === 'following' }"
               @click="switchTab('following')"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
               关注
             </button>
           </div>
@@ -162,11 +162,11 @@
                   <div class="card-overlay">
                     <div class="overlay-stats">
                       <span>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                         {{ art.likeCount || 0 }}
                       </span>
                       <span>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         {{ art.viewCount || 0 }}
                       </span>
                     </div>
@@ -198,7 +198,7 @@
                   <div class="card-overlay">
                     <div class="overlay-stats">
                       <span>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                         {{ art.likeCount || 0 }}
                       </span>
                     </div>
@@ -262,12 +262,12 @@
     <!-- 申请画师对话框 -->
     <el-dialog v-model="applyDialogVisible" title="申请成为画师" width="480px" :close-on-click-modal="false">
       <div class="apply-tip">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="#0096FA"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0096FA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         <span>提交申请后，管理员将会审核你的资料</span>
       </div>
       <el-form :model="applyForm" label-position="top" style="margin-top: 16px">
         <el-form-item label="作品集链接" required>
-          <el-input v-model="applyForm.portfolioUrl" placeholder="paste your portfolio URL" />
+          <el-input v-model="applyForm.portfolioUrl" placeholder="请输入作品集链接" />
         </el-form-item>
         <el-form-item label="创作经历" required>
           <el-input v-model="applyForm.description" type="textarea" :rows="4" placeholder="介绍一下你的创作经历和擅长的风格" maxlength="500" show-word-limit />
@@ -521,21 +521,21 @@ onMounted(() => loadUserProfile())
 /* ========== 页面容器 ========== */
 .profile-page {
   min-height: calc(100vh - 56px);
-  background: #f5f5f5;
+  background: #fff;
 }
 
 /* ========== 骨架屏 ========== */
 .profile-skeleton .user-card {
   margin-top: -60px;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 
 /* ========== Banner ========== */
 .profile-banner {
   height: 220px;
-  background: linear-gradient(135deg, #0096FA 0%, #0078D4 60%, #005A9E 100%);
+  background: linear-gradient(135deg, #e8f0fe 0%, #d4e4fc 40%, #c2d6f8 100%);
   position: relative;
   overflow: hidden;
 }
@@ -548,7 +548,7 @@ onMounted(() => loadUserProfile())
 }
 .banner-fade {
   position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
-  background: linear-gradient(transparent, #f5f5f5);
+  background: linear-gradient(transparent, #fff);
 }
 
 /* ========== 主内容区 ========== */
@@ -563,9 +563,9 @@ onMounted(() => loadUserProfile())
 /* ========== 用户卡片 ========== */
 .user-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   display: flex;
   gap: 32px;
   margin-bottom: 24px;
@@ -582,8 +582,8 @@ onMounted(() => loadUserProfile())
 .avatar-ring {
   width: 120px; height: 120px;
   border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 20px rgba(0,150,250,0.2);
+  border: 3px solid #e8f0fe;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   position: relative;
   cursor: pointer;
   overflow: hidden;
@@ -609,7 +609,7 @@ onMounted(() => loadUserProfile())
 
 .role-tag {
   display: flex; align-items: center; gap: 4px;
-  padding: 4px 12px; border-radius: 20px;
+  padding: 4px 12px; border-radius: 999px;
   font-size: 12px; font-weight: 600;
 }
 .role-tag.artist { background: #FFF3E0; color: #E67E22; }
@@ -627,7 +627,7 @@ onMounted(() => loadUserProfile())
 }
 .vip-badge {
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
+  padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
   letter-spacing: 1px; flex-shrink: 0;
 }
 .vip-badge.vip {
@@ -641,7 +641,7 @@ onMounted(() => loadUserProfile())
 .edit-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 20px; border: 1px solid #ddd;
-  background: #fff; border-radius: 20px;
+  background: #fff; border-radius: 999px;
   font-size: 13px; color: #555; cursor: pointer;
   transition: all 0.2s; flex-shrink: 0;
 }
@@ -671,7 +671,7 @@ onMounted(() => loadUserProfile())
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .primary-btn, .outline-btn, .success-btn {
   display: flex; align-items: center; gap: 6px;
-  padding: 10px 24px; border-radius: 24px;
+  padding: 10px 24px; border-radius: 999px;
   font-size: 14px; font-weight: 500; cursor: pointer;
   transition: all 0.2s; border: none;
 }
@@ -691,27 +691,27 @@ onMounted(() => loadUserProfile())
 /* ========== Tabs ========== */
 .tabs-section {
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
   overflow: hidden;
 }
 .tabs-nav {
-  display: flex;
-  border-bottom: 1px solid #f0f0f0;
+  display: flex; gap: 8px;
+  padding: 16px 24px 0;
+  border-bottom: none;
 }
 .tab-item {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 16px 0; border: none; background: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 24px; border: none; background: #f5f5f5;
   font-size: 14px; font-weight: 500; color: #999;
   cursor: pointer; transition: all 0.2s;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  border-radius: 999px;
 }
-.tab-item:hover { color: #333; }
+.tab-item:hover { color: #333; background: #eee; }
 .tab-item.active {
-  color: #0096FA; border-bottom-color: #0096FA;
+  color: #fff; background: #0096FA;
 }
-.tab-item.active svg { fill: #0096FA; }
+.tab-item.active svg { stroke: #fff; }
 
 .tab-panel { padding: 24px; }
 
@@ -722,16 +722,17 @@ onMounted(() => loadUserProfile())
 }
 .artwork-card {
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 20px;
   overflow: hidden;
-  background: #fafafa;
+  background: #fff;
   transition: all 0.25s;
   break-inside: avoid;
   margin-bottom: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .artwork-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 .card-cover {
   position: relative;
@@ -770,7 +771,7 @@ onMounted(() => loadUserProfile())
 .follow-card {
   display: flex; align-items: center; gap: 14px;
   padding: 14px 16px;
-  border: 1px solid #f0f0f0; border-radius: 12px;
+  border: 1px solid #f0f0f0; border-radius: 20px;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -790,7 +791,7 @@ onMounted(() => loadUserProfile())
 .follow-meta { font-size: 12px; color: #999; margin-top: 2px; }
 .unfollow-btn {
   padding: 6px 16px; border: 1px solid #ddd; background: #fff;
-  border-radius: 16px; font-size: 12px; color: #666;
+  border-radius: 999px; font-size: 12px; color: #666;
   cursor: pointer; transition: all 0.2s; flex-shrink: 0;
 }
 .unfollow-btn:hover { border-color: #FF4D4F; color: #FF4D4F; background: #FFF1F0; }
@@ -807,7 +808,7 @@ onMounted(() => loadUserProfile())
 .apply-tip {
   display: flex; align-items: center; gap: 8px;
   padding: 12px 16px; background: #E8F4FF;
-  border-radius: 8px; font-size: 13px; color: #0078D4;
+  border-radius: 20px; font-size: 13px; color: #0078D4;
 }
 
 /* ========== 响应式 ========== */

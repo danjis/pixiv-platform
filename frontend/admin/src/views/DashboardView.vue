@@ -2,47 +2,79 @@
   <div class="dashboard">
     <!-- 统计卡片 -->
     <div class="stat-grid">
-      <div
-        class="stat-card"
-        v-for="(item, idx) in statCards"
-        :key="item.key"
-        :style="{ '--delay': idx * 0.06 + 's' }"
-      >
-        <div class="stat-card-bg"></div>
-        <div class="stat-icon" :style="{ '--icon-color': item.color, '--icon-bg': item.bg }">
-          <el-icon :size="22"><component :is="item.icon" /></el-icon>
+      <div class="stat-card" v-for="item in statCards" :key="item.key">
+        <div class="stat-icon" :style="{ background: item.bg }">
+          <el-icon :size="22" :color="item.color"><component :is="item.icon" /></el-icon>
         </div>
         <div class="stat-body">
-          <span class="stat-value">{{ formatNum(stats[item.key] ?? 0) }}</span>
+          <span class="stat-value">{{ stats[item.key] ?? '—' }}</span>
           <span class="stat-label">{{ item.label }}</span>
         </div>
-        <div class="stat-trend" :style="{ color: item.color }">{{ item.unit }}</div>
       </div>
     </div>
 
     <!-- 图表区 -->
     <div class="chart-row">
       <div class="chart-panel">
-        <div class="panel-header"><h4 class="panel-title">作品状态分布</h4></div>
+        <h4 class="panel-title">作品状态分布</h4>
         <div ref="pieChartRef" class="chart-box"></div>
       </div>
       <div class="chart-panel">
-        <div class="panel-header"><h4 class="panel-title">平台数据概览</h4></div>
+        <h4 class="panel-title">平台数据概览</h4>
         <div ref="barChartRef" class="chart-box"></div>
       </div>
     </div>
 
     <!-- 详细统计 -->
     <div class="detail-grid">
-      <div class="detail-card" v-for="card in detailCards" :key="card.title">
-        <div class="detail-card-header">
-          <span class="detail-card-dot" :style="{ background: card.dotColor }"></span>
-          <h4 class="panel-title">{{ card.title }}</h4>
-        </div>
+      <div class="detail-card">
+        <h4 class="panel-title">用户统计</h4>
         <div class="detail-items">
-          <div class="detail-row" v-for="row in card.rows" :key="row.label">
-            <span class="detail-label">{{ row.label }}</span>
-            <span class="detail-val" :class="row.cls">{{ formatNum(row.value) }}</span>
+          <div class="detail-row">
+            <span class="detail-label">总用户数</span>
+            <span class="detail-val">{{ stats.totalUsers ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">认证画师</span>
+            <span class="detail-val">{{ stats.totalArtists ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">待审核申请</span>
+            <span class="detail-val accent">{{ stats.pendingApplications ?? 0 }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <h4 class="panel-title">作品统计</h4>
+        <div class="detail-items">
+          <div class="detail-row">
+            <span class="detail-label">已发布</span>
+            <span class="detail-val">{{ artworkStats.publishedCount ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">草稿中</span>
+            <span class="detail-val">{{ artworkStats.draftCount ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">已删除</span>
+            <span class="detail-val danger">{{ artworkStats.deletedCount ?? 0 }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <h4 class="panel-title">互动统计</h4>
+        <div class="detail-items">
+          <div class="detail-row">
+            <span class="detail-label">总浏览量</span>
+            <span class="detail-val">{{ artworkStats.totalViews ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">总点赞数</span>
+            <span class="detail-val">{{ artworkStats.totalLikes ?? 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">总收藏数</span>
+            <span class="detail-val">{{ artworkStats.totalFavorites ?? 0 }}</span>
           </div>
         </div>
       </div>
@@ -50,427 +82,328 @@
 
     <!-- 最近审计日志 -->
     <div class="log-section">
-      <div class="panel-header"><h4 class="panel-title">最近操作日志</h4></div>
-      <div class="log-list">
-        <div v-if="recentLogs.length === 0" class="empty-state">
-          <span class="empty-icon">📋</span>
-          <p>暂无操作日志</p>
-        </div>
-        <div v-for="log in recentLogs" :key="log.id" class="log-item">
-          <div class="log-dot" :class="getLogDotClass(log.actionType)"></div>
-          <div class="log-content">
-            <el-tag :type="getLogTagType(log.actionType)" size="small" effect="plain">
-              {{ formatActionType(log.actionType) }}
-            </el-tag>
-            <span class="log-desc">{{ cleanDesc(log.description) }}</span>
-          </div>
-          <div class="log-time">{{ formatDate(log.createdAt) }}</div>
-        </div>
+      <h4 class="panel-title">最近操作日志</h4>
+      <div class="table-wrapper">
+        <el-table :data="recentLogs" size="small">
+          <el-table-column prop="adminId" label="管理员" width="90" />
+          <el-table-column prop="actionType" label="操作" width="180">
+            <template #default="{ row }">
+              <el-tag :type="getActionTagType(row.actionType)" size="small">
+                {{ formatAction(row.actionType) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="description" label="描述" show-overflow-tooltip />
+          <el-table-column prop="createdAt" label="时间" width="170">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+        </el-table>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, markRaw } from 'vue'
-import { User, Picture, Stamp, ChatDotRound, Money, Suitcase, Trophy, Medal } from '@element-plus/icons-vue'
-import { getStats, getAuditLogs } from '@/api/stats'
+import { ref, reactive, onMounted, onBeforeUnmount, markRaw } from 'vue'
+import * as echarts from 'echarts'
+import { User, Picture, Stamp, Suitcase } from '@element-plus/icons-vue'
+import { getPlatformStats, getArtworkStats, getAuditLogs } from '@/api/stats'
 
-const stats = ref({})
-const recentLogs = ref([])
 const pieChartRef = ref(null)
 const barChartRef = ref(null)
 let pieChart = null
 let barChart = null
 
+const stats = reactive({
+  totalUsers: 0,
+  totalArtists: 0,
+  publishedCount: 0,
+  pendingApplications: 0
+})
+
+const artworkStats = reactive({
+  publishedCount: 0,
+  draftCount: 0,
+  deletedCount: 0,
+  totalViews: 0,
+  totalLikes: 0,
+  totalFavorites: 0
+})
+
+const recentLogs = ref([])
+
 const statCards = [
-  { key: 'totalUsers',       label: '注册用户', unit: '人', icon: markRaw(User),         color: '#6aabde', bg: 'rgba(106,171,222,0.12)' },
-  { key: 'totalArtists',     label: '认证画师', unit: '人', icon: markRaw(Stamp),        color: '#c9a84c', bg: 'rgba(201,168,76,0.12)' },
-  { key: 'totalArtworks',    label: '作品总数', unit: '幅', icon: markRaw(Picture),      color: '#2ec98a', bg: 'rgba(46,201,138,0.12)' },
-  { key: 'totalComments',    label: '评论总数', unit: '条', icon: markRaw(ChatDotRound), color: '#788c5d', bg: 'rgba(120,140,93,0.12)' },
-  { key: 'totalCommissions', label: '约稿订单', unit: '单', icon: markRaw(Suitcase),     color: '#f0a030', bg: 'rgba(240,160,48,0.12)' },
-  { key: 'totalRevenue',     label: '平台收入', unit: '元', icon: markRaw(Money),        color: '#e8c96e', bg: 'rgba(232,201,110,0.12)' },
-  { key: 'totalContests',    label: '比赛活动', unit: '场', icon: markRaw(Trophy),       color: '#d97757', bg: 'rgba(217,119,87,0.12)' },
-  { key: 'totalMembers',     label: '付费会员', unit: '人', icon: markRaw(Medal),        color: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
+  { key: 'totalUsers', label: '总用户', icon: markRaw(User), color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
+  { key: 'totalArtists', label: '认证画师', icon: markRaw(Stamp), color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+  { key: 'publishedCount', label: '发布作品', icon: markRaw(Picture), color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+  { key: 'pendingApplications', label: '待审核', icon: markRaw(Suitcase), color: '#ef4444', bg: 'rgba(239,68,68,0.1)' }
 ]
 
-const detailCards = computed(() => [
-  {
-    title: '用户概况', dotColor: '#6aabde',
-    rows: [
-      { label: '总注册用户', value: stats.value.totalUsers        ?? 0 },
-      { label: '认证画师',   value: stats.value.totalArtists      ?? 0, cls: 'val-gold' },
-      { label: '付费会员',   value: stats.value.totalMembers      ?? 0, cls: 'val-purple' },
-      { label: '今日新增',   value: stats.value.todayNewUsers     ?? 0, cls: 'val-green' },
-    ]
-  },
-  {
-    title: '内容概况', dotColor: '#2ec98a',
-    rows: [
-      { label: '作品总数', value: stats.value.totalArtworks       ?? 0 },
-      { label: '已发布',   value: stats.value.publishedArtworks   ?? 0, cls: 'val-green' },
-      { label: '画师审核', value: stats.value.pendingApplications ?? 0, cls: 'val-warning' },
-      { label: '评论总数', value: stats.value.totalComments       ?? 0 },
-    ]
-  },
-  {
-    title: '交易概况', dotColor: '#f0a030',
-    rows: [
-      { label: '约稿总数', value: stats.value.totalCommissions     ?? 0 },
-      { label: '进行中',   value: stats.value.activeCommissions    ?? 0, cls: 'val-warning' },
-      { label: '已完成',   value: stats.value.completedCommissions ?? 0, cls: 'val-green' },
-      { label: '平台收入', value: stats.value.totalRevenue         ?? 0, cls: 'val-gold' },
-    ]
-  },
-  {
-    title: '活动概况', dotColor: '#d97757',
-    rows: [
-      { label: '比赛总数',   value: stats.value.totalContests    ?? 0 },
-      { label: '进行中',     value: stats.value.activeContests   ?? 0, cls: 'val-green' },
-      { label: '优惠券数',   value: stats.value.totalCoupons     ?? 0 },
-      { label: '待处理反馈', value: stats.value.pendingFeedbacks ?? 0, cls: 'val-danger' },
-    ]
-  }
-])
-
-const formatNum = (n) => {
-  const num = Number(n) || 0
-  if (num >= 10000) return (num / 10000).toFixed(1) + 'w'
-  return num.toLocaleString('zh-CN')
+const actionMap = {
+  APPROVE_ARTIST_APPLICATION: '通过画师申请',
+  REJECT_ARTIST_APPLICATION: '拒绝画师申请',
+  DELETE_ARTWORK: '删除作品',
+  DELETE_COMMENT: '删除评论',
+  BAN_USER: '封禁用户',
+  UNBAN_USER: '解封用户'
 }
 
-const formatDate = (str) => {
-  if (!str) return ''
-  const d = new Date(str)
-  const diff = Date.now() - d
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前'
-  if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前'
-  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
-}
+function formatAction(type) { return actionMap[type] || type }
+function formatDate(str) { return str ? new Date(str).toLocaleString('zh-CN') : '' }
 
-const actionTypeMap = {
-  APPROVE_ARTIST_APPLICATION: '通过申请', REJECT_ARTIST_APPLICATION: '拒绝申请',
-  DELETE_ARTWORK: '删除作品', DELETE_COMMENT: '删除评论',
-  BAN_USER: '封禁用户', UNBAN_USER: '解封用户', OTHER: '其他操作'
-}
-const formatActionType = (t) => actionTypeMap[t] || t
-const cleanDesc = (desc) => desc ? desc.replace(/意见:\s*null/g, '意见: 无') : ''
-const getLogTagType = (t) => {
-  if (t?.includes('APPROVE') || t?.includes('UNBAN')) return 'success'
-  if (t?.includes('REJECT') || t?.includes('DELETE') || t?.includes('BAN')) return 'danger'
+function getActionTagType(type) {
+  if (type?.includes('APPROVE')) return 'success'
+  if (type?.includes('REJECT') || type?.includes('DELETE') || type?.includes('BAN')) return 'danger'
+  if (type?.includes('UNBAN')) return 'warning'
   return 'info'
 }
-const getLogDotClass = (t) => {
-  if (t?.includes('APPROVE') || t?.includes('UNBAN')) return 'dot-green'
-  if (t?.includes('REJECT') || t?.includes('DELETE') || t?.includes('BAN')) return 'dot-red'
-  return 'dot-blue'
+
+function initCharts() {
+  // 饼图
+  if (pieChartRef.value) {
+    pieChart = echarts.init(pieChartRef.value)
+    pieChart.setOption({
+      tooltip: { trigger: 'item', backgroundColor: '#fff', borderColor: '#e2e8f0', borderWidth: 1, textStyle: { color: '#334155', fontSize: 13 } },
+      legend: { bottom: 0, textStyle: { color: '#64748b', fontSize: 12 } },
+      color: ['#6366f1', '#94a3b8', '#ef4444'],
+      series: [{
+        type: 'pie',
+        radius: ['42%', '70%'],
+        center: ['50%', '45%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 3 },
+        label: { show: false },
+        emphasis: { label: { show: true, fontSize: 14, fontWeight: '600' } },
+        data: [
+          { value: artworkStats.publishedCount, name: '已发布' },
+          { value: artworkStats.draftCount, name: '草稿' },
+          { value: artworkStats.deletedCount, name: '已删除' }
+        ]
+      }]
+    })
+  }
+
+  // 柱状图
+  if (barChartRef.value) {
+    barChart = echarts.init(barChartRef.value)
+    barChart.setOption({
+      tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#e2e8f0', borderWidth: 1, textStyle: { color: '#334155', fontSize: 13 } },
+      grid: { left: 50, right: 20, top: 20, bottom: 36 },
+      xAxis: {
+        type: 'category',
+        data: ['用户', '画师', '作品', '浏览', '点赞', '收藏'],
+        axisLine: { lineStyle: { color: '#e2e8f0' } },
+        axisTick: { show: false },
+        axisLabel: { color: '#64748b', fontSize: 12 }
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 11 }
+      },
+      series: [{
+        type: 'bar',
+        barWidth: 28,
+        itemStyle: {
+          borderRadius: [6, 6, 0, 0],
+          color: (params) => {
+            const colors = ['#6366f1', '#818cf8', '#a5b4fc', '#10b981', '#f59e0b', '#f97316']
+            return colors[params.dataIndex] || '#6366f1'
+          }
+        },
+        data: [
+          stats.totalUsers,
+          stats.totalArtists,
+          artworkStats.publishedCount,
+          artworkStats.totalViews,
+          artworkStats.totalLikes,
+          artworkStats.totalFavorites
+        ]
+      }]
+    })
+  }
 }
 
-const initCharts = async () => {
-  if (typeof window === 'undefined') return
+function handleResize() {
+  pieChart?.resize()
+  barChart?.resize()
+}
+
+onMounted(async () => {
   try {
-    const echarts = (await import('echarts')).default
-    const s = stats.value
-    if (pieChartRef.value) {
-      pieChart = echarts.init(pieChartRef.value)
-      pieChart.setOption({
-        backgroundColor: 'transparent',
-        tooltip: { trigger: 'item', backgroundColor: '#162234', borderColor: 'rgba(201,168,76,0.25)', textStyle: { color: '#ddd8ce', fontSize: 12 }, formatter: '{b}: {c} ({d}%)' },
-        legend: { bottom: 8, textStyle: { color: '#8a97b0', fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
-        series: [{ type: 'pie', radius: ['40%', '68%'], center: ['50%', '44%'],
-          itemStyle: { borderRadius: 6, borderColor: '#0c1220', borderWidth: 2 },
-          label: { show: false },
-          emphasis: { label: { show: true, fontSize: 13, fontWeight: 'bold', color: '#e8c96e' } },
-          data: [
-            { value: s.publishedArtworks ?? 0, name: '已发布', itemStyle: { color: '#2ec98a' } },
-            { value: s.draftArtworks     ?? 0, name: '草稿',   itemStyle: { color: '#f0a030' } },
-            { value: s.deletedArtworks   ?? 0, name: '已删除', itemStyle: { color: '#e05a7a' } },
-          ]
-        }]
-      })
+    const [platformRes, artworkRes, logRes] = await Promise.all([
+      getPlatformStats(),
+      getArtworkStats(),
+      getAuditLogs({ page: 1, size: 8 })
+    ])
+
+    if (platformRes.code === 200 && platformRes.data) {
+      Object.assign(stats, platformRes.data)
     }
-    if (barChartRef.value) {
-      barChart = echarts.init(barChartRef.value)
-      const lg = (c1, c2) => new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:c1},{offset:1,color:c2}])
-      barChart.setOption({
-        backgroundColor: 'transparent',
-        tooltip: { trigger: 'axis', backgroundColor: '#162234', borderColor: 'rgba(201,168,76,0.25)', textStyle: { color: '#ddd8ce', fontSize: 12 }, axisPointer: { type: 'shadow' } },
-        grid: { top: 20, right: 12, bottom: 36, left: 48 },
-        xAxis: { type: 'category', data: ['用户','画师','作品','评论','约稿','会员'], axisLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }, axisLabel: { color: '#52617a', fontSize: 11 }, axisTick: { show: false } },
-        yAxis: { type: 'value', axisLabel: { color: '#52617a', fontSize: 10 }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
-        series: [{ type: 'bar', barMaxWidth: 36, itemStyle: { borderRadius: [4,4,0,0] },
-          data: [
-            { value: s.totalUsers       ?? 0, itemStyle: { color: lg('#6aabde','rgba(106,171,222,0.3)') }},
-            { value: s.totalArtists     ?? 0, itemStyle: { color: lg('#e8c96e','rgba(232,201,110,0.3)') }},
-            { value: s.totalArtworks    ?? 0, itemStyle: { color: lg('#2ec98a','rgba(46,201,138,0.3)')  }},
-            { value: s.totalComments    ?? 0, itemStyle: { color: lg('#788c5d','rgba(120,140,93,0.3)')  }},
-            { value: s.totalCommissions ?? 0, itemStyle: { color: lg('#f0a030','rgba(240,160,48,0.3)')  }},
-            { value: s.totalMembers     ?? 0, itemStyle: { color: lg('#a78bfa','rgba(167,139,250,0.3)') }},
-          ]
-        }]
-      })
+    if (artworkRes.code === 200 && artworkRes.data) {
+      Object.assign(artworkStats, artworkRes.data)
+      stats.publishedCount = artworkRes.data.publishedCount || 0
     }
-  } catch (e) { console.warn('ECharts 不可用:', e) }
-}
-
-const resizeCharts = () => { pieChart?.resize(); barChart?.resize() }
-
-const loadStats = async () => {
-  try {
-    const res = await getStats()
-    if (res.code === 200 && res.data) {
-      stats.value = res.data
-      await nextTick()
-      initCharts()
+    if (logRes.data) {
+      const d = logRes.data
+      recentLogs.value = d.records || d.items || d.content || []
     }
-  } catch (e) { console.warn('加载统计失败:', e) }
-}
+  } catch (e) {
+    console.error('加载仪表盘数据失败:', e)
+  }
 
-const loadLogs = async () => {
-  try {
-    const res = await getAuditLogs({ page: 1, size: 8 })
-    const data = res.data
-    recentLogs.value = data?.records || data?.items || data?.content || []
-  } catch { /* ignore */ }
-}
+  initCharts()
+  window.addEventListener('resize', handleResize)
+})
 
-onMounted(() => { loadStats(); loadLogs(); window.addEventListener('resize', resizeCharts) })
-onUnmounted(() => { window.removeEventListener('resize', resizeCharts); pieChart?.dispose(); barChart?.dispose() })
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+  pieChart?.dispose()
+  barChart?.dispose()
+})
 </script>
 
 <style scoped>
 .dashboard {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 
-/* ===== 统计卡片 ===== */
+/* 统计卡片 */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: 18px;
+  margin-bottom: 24px;
 }
+
 .stat-card {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 18px 16px;
+  gap: 16px;
+  padding: 22px 20px;
   background: var(--c-surface);
   border-radius: var(--radius-md);
-  border: 1px solid var(--c-border);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  animation: fadeUp 0.4s ease both;
-  animation-delay: var(--delay, 0s);
-  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition);
 }
+
 .stat-card:hover {
-  border-color: var(--c-border-gold);
-  box-shadow: var(--shadow-sm), var(--shadow-gold);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
-.stat-card-bg {
-  position: absolute;
-  top: -20px; right: -20px;
-  width: 80px; height: 80px;
-  border-radius: 50%;
-  background: var(--icon-bg, rgba(201,168,76,0.08));
-  pointer-events: none;
-}
+
 .stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px; height: 46px;
-  border-radius: var(--radius-sm);
-  background: var(--icon-bg);
-  color: var(--icon-color);
-  flex-shrink: 0;
-}
-.stat-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.stat-value {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--c-text-inverse);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-.stat-label {
-  font-size: 12px;
-  color: var(--c-text-muted);
-  font-weight: 500;
-}
-.stat-trend {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 
-/* ===== 图表区 ===== */
+.stat-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--c-text);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--c-text-muted);
+  margin-top: 2px;
+}
+
+/* 图表 */
 .chart-row {
   display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
 }
+
 .chart-panel {
   background: var(--c-surface);
   border-radius: var(--radius-md);
-  border: 1px solid var(--c-border);
-  box-shadow: var(--shadow-card);
-  padding: 18px 20px 14px;
-}
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.panel-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--c-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin: 0;
-}
-.chart-box {
-  height: 220px;
-  width: 100%;
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
 }
 
-/* ===== 详细统计 ===== */
+.panel-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-text);
+  margin-bottom: 16px;
+}
+
+.chart-box {
+  height: 280px;
+}
+
+/* 详细统计 */
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
 }
+
 .detail-card {
   background: var(--c-surface);
   border-radius: var(--radius-md);
-  border: 1px solid var(--c-border);
-  box-shadow: var(--shadow-card);
-  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
 }
-.detail-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.detail-card-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+
 .detail-items {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
+
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .detail-label {
-  font-size: 12px;
-  color: var(--c-text-muted);
+  font-size: 13px;
+  color: var(--c-text-secondary);
 }
+
 .detail-val {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--c-text);
   font-variant-numeric: tabular-nums;
 }
-.val-gold    { color: var(--c-primary-bright); }
-.val-green   { color: var(--c-success); }
-.val-warning { color: var(--c-warning); }
-.val-danger  { color: var(--c-danger); }
-.val-purple  { color: #a78bfa; }
 
-/* ===== 日志区 ===== */
+.detail-val.accent {
+  color: var(--c-primary);
+}
+
+.detail-val.danger {
+  color: var(--c-danger);
+}
+
+/* 日志 */
 .log-section {
   background: var(--c-surface);
   border-radius: var(--radius-md);
-  border: 1px solid var(--c-border);
-  box-shadow: var(--shadow-card);
-  padding: 18px 20px;
-}
-.log-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.log-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 10px;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
-}
-.log-item:hover { background: var(--c-surface-2); }
-.log-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.dot-green { background: var(--c-success); box-shadow: 0 0 6px var(--c-success); }
-.dot-red   { background: var(--c-danger);  box-shadow: 0 0 6px var(--c-danger); }
-.dot-blue  { background: var(--c-info);    box-shadow: 0 0 6px var(--c-info); }
-
-.log-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.log-desc {
-  font-size: 13px;
-  color: var(--c-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.log-time {
-  font-size: 11px;
-  color: var(--c-text-muted);
-  flex-shrink: 0;
-  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
 }
 
-/* ===== 空状态 ===== */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 20px;
-  color: var(--c-text-muted);
-  gap: 8px;
-}
-.empty-icon { font-size: 36px; opacity: .5; }
-.empty-state p { font-size: 13px; }
-
-/* ===== 动画 ===== */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 1200px) {
-  .stat-grid   { grid-template-columns: repeat(2, 1fr); }
-  .detail-grid { grid-template-columns: repeat(2, 1fr); }
-  .chart-row   { grid-template-columns: 1fr; }
+.log-section .table-wrapper {
+  box-shadow: none;
 }
 </style>

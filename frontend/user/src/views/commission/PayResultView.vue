@@ -4,7 +4,7 @@
       <!-- 成功 -->
       <template v-if="payResult === 'success'">
         <div class="result-icon success">
-          <svg viewBox="0 0 24 24" width="56" height="56" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 3L16 9"/></svg>
         </div>
         <h2>支付成功</h2>
         <p class="result-text">{{ paymentTypeLabel }}已完成支付</p>
@@ -18,7 +18,7 @@
       <!-- 待确认 -->
       <template v-else-if="payResult === 'pending'">
         <div class="result-icon pending">
-          <svg viewBox="0 0 24 24" width="56" height="56" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         </div>
         <h2>支付处理中</h2>
         <p class="result-text">支付结果确认中，请稍后查看约稿详情</p>
@@ -27,7 +27,7 @@
       <!-- 失败 -->
       <template v-else>
         <div class="result-icon fail">
-          <svg viewBox="0 0 24 24" width="56" height="56" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
         <h2>支付未完成</h2>
         <p class="result-text">{{ errorMsg || '支付可能未成功，请返回重试或查看约稿详情' }}</p>
@@ -112,7 +112,7 @@ function formatTime(t) {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f5f5f5;
+  background: #fff;
   padding: 24px;
 }
 .result-card {
@@ -122,12 +122,12 @@ function formatTime(t) {
   text-align: center;
   max-width: 460px;
   width: 100%;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .result-icon { margin-bottom: 20px; }
-.result-icon.success { color: #52c41a; }
-.result-icon.pending { color: #faad14; }
-.result-icon.fail { color: #ff4d4f; }
+.result-icon.success { color: #34c759; }
+.result-icon.pending { color: #f5a623; }
+.result-icon.fail { color: #f56c6c; }
 .result-card h2 {
   font-size: 22px;
   font-weight: 700;
@@ -142,7 +142,7 @@ function formatTime(t) {
 
 .result-info {
   background: #f9fafb;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 16px 20px;
   margin-bottom: 24px;
   text-align: left;
@@ -163,7 +163,7 @@ function formatTime(t) {
 }
 .btn {
   padding: 12px 24px;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

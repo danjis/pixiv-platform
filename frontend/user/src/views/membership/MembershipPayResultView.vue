@@ -10,9 +10,9 @@
       <!-- 成功 -->
       <template v-if="payResult === 'success'">
         <div class="result-icon success">
-          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2">
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10" />
-            <path d="M8 12l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M8 12l3 3 5-5" />
           </svg>
         </div>
         <h2>会员开通成功</h2>
@@ -44,9 +44,9 @@
       <!-- 失败 -->
       <template v-else-if="payResult === 'fail'">
         <div class="result-icon fail">
-          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2">
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10" />
-            <path d="M15 9l-6 6M9 9l6 6" stroke-linecap="round" />
+            <path d="M15 9l-6 6M9 9l6 6" />
           </svg>
         </div>
         <h2>支付未完成</h2>
@@ -55,7 +55,7 @@
 
       <div class="result-actions">
         <button class="btn primary" @click="$router.push('/membership')">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v5c0 5.25 3.4 10.2 8 11.4 4.6-1.2 8-6.15 8-11.4V6l-8-4z"/></svg>
           返回会员中心
         </button>
         <button class="btn outline" @click="$router.push('/')">返回首页</button>
@@ -170,7 +170,7 @@ function formatTime(t) {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  background: #fff;
   padding: 24px;
 }
 
@@ -181,7 +181,7 @@ function formatTime(t) {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e8e8e8;
+  border: 3px solid #f0f0f0;
   border-top-color: #0096FA;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -201,12 +201,12 @@ function formatTime(t) {
   text-align: center;
   max-width: 480px;
   width: 100%;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
 }
 
 .result-icon { margin-bottom: 24px; }
-.result-icon.success { color: #52c41a; }
-.result-icon.fail { color: #ff4d4f; }
+.result-icon.success { color: #34c759; }
+.result-icon.fail { color: #ff6b6b; }
 
 .result-card h2 {
   font-size: 24px;
@@ -223,8 +223,8 @@ function formatTime(t) {
 }
 
 .result-info {
-  background: #f8f9fb;
-  border-radius: 14px;
+  background: #f9fafb;
+  border-radius: 16px;
   padding: 20px 24px;
   margin-bottom: 28px;
   text-align: left;
@@ -275,7 +275,7 @@ function formatTime(t) {
   justify-content: center;
   gap: 6px;
   padding: 13px 24px;
-  border-radius: 12px;
+  border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /c/Users/ssd/Desktop/bs-3/pixiv-platform/docker/nginx/conf.d/*.conf)",
+      "Bash(find /c/Users/ssd/Desktop/bs-3/pixiv-platform/common -name *.java)",
+      "Bash(xargs cat:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(node_modules/.bin/eslint src/views/HomeView.vue)",
+      "Bash(ls node_modules/.bin/eslint*)",
+      "Bash(find C:/Users/ssd/Desktop/bs-3/pixiv-platform/frontend/admin/src -name *.vue)",
+      "Bash(wc:*)"
+    ]
+  }
+}

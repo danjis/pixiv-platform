@@ -9,6 +9,16 @@
   --px-blue-hover: #007ACC;
   --px-blue-active: #005FA3;
 
+  /* ---- 清新强调色 ---- */
+  --px-soft-blue: #60A5FA;
+  --px-soft-blue-light: #EFF6FF;
+  --px-soft-green: #6EE7B7;
+  --px-soft-green-light: #ECFDF5;
+  --px-soft-purple: #A78BFA;
+  --px-soft-purple-light: #F5F3FF;
+  --px-soft-pink: #F9A8D4;
+  --px-soft-pink-light: #FDF2F8;
+
   /* ---- 功能色 ---- */
   --px-like: #FF4060;
   --px-like-light: #FFF0F3;
@@ -42,6 +52,8 @@
   --px-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
   --px-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
   --px-shadow-card-hover: 0 6px 20px rgba(0, 0, 0, 0.12);
+  --px-shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --px-shadow-card: 0 2px 16px rgba(0, 0, 0, 0.04);
 
   /* ---- 圆角 ---- */
   --px-radius-xs: 4px;

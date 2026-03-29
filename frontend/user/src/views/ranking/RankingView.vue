@@ -4,8 +4,8 @@
       <!-- 页面头部 -->
       <div class="ranking-header">
         <h1 class="ranking-title">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" class="ranking-icon">
-            <path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/>
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--px-blue, #0096FA)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="ranking-icon">
+            <path d="M18 20V10M12 20V4M6 20v-6"/>
           </svg>
           排行榜
         </h1>
@@ -265,7 +265,7 @@ onMounted(() => {
 <style scoped>
 .ranking-page {
   min-height: calc(100vh - 64px);
-  background: var(--px-bg-secondary, #f5f5f5);
+  background: #fff;
   padding: 24px 0;
 }
 
@@ -280,7 +280,7 @@ onMounted(() => {
 }
 
 .ranking-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--px-text-primary, #1a1a2e);
   display: flex;
@@ -306,8 +306,8 @@ onMounted(() => {
   margin-bottom: 24px;
   padding: 16px 20px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
   flex-wrap: wrap;
 }
 
@@ -332,7 +332,7 @@ onMounted(() => {
 .filter-tab {
   padding: 6px 16px;
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 13px;
   cursor: pointer;
   background: var(--px-bg-secondary, #f5f5f5);
@@ -367,15 +367,15 @@ onMounted(() => {
   gap: 16px;
   padding: 12px 16px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
 .ranking-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* 排名标识 */
@@ -386,7 +386,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--px-bg-secondary, #f0f0f0);
 }
 
@@ -416,7 +416,7 @@ onMounted(() => {
   flex-shrink: 0;
   width: 72px;
   height: 72px;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--px-bg-tertiary, #f2f3f5);
 }
@@ -509,7 +509,7 @@ onMounted(() => {
 }
 
 .skeleton-card {
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   background: #fff;
 }

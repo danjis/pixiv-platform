@@ -7,7 +7,7 @@
         <!-- 页面标题行 -->
         <div class="discover-header">
           <div class="discover-title-wrap">
-            <span class="discover-icon">🔭</span>
+            <svg class="discover-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--px-blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
             <h1 class="discover-title">深度探索</h1>
             <span class="discover-sub">发现每一个值得被看见的创作</span>
           </div>
@@ -37,7 +37,7 @@
               :style="{ '--capsule-color': tag.color }"
               @click="toggleTag(tag.name)"
             >
-              <span class="capsule-emoji">{{ tag.emoji }}</span>
+              <span class="capsule-dot" :style="{ background: tag.color }"></span>
               <span class="capsule-name">{{ tag.name }}</span>
               <span v-if="selectedTags.includes(tag.name)" class="capsule-check">✓</span>
             </button>
@@ -405,7 +405,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
 }
-.discover-icon { font-size: 22px; }
+.discover-icon { flex-shrink: 0; }
 .discover-title {
   font-size: 22px;
   font-weight: 900;
@@ -506,7 +506,7 @@ onUnmounted(() => {
   color: #fff;
   box-shadow: 0 3px 12px rgba(0,0,0,0.18);
 }
-.capsule-emoji { font-size: 14px; line-height: 1; }
+.capsule-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .capsule-name { font-size: 12px; }
 .capsule-check { font-size: 11px; opacity: 0.9; }
 
@@ -541,9 +541,9 @@ onUnmounted(() => {
 }
 
 .sort-btn {
-  padding: 4px 12px;
+  padding: 5px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
   background: transparent;
   font-size: 13px;
   font-weight: 500;
@@ -568,7 +568,7 @@ onUnmounted(() => {
   gap: 5px;
   padding: 5px 14px;
   border: 1px solid var(--px-border, #e0e0e0);
-  border-radius: 6px;
+  border-radius: 999px;
   background: #fff;
   font-size: 13px;
   color: var(--px-text-secondary, #555);
@@ -599,7 +599,7 @@ onUnmounted(() => {
 /* 高级筛选面板 */
 .advanced-panel {
   background: var(--px-bg-secondary, #f9f9f9);
-  border-radius: 8px;
+  border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -647,7 +647,7 @@ onUnmounted(() => {
 .adv-btn {
   padding: 3px 12px;
   border: 1px solid var(--px-border, #e0e0e0);
-  border-radius: 4px;
+  border-radius: 999px;
   background: #fff;
   font-size: 12px;
   color: var(--px-text-secondary, #555);
@@ -669,7 +669,7 @@ onUnmounted(() => {
 .date-input {
   padding: 3px 8px;
   border: 1px solid var(--px-border, #e0e0e0);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
   color: var(--px-text-primary, #1f1f1f);
   background: #fff;
@@ -692,7 +692,7 @@ onUnmounted(() => {
 .reset-btn {
   padding: 4px 16px;
   border: 1px solid var(--px-border, #e0e0e0);
-  border-radius: 4px;
+  border-radius: 999px;
   background: #fff;
   font-size: 12px;
   color: var(--px-text-tertiary, #999);
@@ -719,7 +719,7 @@ onUnmounted(() => {
 
 /* ===== 骨架屏 ===== */
 .skeleton-card {
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   background: #fff;
   break-inside: avoid;

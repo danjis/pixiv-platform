@@ -56,11 +56,12 @@
         <div class="order-item" v-for="order in orders" :key="order.id">
           <!-- 左侧图标 -->
           <div class="order-type-icon" :class="typeClass(order.paymentType)">
-            <svg v-if="order.paymentType === 'MEMBERSHIP'" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <svg v-if="order.paymentType === 'MEMBERSHIP'" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-            <svg v-else viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-              <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            <svg v-else viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
             </svg>
           </div>
 
@@ -112,14 +113,14 @@
       <!-- 空状态 -->
       <div v-else-if="!loading" class="empty-state">
         <div class="empty-illustration">
-          <svg viewBox="0 0 120 120" width="100" height="100">
-            <rect x="25" y="20" width="70" height="85" rx="8" fill="#f0f2f5" stroke="#d9d9d9" stroke-width="1.5"/>
-            <rect x="35" y="35" width="50" height="6" rx="3" fill="#e8e8e8"/>
-            <rect x="35" y="48" width="35" height="6" rx="3" fill="#e8e8e8"/>
-            <rect x="35" y="61" width="45" height="6" rx="3" fill="#e8e8e8"/>
-            <rect x="35" y="74" width="25" height="6" rx="3" fill="#e8e8e8"/>
-            <circle cx="85" cy="85" r="18" fill="#fff" stroke="#d9d9d9" stroke-width="1.5"/>
-            <path d="M79 85h12M85 79v12" stroke="#bbb" stroke-width="2" stroke-linecap="round"/>
+          <svg viewBox="0 0 120 120" width="100" height="100" fill="none">
+            <rect x="25" y="20" width="70" height="85" rx="12" stroke="#d9d9d9" stroke-width="1.8"/>
+            <line x1="38" y1="38" x2="82" y2="38" stroke="#e8e8e8" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="38" y1="51" x2="70" y2="51" stroke="#e8e8e8" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="38" y1="64" x2="78" y2="64" stroke="#e8e8e8" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="38" y1="77" x2="60" y2="77" stroke="#e8e8e8" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="85" cy="85" r="18" stroke="#d9d9d9" stroke-width="1.8"/>
+            <path d="M79 85h12M85 79v12" stroke="#bbb" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
         <p class="empty-title">暂无订单记录</p>
@@ -287,6 +288,7 @@ onMounted(loadOrders)
   max-width: 720px;
   margin: 0 auto;
   padding: 0 20px 40px;
+  background: #fff;
 }
 
 /* 页面头部 */
@@ -294,8 +296,8 @@ onMounted(loadOrders)
   padding: 36px 0 28px;
 }
 .header-content h1 {
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
   color: #1a1a2e;
   margin: 0 0 6px;
   letter-spacing: -0.5px;
@@ -318,14 +320,14 @@ onMounted(loadOrders)
   display: flex;
   gap: 4px;
   background: #f5f6f8;
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 3px;
 }
 .tab-btn {
   padding: 7px 16px;
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 500;
   color: #666;
@@ -357,16 +359,16 @@ onMounted(loadOrders)
   gap: 16px;
   padding: 20px 24px;
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   margin-bottom: 12px;
   transition: all 0.25s;
   border: 1.5px solid #f0f0f3;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .order-item:hover {
   border-color: #e0e0ee;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
 }
 
 /* 左侧类型图标 */
@@ -437,8 +439,8 @@ onMounted(loadOrders)
 }
 .order-type-badge {
   font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
   font-weight: 500;
 }
 .order-type-badge.membership {
@@ -490,8 +492,8 @@ onMounted(loadOrders)
 }
 .extra-tag {
   font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
 }
 .extra-tag.discount {
   background: #f6ffed;
@@ -522,7 +524,7 @@ onMounted(loadOrders)
 }
 .order-action-btn {
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;

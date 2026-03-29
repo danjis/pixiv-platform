@@ -9,7 +9,7 @@
         <div class="orb orb-3"></div>
       </div>
       <div class="cph-content">
-        <p class="cph-eyebrow">COMMISSION MANAGEMENT</p>
+        <p class="cph-eyebrow">约稿管理</p>
         <h1 class="cph-title">约稿管理中心</h1>
         <p class="cph-desc">管理你的所有委托与接稿订单，随时掌握每笔交易进度</p>
         <div class="cph-stats">
@@ -36,7 +36,7 @@
           :class="{ active: activeTab === 'client' }"
           @click="switchTab('client')"
         >
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg>
           我的委托
           <span v-if="clientTotal" class="tab-badge">{{ clientTotal }}</span>
         </button>
@@ -46,7 +46,7 @@
           :class="{ active: activeTab === 'artist' }"
           @click="switchTab('artist')"
         >
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M7 14l5-5 5 5H7z"/><path d="M3 17h18v2H3zm0-8h18v2H3zm0-4h18v2H3z"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12h6M12 9v6"/></svg>
           我的接稿
           <span v-if="artistTotal" class="tab-badge">{{ artistTotal }}</span>
         </button>
@@ -131,15 +131,15 @@
           <!-- Meta chips -->
           <div class="oc-meta">
             <span v-if="c.status === 'PENDING' && c.budget" class="meta-chip price-chip">
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
               预算 &yen;{{ c.budget }}
             </span>
             <span v-if="c.totalAmount && c.status !== 'PENDING'" class="meta-chip price-chip">
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
               报价 &yen;{{ c.totalAmount }}
             </span>
             <span v-if="c.deadline" class="meta-chip date-chip">
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
               {{ formatDate(c.deadline) }}
             </span>
             <span v-if="c.status === 'IN_PROGRESS'" class="meta-chip progress-chip">
@@ -175,7 +175,7 @@
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="pagination">
         <button class="page-btn" :disabled="page === 1" @click="changePage(page - 1)">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
         <button
           v-for="p in pageNumbers"
@@ -185,7 +185,7 @@
           @click="changePage(p)"
         >{{ p }}</button>
         <button class="page-btn" :disabled="page === totalPages" @click="changePage(page + 1)">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
 
@@ -289,37 +289,38 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.commission-page { min-height: calc(100vh - 64px); background: #f0f2f8; }
-.cpage-hero { position: relative; overflow: hidden; padding: 60px 40px 54px; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%); }
-.cph-orbs { position: absolute; inset: 0; pointer-events: none; }
-.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.28; }
-.orb-1 { width: 420px; height: 420px; background: #4f46e5; top: -120px; right: 8%; }
-.orb-2 { width: 280px; height: 280px; background: #7c3aed; bottom: -80px; left: 4%; }
-.orb-3 { width: 180px; height: 180px; background: #0ea5e9; top: 10px; left: 38%; }
+.commission-page { min-height: calc(100vh - 64px); background: #fff; }
+.cpage-hero { position: relative; overflow: hidden; padding: 60px 40px 54px; background: linear-gradient(135deg, #EFF6FF, #ECFDF5, #F5F3FF); }
+.cph-orbs { display: none; }
+.orb { display: none; }
+.orb-1 { display: none; }
+.orb-2 { display: none; }
+.orb-3 { display: none; }
 .cph-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; text-align: center; }
-.cph-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: 5px; color: rgba(255,255,255,.4); margin-bottom: 14px; text-transform: uppercase; }
-.cph-title { font-size: 42px; font-weight: 900; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
-.cph-desc { font-size: 15px; color: rgba(255,255,255,.55); margin-bottom: 30px; line-height: 1.6; }
+.cph-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 3px; color: #94a3b8; margin-bottom: 14px; }
+.cph-title { font-size: 36px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; margin-bottom: 10px; }
+.cph-desc { font-size: 15px; color: #64748b; margin-bottom: 30px; line-height: 1.6; }
 .cph-stats { display: flex; justify-content: center; align-items: center; gap: 36px; }
 .cph-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.cph-num { font-size: 34px; font-weight: 900; color: #fff; line-height: 1; }
-.cph-lbl { font-size: 12px; color: rgba(255,255,255,.45); letter-spacing: 1px; }
-.cph-divider { width: 1px; height: 44px; background: rgba(255,255,255,.18); }
+.cph-num { font-size: 34px; font-weight: 900; color: #1e293b; line-height: 1; }
+.cph-lbl { font-size: 12px; color: #94a3b8; letter-spacing: 1px; }
+.cph-divider { width: 1px; height: 44px; background: #e2e8f0; }
 .main-wrap { max-width: 1120px; margin: 0 auto; padding: 32px 24px 80px; }
 .tab-rail { display: flex; gap: 8px; margin-bottom: 22px; }
-.tab-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border: 2px solid #e2e8f0; border-radius: 999px; background: #fff; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; transition: all .22s; }
-.tab-pill:hover { border-color: #818cf8; color: #4f46e5; background: #eef2ff; }
-.tab-pill.active { background: linear-gradient(135deg, #4f46e5, #7c3aed); border-color: transparent; color: #fff; box-shadow: 0 6px 20px rgba(79,70,229,.35); }
-.tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(255,255,255,.25); }
-.tab-pill:not(.active) .tab-badge { background: #e0e7ff; color: #4f46e5; }
+.tab-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border: none; border-radius: 999px; background: #F7F8FA; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; transition: all .22s; }
+.tab-pill:hover { color: #3b82f6; background: #EFF6FF; }
+.tab-pill.active { background: #fff; color: #3b82f6; box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
+.tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(59,130,246,.1); color: #3b82f6; }
+.tab-pill.active .tab-badge { background: rgba(59,130,246,.12); color: #3b82f6; }
+.tab-pill:not(.active) .tab-badge { background: #e0e7ff; color: #3b82f6; }
 .filter-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
-.filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border: 1.5px solid #e2e8f0; border-radius: 999px; background: #fff; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all .18s; }
-.filter-chip:hover { border-color: #818cf8; color: #4f46e5; background: #f5f3ff; }
-.filter-chip.active { background: #eef2ff; border-color: #818cf8; color: #4f46e5; }
+.filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border: none; border-radius: 999px; background: #F7F8FA; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all .18s; }
+.filter-chip:hover { color: #3b82f6; background: #EFF6FF; }
+.filter-chip.active { background: #fff; color: #3b82f6; box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
 .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
-.order-card { position: relative; background: #fff; border-radius: 18px; padding: 22px; cursor: pointer; border: 1.5px solid #e8edf5; box-shadow: 0 2px 12px rgba(0,0,0,.04); transition: all .28s ease; overflow: hidden; }
-.order-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(79,70,229,.13); border-color: #c7d2fe; }
+.order-card { position: relative; background: #fff; border-radius: 20px; padding: 22px; cursor: pointer; border: 1px solid #f1f5f9; box-shadow: 0 2px 16px rgba(0,0,0,0.04); transition: all .28s ease; overflow: hidden; }
+.order-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); border-color: #e2e8f0; }
 .card-status-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
 .bar-pending { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
 .bar-quoted { background: linear-gradient(90deg,#3b82f6,#60a5fa); }
@@ -352,13 +353,13 @@ onMounted(async () => {
 .s-cancelled,.s-rejected { background: #f1f5f9; color: #64748b; }
 .oc-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .oc-desc { font-size: 13px; color: #64748b; margin: 0 0 14px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.55; }
-.quote-banner { background: linear-gradient(135deg,#eff6ff,#eef2ff); border: 1px solid #c7d2fe; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+.quote-banner { background: linear-gradient(135deg,#EFF6FF,#F5F3FF); border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px; margin-bottom: 14px; }
 .qb-inner { display: flex; align-items: center; gap: 14px; }
 .qb-col { flex: 1; }
 .qb-label { font-size: 11px; color: #64748b; margin: 0 0 3px; }
-.qb-amount { font-size: 20px; font-weight: 900; color: #4f46e5; margin: 0; }
-.qb-deposit { font-size: 16px; font-weight: 700; color: #6366f1; margin: 0; }
-.qb-sep { width: 1px; height: 36px; background: #c7d2fe; }
+.qb-amount { font-size: 20px; font-weight: 900; color: #3b82f6; margin: 0; }
+.qb-deposit { font-size: 16px; font-weight: 700; color: #3b82f6; margin: 0; }
+.qb-sep { width: 1px; height: 36px; background: #e2e8f0; }
 .qb-note { font-size: 12px; color: #64748b; margin: 10px 0 0; }
 .oc-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .meta-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; }
@@ -370,28 +371,28 @@ onMounted(async () => {
 .oc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid #f1f5f9; }
 .oc-time { font-size: 12px; color: #94a3b8; }
 .oc-arrow { font-size: 22px; color: #cbd5e1; transition: color .2s, transform .2s; }
-.order-card:hover .oc-arrow { color: #6366f1; transform: translateX(3px); }
+.order-card:hover .oc-arrow { color: #3b82f6; transform: translateX(3px); }
 .skel-card { animation: shimmer 1.5s infinite; }
 .skel-bar { height: 3px; background: #f1f5f9; margin-bottom: 18px; }
-.skel-head { height: 48px; background: #f1f5f9; border-radius: 8px; margin-bottom: 14px; }
+.skel-head { height: 48px; background: #f1f5f9; border-radius: 12px; margin-bottom: 14px; }
 .skel-body { display: flex; flex-direction: column; gap: 8px; }
 .skel-line { height: 12px; background: #f1f5f9; border-radius: 6px; }
 .w70{width:70%} .w50{width:50%} .w40{width:40%}
 @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.55} }
 .empty-state { display: flex; flex-direction: column; align-items: center; padding: 80px 0 60px; gap: 14px; }
 .empty-illustration { opacity: .8; }
-.empty-title { font-size: 18px; font-weight: 800; color: #334155; margin: 0; }
+.empty-title { font-size: 20px; font-weight: 700; color: #334155; margin: 0; }
 .empty-sub { font-size: 13px; color: #94a3b8; margin: 0; }
-.empty-cta { margin-top: 4px; padding: 11px 32px; background: linear-gradient(135deg,#4f46e5,#7c3aed); color: #fff; border-radius: 999px; font-size: 14px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 16px rgba(79,70,229,.35); transition: transform .2s; }
-.empty-cta:hover { transform: translateY(-2px); }
+.empty-cta { margin-top: 4px; padding: 11px 32px; background: #3b82f6; color: #fff; border-radius: 999px; font-size: 14px; font-weight: 700; text-decoration: none; box-shadow: 0 2px 16px rgba(59,130,246,.2); transition: transform .2s, box-shadow .2s; }
+.empty-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,.25); }
 .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 36px; }
-.page-btn { width: 36px; height: 36px; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; }
-.page-btn:hover:not(:disabled) { border-color: #6366f1; color: #4f46e5; }
-.page-btn.active { background: linear-gradient(135deg,#4f46e5,#7c3aed); border-color: transparent; color: #fff; font-weight: 800; }
+.page-btn { width: 36px; height: 36px; border: 1px solid #f1f5f9; border-radius: 999px; background: #F7F8FA; font-size: 14px; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; color: #64748b; }
+.page-btn:hover:not(:disabled) { background: #EFF6FF; color: #3b82f6; }
+.page-btn.active { background: #3b82f6; border-color: transparent; color: #fff; font-weight: 700; box-shadow: 0 2px 16px rgba(59,130,246,.2); }
 .page-btn:disabled { opacity: .35; cursor: not-allowed; }
 @media (max-width: 768px) {
   .cpage-hero { padding: 40px 20px 36px; }
-  .cph-title { font-size: 28px; }
+  .cph-title { font-size: 26px; }
   .order-grid { grid-template-columns: 1fr; }
   .main-wrap { padding: 20px 16px 40px; }
 }
