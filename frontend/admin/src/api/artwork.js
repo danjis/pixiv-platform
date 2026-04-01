@@ -30,18 +30,3 @@ export function deleteArtwork(id, data) {
     data
   })
 }
-
-/**
- * 获取审计日志
- * @param {Object} params - 查询参数
- * @param {number} params.page - 页码
- * @param {number} params.size - 每页数量
- * @returns {Promise}
- */
-export function getAuditLogs(params) {
-  return request({
-    url: '/api/admin/audit-logs',
-    method: 'get',
-    params
-  })
-}

@@ -48,16 +48,47 @@
         </el-button>
       </div>
 
-      <!-- 作品列表 -->
+      <!-- 作品列表 — 瀑布流布局 -->
       <template v-else>
-        <div class="artwork-grid">
-          <ArtworkCard
+        <div class="masonry-grid">
+          <div
             v-for="artwork in artworks"
             :key="artwork.id"
-            :artwork="artwork"
+            class="masonry-item"
             @click="goToDetail(artwork.id)"
-            @author-click="(art) => goToArtist(art.artistId)"
-          />
+          >
+            <div class="mi-thumb">
+              <img :src="artwork.thumbnailUrl || artwork.imageUrl" :alt="artwork.title" class="mi-img" loading="lazy" />
+              <div class="mi-overlay">
+                <div class="mi-actions">
+                  <span class="mi-btn">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    {{ formatCount(artwork.likeCount) }}
+                  </span>
+                </div>
+              </div>
+              <div v-if="artwork.imageCount > 1" class="mi-multi">{{ artwork.imageCount }}张</div>
+            </div>
+            <div class="mi-info">
+              <p class="mi-title">{{ artwork.title }}</p>
+              <div class="mi-meta">
+                <div class="mi-author" @click.stop="goToArtist(artwork.artistId)">
+                  <el-avatar :size="18" :src="artwork.artistAvatar || undefined" class="mi-avatar">{{ artwork.artistName?.charAt(0) }}</el-avatar>
+                  <span class="mi-name">{{ artwork.artistName }}</span>
+                </div>
+                <div class="mi-stats">
+                  <span class="mi-stat">
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="opacity:.4"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    {{ formatCount(artwork.viewCount) }}
+                  </span>
+                  <span class="mi-stat">
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="#FF4060" style="opacity:.75"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    {{ formatCount(artwork.likeCount) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 分页 -->
@@ -87,7 +118,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getFeedArtworks } from '@/api/artwork'
-import ArtworkCard from '@/components/ArtworkCard.vue'
 import { Loading } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -132,6 +162,13 @@ function goToArtist(id) {
   router.push(`/artist/${id}`)
 }
 
+function formatCount(num) {
+  if (!num) return '0'
+  if (num >= 10000) return (num / 10000).toFixed(1) + '万'
+  if (num >= 1000) return (num / 1000).toFixed(1) + '千'
+  return String(num)
+}
+
 onMounted(() => {
   loadFeed()
 })
@@ -174,11 +211,117 @@ onMounted(() => {
   margin: 0;
 }
 
-/* 作品网格 */
-.artwork-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+/* ===================== 瀑布流 ===================== */
+.masonry-grid {
+  column-count: 4;
+  column-gap: 16px;
+}
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.masonry-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+.mi-thumb {
+  position: relative;
+  overflow: hidden;
+}
+.mi-img {
+  width: 100%;
+  display: block;
+}
+.mi-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+}
+.masonry-item:hover .mi-overlay {
+  opacity: 1;
+}
+.mi-actions {
+  display: flex;
+  gap: 8px;
+}
+.mi-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--px-text-secondary, #666);
+}
+.mi-multi {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+}
+.mi-info {
+  padding: 12px 14px;
+}
+.mi-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--px-text-primary, #1a1a2e);
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mi-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mi-author {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.mi-avatar {
+  flex-shrink: 0;
+}
+.mi-name {
+  font-size: 12px;
+  color: var(--px-text-tertiary, #8c8c8c);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80px;
+}
+.mi-stats {
+  display: flex;
+  gap: 8px;
+}
+.mi-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--px-text-placeholder, #bbb);
 }
 
 /* 分页 */
@@ -216,13 +359,14 @@ onMounted(() => {
 
 /* 骨架屏加载 */
 .grid-loading {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  column-count: 4;
+  column-gap: 16px;
 }
 
 .skeleton-card {
-  border-radius: 16px;
+  break-inside: avoid;
+  margin-bottom: 16px;
+  border-radius: 20px;
   overflow: hidden;
   background: #fff;
 }
@@ -270,14 +414,14 @@ onMounted(() => {
   font-size: 14px;
 }
 
+@media (max-width: 1100px) {
+  .masonry-grid, .grid-loading { column-count: 3; }
+}
 @media (max-width: 768px) {
-  .artwork-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 12px;
-  }
-
-  .feed-title {
-    font-size: 22px;
-  }
+  .masonry-grid, .grid-loading { column-count: 2; }
+  .feed-title { font-size: 22px; }
+}
+@media (max-width: 480px) {
+  .masonry-grid, .grid-loading { column-count: 2; column-gap: 10px; }
 }
 </style>

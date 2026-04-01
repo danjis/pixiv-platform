@@ -1,116 +1,136 @@
 <template>
   <div class="home-page">
 
-    <!-- ===== 巨幕区域 (Hero) ===== -->
+    <!-- ===== Hero: 左文字 + 右轮播 斜切分割 ===== -->
     <section class="hero-section">
-      <div class="hero-inner">
-        <!-- 左侧文案 -->
-        <div class="hero-left">
-          <h1 class="hero-headline">幻画空间 · 发现创作 · 轻松约稿</h1>
-          <p class="hero-sub">ACG插画与约稿首选平台。汇聚数十万创意画师与爱好者，开启属于你的灵感之旅。</p>
-          <div class="hero-ctas">
-            <button class="cta-primary" @click="$router.push('/artworks')">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-              探索作品
-            </button>
-            <button v-if="!userStore.isAuthenticated" class="cta-outline" @click="$router.push('/register')">免费注册</button>
-            <button v-else-if="userStore.isArtist" class="cta-outline" @click="$router.push('/publish')">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-              发布作品
-            </button>
-          </div>
-          <!-- 统计面板 -->
-          <div class="hero-stats">
-            <div class="stat-panel">
-              <span class="stat-num">10万+</span>
-              <span class="stat-label">作品总数</span>
-            </div>
-            <div class="stat-panel">
-              <span class="stat-num">5万+</span>
-              <span class="stat-label">创意画师</span>
-            </div>
-            <div class="stat-panel">
-              <span class="stat-num">1万+</span>
-              <span class="stat-label">约稿成功</span>
+      <!-- 右侧轮播区（绝对定位，充满右侧） -->
+      <div class="hero-carousel" v-if="featuredArtworks.length">
+        <div class="carousel-viewport">
+          <div
+            v-for="(art, i) in featuredArtworks.slice(0, 5)"
+            :key="art.id || i"
+            class="carousel-slide"
+            :class="{ active: heroIndex === i }"
+            @click="goToDetail(art.id)"
+          >
+            <img :src="art.imageUrl || art.thumbnailUrl" :alt="art.title" loading="eager" />
+            <div class="carousel-caption">
+              <span class="carousel-title">{{ art.title }}</span>
+              <span class="carousel-artist" v-if="art.artistName">by {{ art.artistName }}</span>
             </div>
           </div>
         </div>
-
-        <!-- 右侧轮播图 -->
-        <div class="hero-carousel" v-if="featuredArtworks.length">
-          <div class="carousel-viewport">
-            <div
-              v-for="(art, i) in featuredArtworks.slice(0, 5)"
-              :key="art.id || i"
-              class="carousel-slide"
-              :class="{ active: heroIndex === i }"
-            >
-              <img :src="art.imageUrl || art.thumbnailUrl" :alt="art.title" loading="eager" />
+        <button class="carousel-arrow carousel-prev" @click="heroPrev" aria-label="上一张">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <button class="carousel-arrow carousel-next" @click="heroNext" aria-label="下一张">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+        <div class="carousel-dots">
+          <button
+            v-for="(_, i) in featuredArtworks.slice(0, 5)"
+            :key="i"
+            class="carousel-dot"
+            :class="{ active: heroIndex === i }"
+            @click="heroIndex = i"
+          ></button>
+        </div>
+      </div>
+      <!-- 左侧文字区（z-index 在深色斜切上方） -->
+      <div class="hero-inner">
+        <div class="hero-text">
+          <h1 class="hero-title">幻画空间</h1>
+          <p class="hero-subtitle">发现好作品，连接创作者</p>
+          <p class="hero-desc">百万插画 · 创意约稿 · 社区互动<br/>属于每一个创作者的舞台</p>
+          <div class="hero-stats">
+            <div class="hs-item">
+              <span class="hs-num">10万+</span>
+              <span class="hs-label">作品总数</span>
+            </div>
+            <div class="hs-divider"></div>
+            <div class="hs-item">
+              <span class="hs-num">5万+</span>
+              <span class="hs-label">创意画师</span>
+            </div>
+            <div class="hs-divider"></div>
+            <div class="hs-item">
+              <span class="hs-num">1万+</span>
+              <span class="hs-label">约稿成功</span>
             </div>
           </div>
-          <!-- 箭头导航 -->
-          <button class="carousel-arrow carousel-prev" @click="heroPrev" aria-label="上一张">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-          </button>
-          <button class="carousel-arrow carousel-next" @click="heroNext" aria-label="下一张">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-          </button>
-          <!-- 圆点指示器 -->
-          <div class="carousel-dots">
-            <button
-              v-for="(_, i) in featuredArtworks.slice(0, 5)"
-              :key="i"
-              class="carousel-dot"
-              :class="{ active: heroIndex === i }"
-              @click="heroIndex = i"
-              :aria-label="'第' + (i+1) + '张'"
-            ></button>
+          <div class="hero-btns">
+            <router-link to="/artworks" class="hero-btn-primary">探索作品</router-link>
+            <router-link to="/commissions" class="hero-btn-secondary">发布约稿</router-link>
           </div>
         </div>
       </div>
+      <!-- 斜切装饰 -->
+      <div class="hero-diagonal"></div>
     </section>
 
     <!-- ===== 快捷导航 ===== -->
-    <nav class="quick-nav">
-      <div class="qnav-inner">
-        <router-link to="/artworks" class="qnav-item">
-          <span class="qnav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          </span>
-          <span>最新作品</span>
-        </router-link>
-        <router-link to="/ranking" class="qnav-item">
-          <span class="qnav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </span>
-          <span>排行榜</span>
-        </router-link>
-        <router-link to="/contests" class="qnav-item">
-          <span class="qnav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
-          </span>
-          <span>比赛专区</span>
-        </router-link>
-        <router-link to="/following" class="qnav-item" v-if="userStore.isAuthenticated">
-          <span class="qnav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          </span>
-          <span>关注动态</span>
-        </router-link>
-        <router-link to="/commissions" class="qnav-item" v-if="userStore.isAuthenticated">
-          <span class="qnav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </span>
-          <span>我的约稿</span>
-        </router-link>
-        <router-link :to="{ path: '/artworks', query: { sortBy: 'popular' } }" class="qnav-item">
-          <span class="qnav-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          </span>
-          <span>热门推荐</span>
-        </router-link>
+    <section class="platform-overview">
+      <div class="overview-inner">
+        <nav class="quick-nav">
+          <router-link to="/artworks" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#60A5FA,#3B82F6)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <span class="qnav-label">最新作品</span>
+            <span class="qnav-desc">发现新灵感</span>
+          </router-link>
+          <router-link to="/ranking" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#FBBF24,#F59E0B)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <span class="qnav-label">排行榜</span>
+            <span class="qnav-desc">热门作品榜</span>
+          </router-link>
+          <router-link to="/contests" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#F472B6,#EC4899)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+            </div>
+            <span class="qnav-label">比赛专区</span>
+            <span class="qnav-desc">参赛赢大奖</span>
+          </router-link>
+          <router-link to="/following" class="qnav-card" v-if="userStore.isAuthenticated">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#34D399,#10B981)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <span class="qnav-label">关注动态</span>
+            <span class="qnav-desc">画师新作品</span>
+          </router-link>
+          <router-link to="/commissions" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#A78BFA,#8B5CF6)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <span class="qnav-label">约稿大厅</span>
+            <span class="qnav-desc">定制你的专属</span>
+          </router-link>
+          <router-link :to="{ path: '/artworks', query: { sortBy: 'hottest' } }" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#FB923C,#F97316)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <span class="qnav-label">热门推荐</span>
+            <span class="qnav-desc">大家都在看</span>
+          </router-link>
+          <router-link v-if="userStore.isAuthenticated" to="/chat" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#6EE7B7,#059669)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <span class="qnav-label">我的私信</span>
+            <span class="qnav-desc">实时聊天</span>
+          </router-link>
+          <router-link to="/membership" class="qnav-card">
+            <div class="qnav-icon-wrap" style="background:linear-gradient(135deg,#FDA4AF,#E11D48)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <span class="qnav-label">会员中心</span>
+            <span class="qnav-desc">签到领福利</span>
+          </router-link>
+        </nav>
       </div>
-    </nav>
+    </section>
 
     <!-- ===== 推荐作品 ===== -->
     <section class="section-block">
@@ -399,11 +419,12 @@ const heroIndex = ref(0)
 let heroTimer = null
 
 const sortTabs = [
-  { label: '热门', value: 'popular' },
+  { label: '热门', value: 'hottest' },
   { label: '最新', value: 'latest' },
-  { label: '编辑精选', value: 'favorite' },
+  { label: '最多收藏', value: 'most_favorited' },
+  { label: '最多点赞', value: 'most_liked' },
 ]
-const activeSortTab = ref('popular')
+const activeSortTab = ref('hottest')
 
 const trendingTags = computed(() => {
   const map = {}
@@ -539,119 +560,137 @@ onBeforeUnmount(() => {
   background: #FFFFFF;
 }
 
-/* ===================== 巨幕 Hero ===================== */
+/* ===================== Hero 斜切分割布局 ===================== */
 .hero-section {
-  background: linear-gradient(135deg, #EFF6FF 0%, #ECFDF5 50%, #F5F3FF 100%);
-  padding: 48px 0 56px;
+  position: relative;
+  width: 100%;
+  height: 480px;
+  overflow: hidden;
 }
 .hero-inner {
+  position: relative;
+  z-index: 2;
   max-width: var(--px-max-width);
   margin: 0 auto;
-  padding: 0 32px;
   display: flex;
   align-items: center;
-  gap: 48px;
+  height: 100%;
+  padding: 0 48px;
+  gap: 0;
 }
-.hero-left {
-  flex: 1;
-  min-width: 0;
+/* 左侧文字 — 深色背景通过伪元素实现斜切 */
+.hero-text {
+  flex: 0 0 440px;
+  color: #fff;
+  position: relative;
+  z-index: 3;
+  padding: 48px 48px 48px 0;
 }
-.hero-headline {
-  font-size: 32px;
+.hero-title {
+  font-size: 36px;
   font-weight: 800;
-  color: var(--px-text-primary);
-  line-height: 1.3;
-  margin-bottom: 16px;
+  margin: 0 0 8px;
   letter-spacing: 1px;
+  background: linear-gradient(135deg, #fff 0%, #93c5fd 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-.hero-sub {
-  font-size: 15px;
-  color: var(--px-text-secondary);
+.hero-subtitle {
+  font-size: 16px;
+  color: rgba(255,255,255,0.85);
+  margin: 0 0 16px;
+  font-weight: 500;
+}
+.hero-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin: 0 0 24px;
   line-height: 1.8;
-  margin-bottom: 28px;
-  max-width: 420px;
 }
-.hero-ctas {
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.hs-item { text-align: center; }
+.hs-num {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: #60a5fa;
+}
+.hs-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+.hs-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,0.15);
+}
+.hero-btns {
   display: flex;
   gap: 12px;
-  margin-bottom: 32px;
 }
-.cta-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 12px 28px;
-  background: var(--px-blue);
+.hero-btn-primary {
+  padding: 10px 28px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: #fff;
-  border: none;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.22s ease;
-  box-shadow: 0 4px 18px rgba(0, 150, 250, 0.3);
-}
-.cta-primary:hover {
-  background: var(--px-blue-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 150, 250, 0.4);
-}
-.cta-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 24px;
-  background: #fff;
-  color: var(--px-blue);
-  border: 1.5px solid var(--px-blue);
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.22s ease;
+  text-decoration: none;
+  transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.3);
 }
-.cta-outline:hover {
-  background: var(--px-blue-light);
+.hero-btn-primary:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(59,130,246,0.45);
+}
+.hero-btn-secondary {
+  padding: 10px 28px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s;
+  backdrop-filter: blur(4px);
+}
+.hero-btn-secondary:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
 }
 
-/* 统计面板 */
-.hero-stats {
-  display: flex;
-  gap: 16px;
-}
-.stat-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border-radius: 16px;
-  padding: 16px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-}
-.stat-num {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--px-blue);
-}
-.stat-label {
-  font-size: 12px;
-  color: var(--px-text-tertiary);
-  font-weight: 500;
+/* 左侧深色背景斜切 */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 60%, #0f172a 100%);
+  clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+  z-index: 1;
 }
 
-/* 轮播图 */
+/* 右侧轮播 — 充满右侧 */
 .hero-carousel {
-  width: 480px;
-  flex-shrink: 0;
-  position: relative;
-  border-radius: 24px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 58%;
+  height: 100%;
+  z-index: 0;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
-  aspect-ratio: 4 / 3;
-  background: #f0f0f0;
+  background: #1a1a2e;
 }
 .carousel-viewport {
   position: absolute;
@@ -662,15 +701,35 @@ onBeforeUnmount(() => {
   inset: 0;
   opacity: 0;
   transition: opacity 0.8s ease;
+  cursor: pointer;
 }
-.carousel-slide.active {
-  opacity: 1;
-}
+.carousel-slide.active { opacity: 1; }
 .carousel-slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.carousel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 36px 24px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.carousel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.carousel-artist {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
 }
 .carousel-arrow {
   position: absolute;
@@ -679,86 +738,105 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
-  border: none;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.2);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--px-text-secondary);
-  transition: all 0.2s ease;
+  color: #fff;
+  transition: all 0.2s;
   z-index: 2;
 }
-.carousel-arrow:hover {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--px-text-primary);
-}
+.carousel-arrow:hover { background: rgba(255,255,255,0.3); }
 .carousel-prev { left: 12px; }
 .carousel-next { right: 12px; }
 .carousel-dots {
   position: absolute;
-  bottom: 14px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 6px;
   z-index: 2;
 }
 .carousel-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255,255,255,0.35);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.3s;
   padding: 0;
 }
 .carousel-dot.active {
   background: #fff;
-  width: 24px;
+  width: 22px;
   border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 斜切装饰 — 底部白色过渡 */
+.hero-diagonal {
+  display: none;
 }
 
 /* ===================== 快捷导航 ===================== */
-.quick-nav {
+.platform-overview {
   background: #fff;
+  padding: 28px 0 20px;
   border-bottom: 1px solid #f0f0f0;
-  padding: 16px 0;
 }
-.qnav-inner {
+.overview-inner {
   max-width: var(--px-max-width);
   margin: 0 auto;
   padding: 0 32px;
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
 }
-.qnav-item {
+/* 快捷入口 — 卡片式 */
+.quick-nav {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+}
+.qnav-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-radius: 20px;
-  background: #F7F8FA;
-  color: var(--px-text-secondary);
+  padding: 18px 8px 14px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
   text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  cursor: pointer;
 }
-.qnav-item:hover {
-  background: var(--px-blue-light);
-  color: var(--px-blue);
+.qnav-card:hover {
+  background: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  border-color: transparent;
 }
-.qnav-icon {
+.qnav-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
-  color: inherit;
-  opacity: 0.7;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.qnav-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--px-text-primary);
+  white-space: nowrap;
+}
+.qnav-desc {
+  font-size: 11px;
+  color: var(--px-text-placeholder);
+  white-space: nowrap;
 }
 
 /* ===================== 通用区块 ===================== */
@@ -1360,39 +1438,54 @@ onBeforeUnmount(() => {
 
 /* ===================== 响应式 ===================== */
 @media (max-width: 1100px) {
+  .hero-inner { padding: 0 32px; }
+  .hero-text { flex: 0 0 340px; }
+  .hero-section::before { width: 50%; }
+  .hero-carousel { width: 60%; }
   .masonry-grid { column-count: 3; }
   .contest-grid { grid-template-columns: repeat(3, 1fr); }
   .commission-layout { grid-template-columns: 1fr 240px; }
   .ranking-grid { grid-template-columns: 1fr 1fr; }
   .ranking-grid > .ranking-panel:last-child { display: none; }
+  .quick-nav { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 900px) {
-  .hero-inner { flex-direction: column; gap: 32px; }
-  .hero-carousel { width: 100%; max-width: 480px; }
+  .hero-section { height: 520px; }
+  .hero-section::before { width: 100%; height: 55%; clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); }
+  .hero-carousel { width: 100%; height: 50%; top: auto; bottom: 0; }
+  .hero-inner { flex-direction: column; text-align: center; padding: 32px 24px; height: auto; padding-top: 40px; }
+  .hero-text { flex: none; width: 100%; padding: 0; }
+  .hero-stats { justify-content: center; }
+  .hero-btns { justify-content: center; }
   .masonry-grid { column-count: 3; }
   .contest-grid { grid-template-columns: repeat(2, 1fr); }
   .commission-layout { grid-template-columns: 1fr; }
   .commission-sidebar { display: none; }
   .ranking-grid { grid-template-columns: 1fr; }
+  .quick-nav { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 768px) {
-  .hero-section { padding: 32px 0 40px; }
-  .hero-headline { font-size: 24px; }
-  .hero-stats { flex-wrap: wrap; }
-  .stat-panel { padding: 12px 16px; }
-  .stat-num { font-size: 18px; }
+  .hero-section { height: 480px; }
+  .hero-title { font-size: 28px; }
+  .quick-nav { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .qnav-card { padding: 12px 4px 10px; }
   .masonry-grid { column-count: 2; }
   .contest-grid { grid-template-columns: repeat(2, 1fr); }
   .commission-list { grid-template-columns: 1fr; }
   .section-inner { padding: 0 16px; }
-  .hero-inner { padding: 0 16px; }
-  .qnav-inner { padding: 0 16px; }
+  .overview-inner { padding: 0 16px; }
 }
 @media (max-width: 480px) {
-  .hero-headline { font-size: 20px; }
-  .hero-carousel { aspect-ratio: 3 / 2; }
+  .hero-section { height: 420px; }
+  .hero-inner { padding: 24px 16px; }
+  .hero-title { font-size: 24px; }
+  .hero-subtitle { font-size: 14px; }
+  .carousel-arrow { display: none; }
   .masonry-grid { column-count: 2; column-gap: 10px; }
   .contest-grid { grid-template-columns: 1fr; }
   .footer-links { flex-wrap: wrap; gap: 12px; }
+  .quick-nav { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .qnav-icon-wrap { width: 36px; height: 36px; border-radius: 10px; }
+  .qnav-icon-wrap svg { width: 18px; height: 18px; }
 }
 </style>
