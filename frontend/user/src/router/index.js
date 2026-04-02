@@ -32,6 +32,12 @@ const routes = [
         meta: { requiresAuth: false }
       },
       {
+        path: 'image-search',
+        name: 'ImageSearch',
+        component: () => import('@/views/artwork/ImageSearchView.vue'),
+        meta: { requiresAuth: false }
+      },
+      {
         path: 'following',
         name: 'Following',
         component: () => import('@/views/feed/FeedView.vue'),

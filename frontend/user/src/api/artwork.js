@@ -174,3 +174,21 @@ export function getSearchSuggestions(keyword, limit = 8) {
     params: { keyword, limit }
   })
 }
+
+/**
+ * 以图搜图 — 上传图片搜索相似作品
+ * @param {File} file - 图片文件
+ * @param {number} size - 返回结果数量
+ */
+export function searchByImage(file, size = 20) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('size', size)
+  return request({
+    url: '/api/artworks/search-by-image',
+    method: 'post',
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 30000
+  })
+}

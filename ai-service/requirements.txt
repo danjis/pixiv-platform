@@ -14,6 +14,9 @@ Pillow==10.1.0           # Python 图像处理库
 # HTTP 客户端
 requests==2.31.0         # HTTP 请求库
 
+# 文件上传支持
+python-multipart==0.0.6  # FastAPI 文件上传依赖
+
 # 数据验证
 pydantic==2.5.0          # 数据验证和设置管理
 

@@ -20,7 +20,11 @@
               class="px-search-input"
             >
               <template #suffix>
-                <el-icon class="search-icon" @click="handleSearch"><Search /></el-icon>
+                <div class="search-suffix-row">
+                  <el-icon class="camera-icon" @click.stop="goImageSearch" title="以图搜图"><Camera /></el-icon>
+                  <span class="suffix-divider"></span>
+                  <el-icon class="search-icon" @click="handleSearch"><Search /></el-icon>
+                </div>
               </template>
             </el-input>
             <!-- 搜索建议下拉 -->
@@ -142,7 +146,7 @@ import { useUserStore } from '@/stores/user'
 import { getUnreadCount } from '@/api/notification'
 import { getSearchSuggestions } from '@/api/artwork'
 import { useWebSocketNotification } from '@/composables/useWebSocket'
-import { Search, Upload, CaretBottom } from '@element-plus/icons-vue'
+import { Search, Upload, CaretBottom, Camera } from '@element-plus/icons-vue'
 import { ElNotification, ElMessage } from 'element-plus'
 import FloatingHelpButton from '@/components/FloatingHelpButton.vue'
 
@@ -168,6 +172,10 @@ const handleSearch = () => {
   if (keyword.value.trim()) {
     router.push({ name: 'Artworks', query: { keyword: keyword.value } })
   }
+}
+
+const goImageSearch = () => {
+  router.push({ name: 'ImageSearch' })
 }
 
 const handleSearchInput = () => {
@@ -430,6 +438,24 @@ onBeforeUnmount(() => {
 .px-search-input :deep(.el-input__wrapper.is-focus) {
   background-color: #fff;
   box-shadow: 0 0 0 1px #d0d0d0 inset;
+}
+
+.search-suffix-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.camera-icon {
+  cursor: pointer;
+  color: #999;
+  font-size: 16px;
+  transition: color 0.15s;
+}
+.camera-icon:hover { color: var(--px-blue, #0096FA); }
+.suffix-divider {
+  width: 1px;
+  height: 14px;
+  background: #ddd;
 }
 
 .right-actions {

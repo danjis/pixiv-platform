@@ -80,6 +80,27 @@
       </div>
     </div>
 
+    <!-- Kibana 数据看板 -->
+    <div class="kibana-section">
+      <h4 class="panel-title">
+        Kibana 运营看板
+        <a class="kibana-link" :href="kibanaUrl" target="_blank" title="在新窗口打开 Kibana">
+          <el-icon><Link /></el-icon> 打开 Kibana
+        </a>
+      </h4>
+      <div class="kibana-embed-wrap">
+        <iframe
+          :src="kibanaUrl + '/app/dashboards'"
+          class="kibana-iframe"
+          frameborder="0"
+          allow="fullscreen"
+        ></iframe>
+        <div class="kibana-fallback">
+          <p>如 Kibana 未加载，请确认容器已启动并访问 <a :href="kibanaUrl" target="_blank">{{ kibanaUrl }}</a></p>
+        </div>
+      </div>
+    </div>
+
     <!-- 最近审计日志 -->
     <div class="log-section">
       <h4 class="panel-title">最近操作日志</h4>
@@ -106,7 +127,7 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import * as echarts from 'echarts'
-import { User, Picture, Stamp, Suitcase } from '@element-plus/icons-vue'
+import { User, Picture, Stamp, Suitcase, Link } from '@element-plus/icons-vue'
 import { getPlatformStats, getArtworkStats, getAuditLogs } from '@/api/stats'
 
 const pieChartRef = ref(null)
@@ -131,6 +152,7 @@ const artworkStats = reactive({
 })
 
 const recentLogs = ref([])
+const kibanaUrl = ref('http://8.155.175.105:5601')
 
 const statCards = [
   { key: 'totalUsers', label: '总用户', icon: markRaw(User), color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
@@ -406,4 +428,45 @@ onBeforeUnmount(() => {
 .log-section .table-wrapper {
   box-shadow: none;
 }
+
+/* Kibana 看板 */
+.kibana-section {
+  grid-column: 1 / -1;
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+.kibana-section .panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kibana-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--c-primary, #6366f1);
+  text-decoration: none;
+}
+.kibana-link:hover { text-decoration: underline; }
+.kibana-embed-wrap { position: relative; }
+.kibana-iframe {
+  width: 100%;
+  height: 520px;
+  border-radius: 8px;
+  border: 1px solid var(--c-border, #e2e8f0);
+}
+.kibana-fallback {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--c-text-muted, #94a3b8);
+}
+.kibana-fallback a { color: var(--c-primary, #6366f1); }
 </style>

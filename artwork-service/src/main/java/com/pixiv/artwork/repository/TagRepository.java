@@ -17,50 +17,50 @@ import java.util.Optional;
  */
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {
-    
+
     /**
      * 根据标签名称查询标签
      */
     Optional<Tag> findByName(String name);
-    
+
     /**
      * 根据标签名称列表查询标签
      */
     List<Tag> findByNameIn(List<String> names);
-    
+
     /**
      * 检查标签名称是否存在
      */
     boolean existsByName(String name);
-    
+
     /**
      * 根据使用次数查询热门标签（分页）
      */
     Page<Tag> findAllByOrderByUsageCountDesc(Pageable pageable);
-    
+
     /**
      * 查询使用次数大于指定值的标签
      */
     @Query("SELECT t FROM Tag t WHERE t.usageCount > :minCount ORDER BY t.usageCount DESC")
     List<Tag> findPopularTags(@Param("minCount") Integer minCount, Pageable pageable);
-    
+
     /**
-     * 根据标签名称模糊搜索
+     * 根据标签名称模糊搜索（同时匹配英文名和中文名）
      */
-    @Query("SELECT t FROM Tag t WHERE t.name LIKE %:keyword% ORDER BY t.usageCount DESC")
+    @Query("SELECT t FROM Tag t WHERE t.name LIKE %:keyword% OR t.nameZh LIKE %:keyword% ORDER BY t.usageCount DESC")
     List<Tag> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
-    
+
     /**
      * 查询使用次数最高的前 N 个标签
      */
     List<Tag> findTop10ByOrderByUsageCountDesc();
-    
+
     /**
      * 查询使用次数最高的前 N 个标签（自定义数量）
      */
     @Query("SELECT t FROM Tag t ORDER BY t.usageCount DESC")
     List<Tag> findTopNByUsageCount(Pageable pageable);
-    
+
     /**
      * 统计标签总数
      */

@@ -55,6 +55,7 @@ public class RateLimiterFilter implements GlobalFilter, Ordered {
         PATH_LIMITS.put("/api/captcha", 30);
         PATH_LIMITS.put("/api/files/upload", 60);
         PATH_LIMITS.put("/api/artworks/suggestions", 120);
+        PATH_LIMITS.put("/api/artworks/search-by-image", 30);
         // 作品前缀独立设置更高上限，首页/搜索/支流等并发请求很容易超标
         PATH_LIMITS.put("/api/artworks", 1000);
     }

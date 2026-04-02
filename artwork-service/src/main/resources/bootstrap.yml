@@ -44,6 +44,9 @@ spring:
           - data-id: shared-rabbitmq.yml
             group: DEFAULT_GROUP
             refresh: true
+          - data-id: shared-elasticsearch.yml
+            group: DEFAULT_GROUP
+            refresh: true
           - data-id: shared-logging.yml
             group: DEFAULT_GROUP
             refresh: true

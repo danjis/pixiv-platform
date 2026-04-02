@@ -34,9 +34,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -96,6 +99,9 @@ public class ArtworkService {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     private static final String ARTWORK_CACHE_PREFIX = "artwork:";
     private static final long ARTWORK_CACHE_TTL = 1; // 缓存 1 小时
@@ -204,6 +210,17 @@ public class ArtworkService {
         // 5.5 推送到粉丝 Feed 收件箱（仅发布状态）
         if (!isDraft) {
             pushToFollowerFeeds(artistId, artwork.getId());
+        }
+
+        // 5.6 发送 ES 同步消息（事务提交后触发，避免 ES 读到未提交的数据）
+        if (!isDraft) {
+            final Long savedId = artwork.getId();
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sendEsSyncMessage(savedId, "INDEX");
+                }
+            });
         }
 
         // 6. 转换为 DTO 并返回
@@ -330,6 +347,17 @@ public class ArtworkService {
             // 推送到粉丝 Feed
             pushToFollowerFeeds(artistId, artwork.getId());
             logger.info("草稿发布 - 已推送到粉丝 Feed: artworkId={}", artwork.getId());
+        }
+
+        // 5.6 发送 ES 同步消息（事务提交后触发）
+        if (artwork.getStatus() == ArtworkStatus.PUBLISHED) {
+            final Long savedId = artwork.getId();
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sendEsSyncMessage(savedId, "INDEX");
+                }
+            });
         }
 
         logger.info("作品更新成功: artworkId={}", artworkId);
@@ -1138,6 +1166,9 @@ public class ArtworkService {
         // 7. 从排行榜移除
         rankingService.removeFromRanking(artworkId);
 
+        // 7.5 发送 ES 同步删除消息
+        sendEsSyncMessage(artworkId, "DELETE");
+
         // 8. 异步删除 OSS 文件（不影响主流程）
         if (!fileUrlsToDelete.isEmpty()) {
             try {
@@ -1221,7 +1252,11 @@ public class ArtworkService {
         try {
             List<Tag> matchingTags = tagRepository.searchByKeyword(trimmed, pageable);
             for (Tag tag : matchingTags) {
-                suggestions.add(new SearchSuggestionDTO("tag", tag.getName(), tag.getUsageCount()));
+                // 优先显示中文名，没有则显示英文名
+                String displayName = (tag.getNameZh() != null && !tag.getNameZh().isEmpty())
+                        ? tag.getNameZh()
+                        : tag.getName();
+                suggestions.add(new SearchSuggestionDTO("tag", displayName, tag.getUsageCount()));
             }
         } catch (Exception e) {
             logger.warn("搜索标签建议失败: {}", e.getMessage());
@@ -1262,6 +1297,25 @@ public class ArtworkService {
         } catch (Exception e) {
             logger.warn("推送 Feed 失败（不影响发布）: artistId={}, artworkId={}, error={}",
                     artistId, artworkId, e.getMessage());
+        }
+    }
+
+    /**
+     * 发送 ES 同步消息到 RabbitMQ
+     *
+     * @param artworkId 作品 ID
+     * @param action    操作类型：INDEX 或 DELETE
+     */
+    private void sendEsSyncMessage(Long artworkId, String action) {
+        try {
+            java.util.Map<String, Object> message = new java.util.HashMap<>();
+            message.put("artworkId", artworkId);
+            message.put("action", action);
+            rabbitTemplate.convertAndSend(com.pixiv.artwork.config.RabbitMQConfig.ES_SYNC_QUEUE, message);
+            logger.info("ES同步消息已发送: artworkId={}, action={}", artworkId, action);
+        } catch (Exception e) {
+            // ES 同步消息发送失败不影响主业务
+            logger.error("发送ES同步消息失败: artworkId={}, action={}, error={}", artworkId, action, e.getMessage());
         }
     }
 

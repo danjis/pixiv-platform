@@ -2,6 +2,17 @@
   <div class="artworks-page">
     <div class="page-header-bar">
       <h2>作品管理</h2>
+      <div class="header-actions">
+        <el-button type="primary" plain :loading="syncLoading" @click="handleFullSync">
+          <el-icon><Refresh /></el-icon> ES 全量同步
+        </el-button>
+        <el-button type="warning" plain :loading="featureLoading" @click="handleExtractFeatures">
+          <el-icon><MagicStick /></el-icon> 提取 AI 特征
+        </el-button>
+        <el-button type="info" plain :loading="translateLoading" @click="handleTranslateTags">
+          翻译标签
+        </el-button>
+      </div>
     </div>
 
     <!-- 筛选栏 -->
@@ -95,11 +106,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Refresh, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getArtworks, deleteArtwork } from '@/api/artwork'
+import { getArtworks, deleteArtwork, esFullSync, esExtractFeatures, batchTranslateTags } from '@/api/artwork'
 
 const loading = ref(false)
+const syncLoading = ref(false)
+const featureLoading = ref(false)
+const translateLoading = ref(false)
 const artworks = ref([])
 const keyword = ref('')
 const statusFilter = ref('')
@@ -158,12 +172,73 @@ async function handleDelete(row) {
   } catch { /* cancelled */ }
 }
 
+async function handleFullSync() {
+  try {
+    await ElMessageBox.confirm('将把所有作品数据全量同步到 Elasticsearch 搜索引擎，确定执行？', 'ES 全量同步', {
+      confirmButtonText: '执行', cancelButtonText: '取消', type: 'warning'
+    })
+    syncLoading.value = true
+    const res = await esFullSync()
+    if (res.code === 200) {
+      ElMessage.success(`同步完成：${res.data?.indexed ?? '—'} 条作品已索引`)
+    } else {
+      ElMessage.error(res.message || '同步失败')
+    }
+  } catch { /* cancelled */ }
+  finally { syncLoading.value = false }
+}
+
+async function handleExtractFeatures() {
+  try {
+    await ElMessageBox.confirm('将为所有已索引作品提取 AI 视觉特征向量（用于以图搜图），耗时较长，确定执行？', '提取 AI 特征', {
+      confirmButtonText: '执行', cancelButtonText: '取消', type: 'warning'
+    })
+    featureLoading.value = true
+    const res = await esExtractFeatures()
+    if (res.code === 200) {
+      const d = res.data || {}
+      ElMessage.success(`提取完成：成功 ${d.extractedCount ?? 0} 条，失败 ${d.failedCount ?? 0} 条`)
+    } else {
+      ElMessage.error(res.message || '提取失败')
+    }
+  } catch { /* cancelled */ }
+  finally { featureLoading.value = false }
+}
+
+async function handleTranslateTags() {
+  try {
+    await ElMessageBox.confirm('将调用 AI 服务将所有英文标签翻译为中文，确定执行？', '批量翻译标签', {
+      confirmButtonText: '执行', cancelButtonText: '取消', type: 'info'
+    })
+    translateLoading.value = true
+    const res = await batchTranslateTags()
+    if (res.code === 200) {
+      const d = res.data || {}
+      ElMessage.success(`翻译完成：共 ${d.totalTags ?? 0} 个标签，成功翻译 ${d.translatedCount ?? 0} 个`)
+    } else {
+      ElMessage.error(res.message || '翻译失败')
+    }
+  } catch { /* cancelled */ }
+  finally { translateLoading.value = false }
+}
+
 onMounted(() => { loadArtworks() })
 </script>
 
 <style scoped>
 .artworks-page {
   width: 100%;
+}
+
+.page-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .artwork-cell {

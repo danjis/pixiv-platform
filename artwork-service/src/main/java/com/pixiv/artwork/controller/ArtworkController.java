@@ -5,6 +5,7 @@ import com.pixiv.artwork.dto.ArtworkDetailDTO;
 import com.pixiv.artwork.dto.CreateArtworkRequest;
 import com.pixiv.artwork.dto.UpdateArtworkRequest;
 import com.pixiv.artwork.service.ArtworkService;
+import com.pixiv.artwork.service.ArtworkSearchService;
 import com.pixiv.common.dto.PageResult;
 import com.pixiv.common.dto.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +38,12 @@ public class ArtworkController {
 
         @Autowired
         private ArtworkService artworkService;
+
+        @Autowired
+        private ArtworkSearchService artworkSearchService;
+
+        @Value("${ai.service.url:http://localhost:8000}")
+        private String aiServiceUrl;
 
         /**
          * 创建作品（发布作品）
@@ -198,9 +206,22 @@ public class ArtworkController {
                                                 .body(Result.error("每页大小必须在 1-100 之间"));
                         }
 
-                        PageResult<ArtworkDTO> result = artworkService.getArtworks(
-                                        keyword, tags, sortBy, page, size, artistId, isAigc, dateFrom, dateTo,
-                                        minLikes);
+                        PageResult<ArtworkDTO> result = null;
+
+                        // 优先使用 ES 搜索（仅当有关键词且无高级筛选时）
+                        boolean useEs = keyword != null && !keyword.trim().isEmpty()
+                                        && artistId == null && dateFrom == null && dateTo == null && minLikes == null;
+                        if (useEs) {
+                                result = artworkSearchService.search(keyword, tags, sortBy, page, size, isAigc);
+                        }
+
+                        // ES 不可用或无关键词时，降级到 MySQL
+                        if (result == null) {
+                                result = artworkService.getArtworks(
+                                                keyword, tags, sortBy, page, size, artistId, isAigc, dateFrom, dateTo,
+                                                minLikes);
+                        }
+
                         return ResponseEntity.ok(Result.success(result));
 
                 } catch (Exception e) {
@@ -580,6 +601,100 @@ public class ArtworkController {
                 } catch (Exception e) {
                         logger.error("搜索建议失败: keyword={}, error={}", keyword, e.getMessage());
                         return ResponseEntity.ok(Result.success(java.util.Collections.emptyList()));
+                }
+        }
+
+        // ==================== 以图搜图 ====================
+
+        /**
+         * 以图搜图
+         *
+         * 用户上传图片 → 调用 AI 服务提取特征向量 → ES kNN 向量检索 → 返回相似作品
+         */
+        @Operation(summary = "以图搜图", description = "上传一张图片，通过 AI 视觉特征匹配查找相似的作品。\n\n"
+                        + "**实现原理：**\n"
+                        + "1. 上传图片到 AI 服务提取 DeepDanbooru 特征向量\n"
+                        + "2. 使用 Elasticsearch kNN 向量检索匹配相似作品\n"
+                        + "3. 返回按相似度排序的作品列表\n\n"
+                        + "**支持格式：** JPG/PNG/GIF/WEBP，最大 10MB")
+        @PostMapping("/search-by-image")
+        public ResponseEntity<Result<List<ArtworkDTO>>> searchByImage(
+                        @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+                        @RequestParam(value = "size", defaultValue = "20") int size) {
+
+                logger.info("收到以图搜图请求: fileName={}, fileSize={}", file.getOriginalFilename(),
+                                file.getSize());
+
+                try {
+                        // 参数验证
+                        if (file.isEmpty()) {
+                                return ResponseEntity.badRequest().body(Result.error("请上传图片文件"));
+                        }
+                        if (file.getSize() > 10 * 1024 * 1024) {
+                                return ResponseEntity.badRequest().body(Result.error("文件大小不能超过 10MB"));
+                        }
+                        if (size < 1 || size > 50) {
+                                size = 20;
+                        }
+
+                        // 调用 AI 服务提取特征向量
+                        float[] featureVector = extractFeatureFromAiService(file);
+                        if (featureVector == null) {
+                                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                                .body(Result.error("AI 特征提取服务暂不可用"));
+                        }
+
+                        // ES 向量检索
+                        List<ArtworkDTO> results = artworkSearchService.searchByImage(featureVector, size);
+                        logger.info("以图搜图完成: 返回 {} 条结果", results.size());
+
+                        return ResponseEntity.ok(Result.success(results));
+
+                } catch (Exception e) {
+                        logger.error("以图搜图失败: error={}", e.getMessage(), e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body(Result.error("搜索失败: " + e.getMessage()));
+                }
+        }
+
+        /**
+         * 调用 AI 服务提取图片特征向量
+         */
+        private float[] extractFeatureFromAiService(org.springframework.web.multipart.MultipartFile file) {
+                try {
+                        // 构建 multipart 请求发送到 AI 服务
+                        String url = aiServiceUrl + "/api/extract-features/upload";
+
+                        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+                        headers.setContentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA);
+
+                        org.springframework.util.MultiValueMap<String, Object> body = new org.springframework.util.LinkedMultiValueMap<>();
+                        body.add("file", new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+                                @Override
+                                public String getFilename() {
+                                        return file.getOriginalFilename();
+                                }
+                        });
+
+                        org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, Object>> requestEntity = new org.springframework.http.HttpEntity<>(
+                                        body, headers);
+
+                        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+                        var response = restTemplate.postForObject(url, requestEntity, java.util.Map.class);
+
+                        if (response != null && response.containsKey("feature_vector")) {
+                                List<Number> vectorList = (List<Number>) response.get("feature_vector");
+                                float[] vector = new float[vectorList.size()];
+                                for (int i = 0; i < vectorList.size(); i++) {
+                                        vector[i] = vectorList.get(i).floatValue();
+                                }
+                                return vector;
+                        }
+                        return null;
+
+                } catch (Exception e) {
+                        logger.error("调用 AI 特征提取服务失败: {}", e.getMessage());
+                        return null;
                 }
         }
 

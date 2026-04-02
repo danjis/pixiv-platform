@@ -56,6 +56,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/api/captcha/**", // 验证码（公开接口）
             "/api/artworks", // 作品列表（游客可访问）
             "/api/artworks/ranking", // 排行榜（游客可访问）
+            "/api/artworks/suggestions", // 搜索联想补全（公开）
+            "/api/artworks/search-by-image", // 以图搜图（公开）
             "/api/artworks/*/", // 作品详情（游客可访问）
             "/api/tags/**", // 标签（游客可访问）
             "/api/contests", // 比赛列表（游客可访问）

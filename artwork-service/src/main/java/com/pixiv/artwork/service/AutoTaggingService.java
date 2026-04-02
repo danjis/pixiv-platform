@@ -159,17 +159,24 @@ public class AutoTaggingService {
 
         for (TagInfo tagInfo : tagInfos) {
             try {
-                // 1. 获取标签显示名称（优先中文翻译）
-                String displayName = tagInfo.getDisplayName();
+                // 1. 使用英文标签名作为唯一标识
+                String englishName = tagInfo.getTag();
+                String chineseName = tagInfo.getTagZh();
 
-                // 2. 查找或创建标签
-                Tag tag = tagRepository.findByName(displayName)
+                // 2. 查找或创建标签（以英文名为主键）
+                Tag tag = tagRepository.findByName(englishName)
                         .orElseGet(() -> {
                             Tag newTag = new Tag();
-                            newTag.setName(displayName);
+                            newTag.setName(englishName);
                             newTag.setUsageCount(0);
-                            return tagRepository.save(newTag);
+                            return newTag;
                         });
+
+                // 更新中文翻译（如果有新翻译）
+                if (chineseName != null && !chineseName.isEmpty() && !chineseName.equals(englishName)) {
+                    tag.setNameZh(chineseName);
+                }
+                tagRepository.save(tag);
 
                 // 2. 检查是否已存在关联
                 if (artworkTagRepository.existsByArtworkIdAndTagId(artworkId, tag.getId())) {

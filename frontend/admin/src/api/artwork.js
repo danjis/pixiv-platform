@@ -30,3 +30,36 @@ export function deleteArtwork(id, data) {
     data
   })
 }
+
+/**
+ * ES 全量同步
+ */
+export function esFullSync() {
+  return request({
+    url: '/api/admin/artworks/es/full-sync',
+    method: 'post',
+    timeout: 60000
+  })
+}
+
+/**
+ * 批量提取 AI 特征向量（以图搜图用）
+ */
+export function esExtractFeatures() {
+  return request({
+    url: '/api/admin/artworks/es/extract-features',
+    method: 'post',
+    timeout: 120000
+  })
+}
+
+/**
+ * 批量翻译标签（英文→中文）
+ */
+export function batchTranslateTags() {
+  return request({
+    url: '/api/admin/artworks/tags/translate',
+    method: 'post',
+    timeout: 60000
+  })
+}

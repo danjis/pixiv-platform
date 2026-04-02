@@ -24,6 +24,11 @@ public class RabbitMQConfig {
     public static final String TAGGING_QUEUE = "artwork.tagging";
 
     /**
+     * ES 数据同步队列名称
+     */
+    public static final String ES_SYNC_QUEUE = "artwork.es.sync";
+
+    /**
      * 创建智能打标队列
      * 
      * @return 队列实例
@@ -32,6 +37,16 @@ public class RabbitMQConfig {
     public Queue taggingQueue() {
         // durable=true 表示队列持久化
         return new Queue(TAGGING_QUEUE, true);
+    }
+
+    /**
+     * 创建 ES 数据同步队列
+     * 
+     * @return 队列实例
+     */
+    @Bean
+    public Queue esSyncQueue() {
+        return new Queue(ES_SYNC_QUEUE, true);
     }
 
     /**

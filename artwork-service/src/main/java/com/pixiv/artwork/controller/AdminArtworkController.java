@@ -5,6 +5,7 @@ import com.pixiv.artwork.entity.Artwork;
 import com.pixiv.artwork.entity.ArtworkStatus;
 import com.pixiv.artwork.repository.ArtworkRepository;
 import com.pixiv.artwork.service.ArtworkService;
+import com.pixiv.artwork.service.ArtworkSearchService;
 import com.pixiv.common.dto.PageResult;
 import com.pixiv.common.dto.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +39,12 @@ public class AdminArtworkController {
 
     @Autowired
     private ArtworkService artworkService;
+
+    @Autowired
+    private ArtworkSearchService artworkSearchService;
+
+    @Value("${ai.service.url:http://localhost:8000}")
+    private String aiServiceUrl;
 
     /**
      * 检查是否为管理员
@@ -176,4 +184,146 @@ public class AdminArtworkController {
 
         return ResponseEntity.ok(Result.success(stats));
     }
+
+    /**
+     * 全量同步作品到 Elasticsearch
+     * 
+     * 将数据库中所有已发布作品同步到 ES 索引，适用于首次部署或索引重建
+     */
+    @Operation(summary = "全量同步ES索引", description = "将所有已发布作品全量同步到 Elasticsearch，用于首次部署或索引重建")
+    @PostMapping("/es/full-sync")
+    public ResponseEntity<Result<Map<String, Object>>> fullSyncEs(
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!isAdmin(role)) {
+            return ResponseEntity.status(403).body(Result.error("需要管理员权限"));
+        }
+
+        try {
+            int count = artworkSearchService.fullSync();
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("syncedCount", count);
+            result.put("message", "全量同步完成");
+            return ResponseEntity.ok(Result.success(result));
+        } catch (Exception e) {
+            logger.error("ES全量同步失败: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Result.error("同步失败: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 批量提取作品特征向量
+     *
+     * 遍历所有已索引的作品，调用 AI 服务提取特征向量并更新 ES，
+     * 用于启用以图搜图功能
+     */
+    @Operation(summary = "批量提取特征向量", description = "为所有已索引作品提取 AI 特征向量，启用以图搜图功能")
+    @PostMapping("/es/extract-features")
+    public ResponseEntity<Result<Map<String, Object>>> batchExtractFeatures(
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!isAdmin(role)) {
+            return ResponseEntity.status(403).body(Result.error("需要管理员权限"));
+        }
+
+        try {
+            int count = 0;
+            int failed = 0;
+            int pageNum = 0;
+            int pageSize = 50;
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
+            while (true) {
+                var page = artworkSearchService.getAllIndexedArtworkUrls(pageNum, pageSize);
+                if (page.isEmpty())
+                    break;
+
+                for (var entry : page.entrySet()) {
+                    Long artworkId = entry.getKey();
+                    String imageUrl = entry.getValue();
+                    try {
+                        // 调用 AI 服务提取特征
+                        Map<String, Object> request = new java.util.HashMap<>();
+                        request.put("image_url", imageUrl);
+                        var response = restTemplate.postForObject(
+                                aiServiceUrl + "/api/extract-features", request, Map.class);
+
+                        if (response != null && response.containsKey("feature_vector")) {
+                            java.util.List<Number> vectorList = (java.util.List<Number>) response.get("feature_vector");
+                            float[] vector = new float[vectorList.size()];
+                            for (int i = 0; i < vectorList.size(); i++) {
+                                vector[i] = vectorList.get(i).floatValue();
+                            }
+                            artworkSearchService.updateFeatureVector(artworkId, vector);
+                            count++;
+                        }
+                    } catch (Exception e) {
+                        logger.warn("作品特征提取失败: artworkId={}, error={}", artworkId, e.getMessage());
+                        failed++;
+                    }
+                }
+                pageNum++;
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("extractedCount", count);
+            result.put("failedCount", failed);
+            result.put("message", "特征提取完成");
+            return ResponseEntity.ok(Result.success(result));
+        } catch (Exception e) {
+            logger.error("批量特征提取失败: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Result.error("提取失败: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 批量翻译标签（填充 nameZh 字段）
+     */
+    @Operation(summary = "批量翻译标签", description = "调用 AI 服务翻译所有没有中文名的标签")
+    @PostMapping("/tags/translate")
+    public ResponseEntity<Result<?>> batchTranslateTags() {
+        try {
+            // 获取所有没有中文翻译的标签
+            var allTags = tagRepository.findAll();
+            var needTranslate = allTags.stream()
+                    .filter(t -> t.getNameZh() == null || t.getNameZh().isEmpty())
+                    .map(com.pixiv.artwork.entity.Tag::getName)
+                    .toList();
+
+            if (needTranslate.isEmpty()) {
+                return ResponseEntity.ok(Result.success(Map.of("translatedCount", 0, "message", "所有标签已有中文翻译")));
+            }
+
+            // 调用 AI 服务批量翻译
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            Map<String, Object> request = new java.util.HashMap<>();
+            request.put("tags", needTranslate);
+            var response = restTemplate.postForObject(
+                    aiServiceUrl + "/api/tags/translate", request, Map.class);
+
+            int translated = 0;
+            if (response != null && response.containsKey("translations")) {
+                Map<String, String> translations = (Map<String, String>) response.get("translations");
+                for (var tag : allTags) {
+                    String zh = translations.get(tag.getName());
+                    if (zh != null && !zh.isEmpty()) {
+                        tag.setNameZh(zh);
+                        tagRepository.save(tag);
+                        translated++;
+                    }
+                }
+            }
+
+            return ResponseEntity.ok(Result.success(Map.of(
+                    "totalTags", allTags.size(),
+                    "translatedCount", translated,
+                    "message", "标签翻译完成")));
+        } catch (Exception e) {
+            logger.error("批量翻译标签失败: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Result.error("翻译失败: " + e.getMessage()));
+        }
+    }
+
+    @Autowired
+    private com.pixiv.artwork.repository.TagRepository tagRepository;
 }
