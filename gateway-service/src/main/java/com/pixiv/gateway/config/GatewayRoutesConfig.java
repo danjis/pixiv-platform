@@ -134,6 +134,11 @@ public class GatewayRoutesConfig {
                                                 .path("/api/feedback/**")
                                                 .uri("lb://notification-service"))
 
+                                // AI 智能客服接口
+                                .route("notification-service-ai-chat", r -> r
+                                                .path("/api/ai-chat/**")
+                                                .uri("lb://notification-service"))
+
                                 // WebSocket 实时通知（STOMP over SockJS）
                                 .route("notification-service-ws", r -> r
                                                 .path("/ws/notifications/**")

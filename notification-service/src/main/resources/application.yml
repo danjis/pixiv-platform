@@ -77,3 +77,8 @@ feign:
 logging:
   level:
     com.pixiv.notification: DEBUG
+
+# AI 服务配置
+ai:
+  service:
+    url: http://localhost:8000

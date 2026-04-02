@@ -6,10 +6,12 @@ AI 智能打标服务 - FastAPI 应用入口
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional, Dict
 import logging
 import time
+import os
 import requests
 import uuid
 import threading
@@ -551,6 +553,262 @@ def _extract_feature_vector(image: Image.Image) -> List[float]:
         vector = vector / norm
     
     return vector.tolist()
+
+
+# ==================== AI 智能客服 ====================
+
+# LLM 客户端（启动时初始化）
+llm_client = None
+
+# 平台知识库 System Prompt
+SYSTEM_PROMPT = """你是「小幻」，幻画空间（HuanHua）平台的AI智能客服助手。幻画空间是一个二次元内容社区与约稿平台，连接插画爱好者和创作者。
+
+## 你的角色
+- 友好、专业、略带二次元风格的客服助手
+- 熟悉平台所有功能，能为用户解答问题并引导操作
+- 回复简洁明了，适当使用emoji让对话更亲切
+
+## 平台核心功能
+
+### 作品相关
+- **发现页**：浏览所有公开作品，支持按关键词、标签、排序方式搜索
+- **以图搜图**：上传图片查找相似二次元作品（基于AI视觉特征匹配）
+- **发布作品**：画师可上传插画作品，支持多图、标签、AI自动打标
+- **排行榜**：按点赞数、收藏数等维度的作品排行
+- **AI智能打标**：上传作品时自动识别内容并生成标签
+- 用户可以对作品点赞、收藏、评论
+
+### 约稿系统
+- **发起约稿**：用户选择画师→填写需求→选择约稿方案→提交
+- **约稿方案**：画师可设置不同价位的约稿方案（如头像、半身、全身等）
+- **约稿流程**：提交请求 → 画师报价 → 用户接受并支付 → 画师创作 → 交付作品 → 用户确认
+- **支付**：支持支付宝在线支付
+- **私信**：约稿双方可通过私信系统沟通细节
+
+### 用户系统
+- **注册/登录**：支持用户名密码和邮箱验证码两种方式
+- **个人中心**：修改头像、昵称、个人简介等信息
+- **关注系统**：关注感兴趣的画师，在关注动态页查看更新
+- **浏览记录**：自动记录浏览过的作品
+- **签到系统**：每日签到获取积分
+
+### 会员系统
+- **会员等级**：普通会员、高级会员等
+- **会员权益**：专属标识、更多收藏位、优先客服等
+- **开通方式**：通过会员中心页面购买
+
+### 画师入驻
+- **申请条件**：需要提交作品样例进行审核
+- **申请流程**：个人中心 → 申请成为画师 → 等待管理员审核
+- **画师工作台**：通过审核后可进入Studio页面管理作品、约稿和收入
+
+### 比赛系统
+- **创作比赛**：平台定期举办主题创作比赛
+- **参赛方式**：在比赛详情页提交参赛作品
+
+### 其他功能
+- **通知中心**：约稿状态变更、新粉丝、作品被赞等实时通知
+- **优惠券**：约稿可使用优惠券抵扣
+- **反馈系统**：Bug反馈、功能建议、在线咨询
+
+## 页面导航指引
+- 首页: /
+- 发现作品: /artworks
+- 以图搜图: /image-search
+- 排行榜: /ranking
+- 关注动态: /following
+- 发布作品: /publish
+- 约稿管理: /commissions
+- 私信: /chat
+- 通知: /notifications
+- 个人中心: /profile
+- 浏览记录: /history
+- 优惠券: /coupons
+- 会员中心: /membership
+- 比赛: /contests
+- 画师工作台: /studio
+
+## 回复规则
+1. 始终基于平台实际功能回答，不编造不存在的功能
+2. 如果用户问题涉及具体操作，给出清晰的步骤指引
+3. 如果能引导到具体页面，在回复中提供页面路径
+4. 对于无法解答的问题，建议用户通过反馈系统联系人工客服
+5. 不回答与平台无关的问题，礼貌地引导回平台话题
+6. 回复使用中文，保持友好专业的语气
+"""
+
+class ChatMessage(BaseModel):
+    """聊天消息"""
+    role: str  # user / assistant / system
+    content: str
+
+class ChatRequest(BaseModel):
+    """聊天请求"""
+    message: str
+    history: List[ChatMessage] = []
+
+class ChatResponse(BaseModel):
+    """聊天响应"""
+    reply: str
+    suggestions: List[str] = []
+
+
+# 火山引擎 ARK 配置
+_LLM_API_KEY = "3e3d1d78-94cb-4b30-9342-ca4d4e02e3f5"
+_LLM_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
+_LLM_MODEL = "ep-20260402230556-lmqkv"
+
+
+def _init_llm_client():
+    """初始化 LLM 客户端"""
+    global llm_client
+    try:
+        from openai import OpenAI
+        api_key = os.environ.get("LLM_API_KEY", _LLM_API_KEY)
+        base_url = os.environ.get("LLM_BASE_URL", _LLM_BASE_URL)
+        if api_key:
+            llm_client = OpenAI(api_key=api_key, base_url=base_url)
+            logger.info(f"LLM 客户端初始化成功 (base_url={base_url})")
+        else:
+            logger.warning("未设置 LLM_API_KEY，AI 客服功能将不可用")
+    except Exception as e:
+        logger.error(f"LLM 客户端初始化失败: {e}")
+
+
+@app.on_event("startup")
+async def startup_init_llm():
+    """启动时初始化 LLM 客户端"""
+    _init_llm_client()
+
+
+@app.post("/api/chat", response_model=ChatResponse, tags=["AI智能客服"])
+async def ai_chat(req: ChatRequest):
+    """
+    AI 智能客服对话接口
+    
+    接收用户消息和历史对话，调用 LLM 生成回复。
+    集成平台知识库，能回答关于幻画空间的各类问题。
+    """
+    if llm_client is None:
+        raise HTTPException(status_code=503, detail="AI 客服服务未配置，请设置 LLM_API_KEY")
+    
+    start_time = time.time()
+    
+    try:
+        # 构建消息列表
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        
+        # 添加历史对话（最近10轮）
+        for msg in req.history[-20:]:
+            messages.append({"role": msg.role, "content": msg.content})
+        
+        # 添加当前用户消息
+        messages.append({"role": "user", "content": req.message})
+        
+        # 调用 LLM API
+        model_name = os.environ.get("LLM_MODEL", _LLM_MODEL)
+        response = llm_client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1024,
+            stream=False
+        )
+        
+        reply = response.choices[0].message.content.strip()
+        
+        # 生成推荐问题
+        suggestions = _generate_suggestions(req.message, reply)
+        
+        processing_time = time.time() - start_time
+        logger.info(f"AI 客服回复生成完成，耗时: {processing_time:.2f}s")
+        
+        return ChatResponse(reply=reply, suggestions=suggestions)
+        
+    except Exception as e:
+        logger.error(f"AI 客服回复生成失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"AI 回复生成失败: {str(e)}")
+
+
+@app.post("/api/chat/stream", tags=["AI智能客服"])
+async def ai_chat_stream(req: ChatRequest):
+    """
+    AI 智能客服流式对话接口 (SSE)
+    
+    以 Server-Sent Events 方式逐字返回 AI 回复，实现打字机效果。
+    """
+    if llm_client is None:
+        raise HTTPException(status_code=503, detail="AI 客服服务未配置，请设置 LLM_API_KEY")
+    
+    # 构建消息列表
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for msg in req.history[-20:]:
+        messages.append({"role": msg.role, "content": msg.content})
+    messages.append({"role": "user", "content": req.message})
+    
+    model_name = os.environ.get("LLM_MODEL", _LLM_MODEL)
+    
+    async def generate():
+        try:
+            response = llm_client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1024,
+                stream=True
+            )
+            
+            full_reply = ""
+            for chunk in response:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_reply += content
+                    yield f"data: {content}\n\n"
+            
+            # 发送结束标记
+            yield "data: [DONE]\n\n"
+            
+        except Exception as e:
+            logger.error(f"流式回复失败: {e}", exc_info=True)
+            yield f"data: [ERROR] {str(e)}\n\n"
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+
+
+def _generate_suggestions(user_msg: str, ai_reply: str) -> List[str]:
+    """根据对话内容生成推荐后续问题"""
+    suggestions = []
+    
+    keywords_map = {
+        "约稿": ["约稿流程是怎样的？", "如何查看约稿进度？", "约稿如何付款？"],
+        "作品": ["如何发布作品？", "如何搜索作品？", "以图搜图怎么用？"],
+        "画师": ["如何成为画师？", "如何找到合适的画师？", "画师工作台在哪？"],
+        "会员": ["会员有什么权益？", "如何开通会员？", "会员等级怎么升？"],
+        "支付": ["支持哪些支付方式？", "支付遇到问题怎么办？", "如何申请退款？"],
+        "账号": ["如何修改个人信息？", "如何修改密码？", "如何绑定邮箱？"],
+        "比赛": ["近期有什么比赛？", "如何参加比赛？", "比赛奖励是什么？"],
+    }
+    
+    combined = user_msg + ai_reply
+    for keyword, qs in keywords_map.items():
+        if keyword in combined:
+            for q in qs:
+                if q not in suggestions and len(suggestions) < 3:
+                    suggestions.append(q)
+    
+    # 如果没匹配到，给通用推荐
+    if not suggestions:
+        suggestions = ["平台有哪些功能？", "如何发起约稿？", "如何成为画师？"]
+    
+    return suggestions[:3]
 
 
 if __name__ == "__main__":

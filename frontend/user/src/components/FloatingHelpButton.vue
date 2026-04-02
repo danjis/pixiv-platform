@@ -1,16 +1,19 @@
 <template>
   <!-- 悬浮帮助按钮 -->
   <div class="floating-help">
-    <div class="help-btn" @click="togglePanel" :class="{ active: showPanel }">
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <div class="help-btn" @click="togglePanel" :class="{ active: showPanel || showAiChat }">
+      <svg v-if="!showAiChat" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
         <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
         <path d="M11 5h2v6h-2zm0 8h2v2h-2z"/>
+      </svg>
+      <svg v-else viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
       </svg>
     </div>
 
     <!-- 展开面板 -->
     <transition name="help-panel">
-      <div v-if="showPanel" class="help-panel">
+      <div v-if="showPanel && !showAiChat" class="help-panel">
         <div class="panel-header">
           <span>帮助与反馈</span>
           <el-icon class="close-icon" @click="showPanel = false"><Close /></el-icon>
@@ -18,6 +21,12 @@
 
         <!-- 快捷入口 -->
         <div class="quick-links">
+          <div class="quick-item" @click="openAiChat">
+            <div class="quick-icon ai">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21 10.975V8a2 2 0 00-2-2h-6V4.688c.305-.274.5-.668.5-1.11a1.5 1.5 0 00-3 0c0 .442.195.836.5 1.11V6H5a2 2 0 00-2 2v2.998l-.072.005A.999.999 0 002 12v2a1 1 0 001 1v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 001-1v-2a.999.999 0 00-1-1.025zM9 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM15 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 18v-2h8v2H8z"/></svg>
+            </div>
+            <span>AI 助手</span>
+          </div>
           <div class="quick-item" @click="openFeedbackDialog('CONSULTATION')">
             <div class="quick-icon consultation">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
@@ -30,12 +39,6 @@
             </div>
             <span>Bug反馈</span>
           </div>
-          <div class="quick-item" @click="openFeedbackDialog('FEATURE_REQUEST')">
-            <div class="quick-icon feature">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>
-            </div>
-            <span>功能建议</span>
-          </div>
           <div class="quick-item" @click="showHistory = true; showPanel = false">
             <div class="quick-icon history">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
@@ -47,6 +50,88 @@
         <div class="panel-footer">
           <p>工作时间：周一至周五 9:00-18:00</p>
           <p>邮箱：support@huanhua.com</p>
+        </div>
+      </div>
+    </transition>
+
+    <!-- AI 对话面板 -->
+    <transition name="ai-slide">
+      <div v-if="showAiChat" class="ai-chat-panel">
+        <!-- 头部 -->
+        <div class="ai-chat-header">
+          <div class="ai-header-left">
+            <div class="ai-avatar">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21 10.975V8a2 2 0 00-2-2h-6V4.688c.305-.274.5-.668.5-1.11a1.5 1.5 0 00-3 0c0 .442.195.836.5 1.11V6H5a2 2 0 00-2 2v2.998l-.072.005A.999.999 0 002 12v2a1 1 0 001 1v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 001-1v-2a.999.999 0 00-1-1.025zM9 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM15 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 18v-2h8v2H8z"/></svg>
+            </div>
+            <div class="ai-header-info">
+              <span class="ai-name">小幻 · AI 助手</span>
+              <span class="ai-status">在线</span>
+            </div>
+          </div>
+          <div class="ai-header-actions">
+            <el-tooltip content="新建会话" placement="top">
+              <el-icon class="header-action-btn" @click="handleNewSession"><Plus /></el-icon>
+            </el-tooltip>
+            <el-tooltip content="关闭" placement="top">
+              <el-icon class="header-action-btn" @click="showAiChat = false"><Close /></el-icon>
+            </el-tooltip>
+          </div>
+        </div>
+
+        <!-- 消息列表 -->
+        <div class="ai-messages" ref="messagesRef">
+          <!-- 欢迎消息 -->
+          <div v-if="messages.length === 0 && !loading" class="ai-welcome">
+            <div class="welcome-avatar">
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M21 10.975V8a2 2 0 00-2-2h-6V4.688c.305-.274.5-.668.5-1.11a1.5 1.5 0 00-3 0c0 .442.195.836.5 1.11V6H5a2 2 0 00-2 2v2.998l-.072.005A.999.999 0 002 12v2a1 1 0 001 1v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 001-1v-2a.999.999 0 00-1-1.025zM9 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM15 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 18v-2h8v2H8z"/></svg>
+            </div>
+            <h3>你好！我是小幻 👋</h3>
+            <p>幻画空间的 AI 智能助手，有什么可以帮你的吗？</p>
+            <div class="welcome-suggestions">
+              <button v-for="q in defaultQuestions" :key="q" @click="sendMessage(q)">{{ q }}</button>
+            </div>
+          </div>
+
+          <!-- 消息气泡 -->
+          <div v-for="msg in messages" :key="msg.id"
+               :class="['ai-msg', msg.role === 'user' ? 'msg-user' : 'msg-ai']">
+            <div v-if="msg.role === 'assistant'" class="msg-avatar">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21 10.975V8a2 2 0 00-2-2h-6V4.688c.305-.274.5-.668.5-1.11a1.5 1.5 0 00-3 0c0 .442.195.836.5 1.11V6H5a2 2 0 00-2 2v2.998l-.072.005A.999.999 0 002 12v2a1 1 0 001 1v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 001-1v-2a.999.999 0 00-1-1.025zM9 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM15 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 18v-2h8v2H8z"/></svg>
+            </div>
+            <div class="msg-bubble" v-html="renderMarkdown(msg.content)"></div>
+          </div>
+
+          <!-- 加载中 -->
+          <div v-if="sending" class="ai-msg msg-ai">
+            <div class="msg-avatar">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21 10.975V8a2 2 0 00-2-2h-6V4.688c.305-.274.5-.668.5-1.11a1.5 1.5 0 00-3 0c0 .442.195.836.5 1.11V6H5a2 2 0 00-2 2v2.998l-.072.005A.999.999 0 002 12v2a1 1 0 001 1v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 001-1v-2a.999.999 0 00-1-1.025zM9 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM15 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 18v-2h8v2H8z"/></svg>
+            </div>
+            <div class="msg-bubble typing">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 推荐问题 -->
+        <div class="ai-suggestions" v-if="suggestions.length && !sending">
+          <button v-for="s in suggestions" :key="s" @click="sendMessage(s)">{{ s }}</button>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="ai-input-bar">
+          <input
+            v-model="inputText"
+            placeholder="有什么可以帮你的？"
+            @keyup.enter="sendMessage(inputText)"
+            :disabled="sending"
+            maxlength="500"
+            ref="inputRef"
+          />
+          <button class="send-btn" @click="sendMessage(inputText)" :disabled="!inputText.trim() || sending">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
         </div>
       </div>
     </transition>
@@ -127,20 +212,39 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { Close } from '@element-plus/icons-vue'
+import { ref, watch, nextTick } from 'vue'
+import { Close, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { submitFeedback, getMyFeedbacks } from '@/api/feedback'
+import { createAiChatSession, sendAiChatMessage, getAiChatMessages } from '@/api/aiChat'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const showPanel = ref(false)
+const showAiChat = ref(false)
 const showFeedbackDialog = ref(false)
 const showHistory = ref(false)
 const submitting = ref(false)
 const historyLoading = ref(false)
 const feedbackList = ref([])
 const feedbackFormRef = ref(null)
+
+// AI 对话状态
+const messages = ref([])
+const inputText = ref('')
+const sending = ref(false)
+const loading = ref(false)
+const suggestions = ref([])
+const currentSessionId = ref(null)
+const messagesRef = ref(null)
+const inputRef = ref(null)
+
+const defaultQuestions = [
+  '平台有哪些功能？',
+  '如何发起约稿？',
+  '如何成为画师？',
+  '以图搜图怎么用？'
+]
 
 const feedbackForm = ref({
   type: 'CONSULTATION',
@@ -173,8 +277,141 @@ const statusTagMap = {
 }
 
 const togglePanel = () => {
+  if (showAiChat.value) {
+    showAiChat.value = false
+    return
+  }
   showPanel.value = !showPanel.value
 }
+
+// ========== AI 对话 ==========
+
+const openAiChat = async () => {
+  if (!userStore.isAuthenticated) {
+    ElMessage.warning('请先登录后使用 AI 助手')
+    return
+  }
+  showPanel.value = false
+  showAiChat.value = true
+  
+  // 如果没有当前会话，创建一个
+  if (!currentSessionId.value) {
+    await createNewSession()
+  }
+  
+  nextTick(() => {
+    if (inputRef.value) inputRef.value.focus()
+  })
+}
+
+const createNewSession = async () => {
+  try {
+    loading.value = true
+    const res = await createAiChatSession()
+    if (res.code === 200 && res.data) {
+      currentSessionId.value = res.data.id
+      messages.value = []
+      suggestions.value = []
+    }
+  } catch (e) {
+    console.error('创建会话失败:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleNewSession = async () => {
+  currentSessionId.value = null
+  messages.value = []
+  suggestions.value = []
+  await createNewSession()
+  nextTick(() => {
+    if (inputRef.value) inputRef.value.focus()
+  })
+}
+
+const sendMessage = async (text) => {
+  if (!text || !text.trim() || sending.value) return
+  
+  const msg = text.trim()
+  inputText.value = ''
+  suggestions.value = []
+  
+  // 如果没有会话，先创建
+  if (!currentSessionId.value) {
+    await createNewSession()
+  }
+  
+  // 添加用户消息到界面
+  messages.value.push({
+    id: Date.now(),
+    role: 'user',
+    content: msg,
+    createdAt: new Date().toISOString()
+  })
+  
+  scrollToBottom()
+  sending.value = true
+  
+  try {
+    const res = await sendAiChatMessage(currentSessionId.value, msg)
+    if (res.code === 200 && res.data) {
+      const aiMessage = res.data.message
+      if (aiMessage) {
+        messages.value.push({
+          id: aiMessage.id,
+          role: 'assistant',
+          content: aiMessage.content,
+          createdAt: aiMessage.createdAt
+        })
+      }
+      if (res.data.suggestions) {
+        suggestions.value = res.data.suggestions
+      }
+    } else {
+      messages.value.push({
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: '抱歉，我暂时无法回复，请稍后再试 😊',
+        createdAt: new Date().toISOString()
+      })
+    }
+  } catch (e) {
+    console.error('发送消息失败:', e)
+    messages.value.push({
+      id: Date.now() + 1,
+      role: 'assistant',
+      content: '网络异常，请稍后重试 😅',
+      createdAt: new Date().toISOString()
+    })
+  } finally {
+    sending.value = false
+    scrollToBottom()
+  }
+}
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messagesRef.value) {
+      messagesRef.value.scrollTop = messagesRef.value.scrollHeight
+    }
+  })
+}
+
+const renderMarkdown = (text) => {
+  if (!text) return ''
+  // 简单 markdown 渲染：加粗、链接、换行
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>')
+}
+
+// ========== 反馈功能 ==========
 
 const openFeedbackDialog = (type) => {
   if (!userStore.isAuthenticated) {
@@ -256,23 +493,23 @@ const formatTime = (time) => {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0096fa, #0078d4);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 120, 212, 0.35);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
   transition: all 0.3s ease;
 }
 
 .help-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(0, 120, 212, 0.45);
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.5);
 }
 
 .help-btn.active {
-  background: linear-gradient(135deg, #0078d4, #005a9e);
+  background: linear-gradient(135deg, #764ba2, #667eea);
 }
 
 /* 展开面板 */
@@ -294,7 +531,7 @@ const formatTime = (time) => {
   padding: 16px 18px;
   font-size: 15px;
   font-weight: 600;
-  background: linear-gradient(135deg, #0096fa, #0078d4);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
 }
 
@@ -342,6 +579,11 @@ const formatTime = (time) => {
   justify-content: center;
 }
 
+.quick-icon.ai {
+  background: linear-gradient(135deg, #e8eaf6, #e0d6f6);
+  color: #667eea;
+}
+
 .quick-icon.consultation {
   background: #e6f4ff;
   color: #0096fa;
@@ -350,11 +592,6 @@ const formatTime = (time) => {
 .quick-icon.bug {
   background: #fff1f0;
   color: #f56c6c;
-}
-
-.quick-icon.feature {
-  background: #f0f9eb;
-  color: #67c23a;
 }
 
 .quick-icon.history {
@@ -385,6 +622,334 @@ const formatTime = (time) => {
 .help-panel-leave-to {
   opacity: 0;
   transform: translateY(12px) scale(0.95);
+}
+
+/* ========== AI 对话面板 ========== */
+.ai-chat-panel {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  width: 380px;
+  height: 540px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ai-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ai-status {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.ai-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-action-btn {
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.header-action-btn:hover {
+  opacity: 1;
+}
+
+/* 消息列表 */
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #f8f9fc;
+}
+
+.ai-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ai-messages::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 4px;
+}
+
+/* 欢迎 */
+.ai-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 10px;
+  text-align: center;
+}
+
+.welcome-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.ai-welcome h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #333;
+}
+
+.ai-welcome p {
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: #888;
+}
+
+.welcome-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.welcome-suggestions button {
+  padding: 7px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  background: #fff;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.welcome-suggestions button:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f0f0ff;
+}
+
+/* 消息气泡 */
+.ai-msg {
+  display: flex;
+  gap: 8px;
+  max-width: 85%;
+}
+
+.ai-msg.msg-user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.ai-msg.msg-ai {
+  align-self: flex-start;
+}
+
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.msg-user .msg-bubble {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.msg-ai .msg-bubble {
+  background: #fff;
+  color: #333;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.msg-bubble :deep(code) {
+  background: rgba(0,0,0,0.06);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.msg-bubble :deep(strong) {
+  font-weight: 600;
+}
+
+/* 打字动画 */
+.msg-bubble.typing {
+  display: flex;
+  gap: 4px;
+  padding: 14px 18px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #999;
+  animation: typing 1.4s infinite;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+/* 推荐问题 */
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.ai-suggestions button {
+  padding: 5px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  background: #fafafa;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ai-suggestions button:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f0f0ff;
+}
+
+/* 输入区域 */
+.ai-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.ai-input-bar input {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 9px 16px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ai-input-bar input:focus {
+  border-color: #667eea;
+}
+
+.ai-input-bar input::placeholder {
+  color: #bbb;
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* AI 面板动画 */
+.ai-slide-enter-active,
+.ai-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.ai-slide-enter-from,
+.ai-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
 }
 
 /* 反馈对话框 */

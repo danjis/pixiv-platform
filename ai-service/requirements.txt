@@ -1,7 +1,9 @@
 # AI 智能打标服务依赖
 
 # Web 框架
-fastapi==0.104.1          # 高性能 Web 框架
+fastapi
+openai
+httpx==0.104.1          # 高性能 Web 框架
 uvicorn[standard]==0.24.0 # ASGI 服务器
 
 # 深度学习
