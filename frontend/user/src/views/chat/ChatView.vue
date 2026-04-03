@@ -273,6 +273,7 @@ async function loadConversations() {
     }
   } catch (e) {
     console.error('加载对话列表失败', e)
+    ElMessage.error('加载对话列表失败')
   } finally {
     loadingConversations.value = false
   }
@@ -302,6 +303,7 @@ async function loadMessages(conversationId) {
     }
   } catch (e) {
     console.error('加载消息失败', e)
+    ElMessage.error('加载消息失败')
   } finally {
     loadingMessages.value = false
     await nextTick()

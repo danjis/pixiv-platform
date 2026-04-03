@@ -38,8 +38,8 @@ public class AiChatController {
     @GetMapping("/sessions")
     public ResponseEntity<Result<List<AiChatSessionDTO>>> getSessions(
             @RequestHeader("X-User-Id") Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
         List<AiChatSessionDTO> sessions = aiChatService.getUserSessions(userId, page, size);
         return ResponseEntity.ok(Result.success(sessions));
     }

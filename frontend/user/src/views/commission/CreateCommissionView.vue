@@ -53,6 +53,14 @@
             <span class="step-num">02</span>
             <div><h2 class="step-title">描述需求</h2><p class="step-sub">详细说明你想要的画面、风格与用途</p></div>
           </div>
+          <div class="tips-panel">
+            <div class="tips-title">灵感模板</div>
+            <div class="tips-actions">
+              <button class="tip-pill" @click="applyTemplate('character')">角色立绘</button>
+              <button class="tip-pill" @click="applyTemplate('scene')">场景插画</button>
+              <button class="tip-pill" @click="applyTemplate('avatar')">头像定制</button>
+            </div>
+          </div>
           <div class="fields">
             <div class="field-group" :class="{ focused: focusedField === 'title', 'has-error': titleError }">
               <label class="field-label">约稿标题 <span class="req">*</span></label>
@@ -156,6 +164,7 @@ import { ElMessage } from 'element-plus'
 import { getCommissionPlans } from '@/api/commissionPlan'
 import { createCommission } from '@/api/commission'
 import { getUserProfile } from '@/api/user'
+import { uploadImages } from '@/api/file'
 
 const route = useRoute()
 const router = useRouter()
@@ -205,13 +214,23 @@ function validateDesc() {
 }
 
 function goStep2() {
-  if (!validateTitle() | !validateDesc()) return
+  if (!validateTitle() || !validateDesc()) return
   currentStep.value = 2
 }
 
 function selectPlan(p) {
   form.value.commissionPlanId = p.id
   selectedPlan.value = p
+  // 预填充方案信息到表单
+  if (p.title) form.value.title = p.title
+  if (p.description) form.value.description = p.description
+  if (p.priceStart) form.value.budgetMin = p.priceStart
+  if (p.priceEnd) form.value.budgetMax = p.priceEnd
+  if (p.estimatedDays) {
+    const d = new Date()
+    d.setDate(d.getDate() + p.estimatedDays)
+    form.value.deadline = d.toISOString().split('T')[0]
+  }
 }
 
 function triggerUpload() { fileInput.value && fileInput.value.click() }
@@ -231,13 +250,39 @@ function addFiles(files) {
 
 function removeImage(idx) { form.value.referenceImages.splice(idx, 1) }
 
+function applyTemplate(type) {
+  const templates = {
+    character: '角色设定：\n- 人物性别/年龄：\n- 发型发色：\n- 服装风格：\n- 动作表情：\n- 画面比例：',
+    scene: '场景设定：\n- 场景主题：\n- 时间天气：\n- 主体元素：\n- 色调氛围：\n- 用途：',
+    avatar: '头像需求：\n- 人设关键词：\n- 背景元素：\n- 风格参考：\n- 是否需要透明底：'
+  }
+  form.value.description = templates[type] || form.value.description
+}
+
 async function submitCommission() {
-  if (!validateTitle() | !validateDesc()) { currentStep.value = 1; return }
+  if (!validateTitle() || !validateDesc()) { currentStep.value = 1; return }
   submitting.value = true
   try {
     const artistId = route.query.artistId
+    let referenceUrls = null
+
+    if (form.value.referenceImages.length > 0) {
+      const files = form.value.referenceImages.map(item => item.file).filter(Boolean)
+      if (files.length > 0) {
+        const uploadRes = await uploadImages(files)
+        if (uploadRes.code === 200 && Array.isArray(uploadRes.data)) {
+          const urls = uploadRes.data
+            .map(item => item.imageUrl || item.originalImageUrl || item.thumbnailUrl)
+            .filter(Boolean)
+          referenceUrls = urls.length > 0 ? urls.join('\n') : null
+        } else {
+          throw new Error(uploadRes.message || '参考图上传失败')
+        }
+      }
+    }
+
     const payload = {
-      artistId,
+      targetUserId: Number(artistId),
       title: form.value.title,
       description: form.value.description,
       styleTag: form.value.styleTag || null,
@@ -245,6 +290,7 @@ async function submitCommission() {
       budgetMax: form.value.budgetMax || null,
       deadline: form.value.deadline || null,
       remark: form.value.remark || null,
+      referenceUrls,
       commissionPlanId: form.value.commissionPlanId || null
     }
     const res = await createCommission(payload)
@@ -261,13 +307,18 @@ onMounted(async () => {
   const artistId = route.query.artistId
   if (artistId) {
     try { const r = await getUserProfile(artistId); if (r.code === 200) artist.value = r.data } catch {}
-    try { const r = await getCommissionPlans({ artistId, page: 1, size: 20 }); if (r.code === 200) plans.value = r.data.records || [] } catch {}
+    try {
+      const r = await getCommissionPlans({ artistId, page: 1, size: 20 })
+      if (r.code === 200) {
+        plans.value = Array.isArray(r.data) ? r.data : (r.data?.records || [])
+      }
+    } catch {}
   }
 })
 </script>
 
 <style scoped>
-.create-page { min-height: calc(100vh - 64px); background: #fff; padding: 40px 0 80px; }
+.create-page { min-height: calc(100vh - 64px); background: radial-gradient(1200px 450px at 10% 0%, #eef5ff 0%, transparent 60%), radial-gradient(1000px 350px at 90% 0%, #f8f0ff 0%, transparent 55%), #fff; padding: 40px 0 80px; }
 .page-wrap { max-width: 780px; margin: 0 auto; padding: 0 24px; }
 .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1.5px solid #e8e8e8; border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; color: #888; cursor: pointer; margin-bottom: 28px; transition: all .18s; }
 .back-btn:hover { border-color: #b0b0b0; color: #333; background: #fafafa; }
@@ -281,23 +332,28 @@ onMounted(async () => {
 .step-item.done .step-label { color: #333; }
 .step-connector { flex: 1; height: 1.5px; background: #e0e0e0; margin: 0 12px; min-width: 24px; transition: background .3s; }
 .step-connector.done { background: #333; }
-.form-card { background: #fff; border-radius: 20px; padding: 36px; box-shadow: 0 2px 16px rgba(0,0,0,0.04); border: none; }
+.form-card { background: #fff; border-radius: 20px; padding: 36px; box-shadow: 0 14px 40px rgba(32, 54, 106, 0.08); border: 1px solid #eef2ff; }
 .artist-banner { display: flex; align-items: center; gap: 14px; background: #fafafa; border: 1px solid #eee; border-radius: 20px; padding: 16px 20px; margin-bottom: 28px; }
 .ab-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .ab-label { font-size: 11px; color: #999; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
 .ab-name { font-size: 15px; font-weight: 800; color: #1a1a1a; }
-.ab-badge { padding: 4px 12px; background: #333; color: #fff; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.ab-badge { padding: 4px 12px; background: linear-gradient(135deg, #6c63ff, #4f46e5); color: #fff; border-radius: 999px; font-size: 12px; font-weight: 700; }
 .step-title-wrap { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; }
 .step-num { font-size: 40px; font-weight: 900; color: #eee; line-height: 1; flex-shrink: 0; }
 .step-title { font-size: 22px; font-weight: 900; color: #1a1a1a; margin: 0 0 4px; }
 .step-sub { font-size: 14px; color: #999; margin: 0; }
+.tips-panel { margin: -10px 0 18px; padding: 12px 14px; border: 1px solid #e9edff; background: #f8f9ff; border-radius: 14px; }
+.tips-title { font-size: 12px; font-weight: 700; color: #667; margin-bottom: 8px; }
+.tips-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tip-pill { padding: 5px 12px; border: 1px solid #d9deff; border-radius: 999px; background: #fff; color: #4f46e5; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .18s; }
+.tip-pill:hover { border-color: #4f46e5; background: #f2f4ff; }
 .plan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .plan-card { border: 1.5px solid #eee; border-radius: 20px; padding: 18px; cursor: pointer; transition: all .22s; position: relative; }
 .plan-card:hover { border-color: #ccc; box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
-.plan-card.selected { border-color: #333; background: #fafafa; box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
+.plan-card.selected { border-color: #4f46e5; background: #f7f7ff; box-shadow: 0 2px 16px rgba(79,70,229,0.12); }
 .pc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .pc-title { font-size: 15px; font-weight: 800; color: #1a1a1a; }
-.pc-price { font-size: 14px; font-weight: 700; color: #333; }
+.pc-price { font-size: 14px; font-weight: 700; color: #4f46e5; }
 .pc-desc { font-size: 13px; color: #888; margin: 0 0 10px; line-height: 1.5; }
 .pc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .pc-tag { padding: 3px 10px; background: #f5f5f5; border-radius: 999px; font-size: 12px; color: #888; }
@@ -344,10 +400,10 @@ onMounted(async () => {
 .step-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 24px; border-top: 1px solid #f0f0f0; margin-top: 8px; }
 .btn-skip, .btn-back { padding: 10px 22px; border: 1.5px solid #e8e8e8; border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; color: #888; cursor: pointer; transition: all .18s; }
 .btn-skip:hover, .btn-back:hover { border-color: #bbb; color: #333; }
-.btn-next { padding: 10px 28px; background: #1a1a1a; border: none; border-radius: 999px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.10); transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
-.btn-next:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.15); }
-.btn-submit { padding: 11px 32px; background: #1a1a1a; border: none; border-radius: 999px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.10); transition: all .2s; }
-.btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+.btn-next { padding: 10px 28px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; border-radius: 999px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; box-shadow: 0 8px 22px rgba(79,70,229,.28); transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-next:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(79,70,229,.34); }
+.btn-submit { padding: 11px 32px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; border-radius: 999px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; box-shadow: 0 8px 22px rgba(79,70,229,.28); transition: all .2s; }
+.btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(79,70,229,.34); }
 .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
 .step-fade-enter-active, .step-fade-leave-active { transition: all .25s ease; }
 .step-fade-enter-from { opacity: 0; transform: translateX(20px); }

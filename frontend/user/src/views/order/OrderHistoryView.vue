@@ -1,54 +1,77 @@
 <template>
   <div class="order-page">
-    <!-- 页面头部 -->
-    <div class="page-header">
-      <div class="header-content">
-        <h1>我的订单</h1>
-        <p>查看你的全部支付记录和交易详情</p>
+    <!-- Hero 头部 -->
+    <section class="order-hero">
+      <div class="hero-bg-orbs">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
       </div>
-    </div>
+      <div class="hero-content">
+        <p class="hero-eyebrow">交易中心</p>
+        <h1 class="hero-title">我的订单</h1>
+        <p class="hero-desc">查看你的全部支付记录和交易详情</p>
+        <div class="hero-stats" v-if="orderStats.total > 0">
+          <div class="hero-stat">
+            <span class="stat-num">{{ orderStats.total }}</span>
+            <span class="stat-label">总订单</span>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-num">¥{{ orderStats.totalAmount }}</span>
+            <span class="stat-label">总消费</span>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-num">{{ orderStats.pendingCount }}</span>
+            <span class="stat-label">待支付</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- 筛选栏 -->
-    <div class="filter-section">
-      <div class="filter-tabs">
-        <button
-          class="tab-btn"
-          :class="{ active: statusFilter === '' }"
-          @click="setStatusFilter('')"
-        >全部</button>
-        <button
-          class="tab-btn"
-          :class="{ active: statusFilter === 'PENDING' }"
-          @click="setStatusFilter('PENDING')"
-        >待支付</button>
-        <button
-          class="tab-btn"
-          :class="{ active: statusFilter === 'PAID' }"
-          @click="setStatusFilter('PAID')"
-        >已支付</button>
-        <button
-          class="tab-btn"
-          :class="{ active: statusFilter === 'REFUNDED' }"
-          @click="setStatusFilter('REFUNDED')"
-        >已退款</button>
-        <button
-          class="tab-btn"
-          :class="{ active: statusFilter === 'CLOSED' }"
-          @click="setStatusFilter('CLOSED')"
-        >已关闭</button>
+    <!-- 主区域 -->
+    <div class="order-main">
+      <!-- 筛选栏 -->
+      <div class="filter-section">
+        <div class="filter-tabs">
+          <button
+            class="tab-btn"
+            :class="{ active: statusFilter === '' }"
+            @click="setStatusFilter('')"
+          >全部</button>
+          <button
+            class="tab-btn"
+            :class="{ active: statusFilter === 'PENDING' }"
+            @click="setStatusFilter('PENDING')"
+          >待支付</button>
+          <button
+            class="tab-btn"
+            :class="{ active: statusFilter === 'PAID' }"
+            @click="setStatusFilter('PAID')"
+          >已支付</button>
+          <button
+            class="tab-btn"
+            :class="{ active: statusFilter === 'REFUNDED' }"
+            @click="setStatusFilter('REFUNDED')"
+          >已退款</button>
+          <button
+            class="tab-btn"
+            :class="{ active: statusFilter === 'CLOSED' }"
+            @click="setStatusFilter('CLOSED')"
+          >已关闭</button>
+        </div>
+        <el-select
+          v-model="typeFilter"
+          placeholder="所有类型"
+          clearable
+          @change="handleFilter"
+          class="type-select"
+        >
+          <el-option label="会员充值" value="MEMBERSHIP" />
+          <el-option label="定金" value="DEPOSIT" />
+          <el-option label="尾款" value="FINAL_PAYMENT" />
+        </el-select>
       </div>
-      <el-select
-        v-model="typeFilter"
-        placeholder="所有类型"
-        clearable
-        @change="handleFilter"
-        class="type-select"
-      >
-        <el-option label="会员充值" value="MEMBERSHIP" />
-        <el-option label="定金" value="DEPOSIT" />
-        <el-option label="尾款" value="FINAL_PAYMENT" />
-      </el-select>
-    </div>
 
     <!-- 订单列表 -->
     <div class="orders-list" v-loading="loading">
@@ -138,11 +161,12 @@
         @current-change="loadOrders"
       />
     </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { getMyOrders, continuePay, cancelOrder, deleteOrder } from '@/api/payment'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -153,6 +177,15 @@ const pageSize = 10
 const total = ref(0)
 const statusFilter = ref('')
 const typeFilter = ref('')
+
+const orderStats = computed(() => {
+  const all = orders.value
+  return {
+    total: total.value,
+    totalAmount: all.reduce((sum, o) => o.status === 'PAID' ? sum + (o.amount || 0) : sum, 0).toFixed(2),
+    pendingCount: all.filter(o => o.status === 'PENDING').length
+  }
+})
 
 const statusLabel = (s) => {
   const map = { PENDING: '待支付', PAID: '已支付', REFUNDED: '已退款', CLOSED: '已关闭' }
@@ -285,27 +318,117 @@ onMounted(loadOrders)
 
 <style scoped>
 .order-page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 20px 40px;
-  background: #fff;
+  min-height: calc(100vh - 56px);
+  background: #f8f9fc;
 }
 
-/* 页面头部 */
-.page-header {
-  padding: 36px 0 28px;
+/* ===== Hero ===== */
+.order-hero {
+  position: relative;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #3a7bd5 100%);
+  padding: 40px 32px 56px;
+  overflow: hidden;
 }
-.header-content h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a2e;
+
+.hero-bg-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12;
+}
+
+.orb-a {
+  width: 180px;
+  height: 180px;
+  background: #fff;
+  top: -40px;
+  right: -20px;
+}
+
+.orb-b {
+  width: 100px;
+  height: 100px;
+  background: #60a5fa;
+  bottom: -20px;
+  left: 15%;
+}
+
+.hero-content {
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 2px;
   margin: 0 0 6px;
-  letter-spacing: -0.5px;
 }
-.header-content p {
+
+.hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.hero-desc {
   font-size: 14px;
-  color: #aaa;
-  margin: 0;
+  color: rgba(255,255,255,0.75);
+  margin: 0 0 20px;
+}
+
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 14px 24px;
+  width: fit-content;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,0.2);
+}
+
+/* ===== 主区域 ===== */
+.order-main {
+  max-width: 720px;
+  margin: -24px auto 0;
+  padding: 0 20px 40px;
+  position: relative;
+  z-index: 2;
 }
 
 /* 筛选区 */
@@ -315,6 +438,10 @@ onMounted(loadOrders)
   align-items: center;
   margin-bottom: 20px;
   gap: 16px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .filter-tabs {
   display: flex;

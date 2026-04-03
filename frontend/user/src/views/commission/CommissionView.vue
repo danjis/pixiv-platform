@@ -198,6 +198,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getMyCommissions as getCommissions } from '@/api/commission'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -248,17 +249,17 @@ function getOtherAvatar(c) { return activeTab.value === 'client' ? c.artistAvata
 async function loadCommissions() {
   loading.value = true
   try {
-    const params = { page: page.value, size: pageSize, role: activeTab.value }
+    const params = { page: page.value - 1, size: pageSize, role: activeTab.value }
     if (currentStatus.value) params.status = currentStatus.value
     const res = await getCommissions(params)
     if (res.code === 200) {
       const d = res.data
-      commissions.value = d.records || []
-      total.value = d.total || 0
-      if (activeTab.value === 'client') clientTotal.value = d.total || 0
-      else artistTotal.value = d.total || 0
+      commissions.value = d.content || d.records || []
+      total.value = d.totalElements || d.total || 0
+      if (activeTab.value === 'client') clientTotal.value = d.totalElements || d.total || 0
+      else artistTotal.value = d.totalElements || d.total || 0
     }
-  } catch (e) { console.error(e) } finally { loading.value = false }
+  } catch (e) { console.error(e); ElMessage.error('加载约稿列表失败') } finally { loading.value = false }
 }
 async function switchTab(tab) { activeTab.value = tab; currentStatus.value = ''; page.value = 1; await loadCommissions() }
 async function filterByStatus(s) { currentStatus.value = s; page.value = 1; await loadCommissions() }
@@ -282,7 +283,7 @@ onMounted(async () => {
   if (isArtist.value) {
     try {
       const res = await getCommissions({ page: 1, size: 1, role: 'artist' })
-      if (res.code === 200) artistTotal.value = res.data.total || 0
+      if (res.code === 200) artistTotal.value = res.data.totalElements || res.data.total || 0
     } catch {}
   }
 })

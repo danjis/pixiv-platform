@@ -1,37 +1,45 @@
 <template>
   <div class="coupon-page">
-    <!-- 标签切换 -->
-    <div class="page-header">
-      <h1 class="page-title">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-          <circle cx="7" cy="7" r="1"/>
-        </svg>
-        优惠券
-      </h1>
-      <div class="code-input-area">
-        <input
-          v-model="redeemCode"
-          class="code-input"
-          placeholder="输入优惠码兑换"
-          @keyup.enter="handleRedeem"
-        />
-        <button class="redeem-btn" @click="handleRedeem" :disabled="!redeemCode.trim()">兑换</button>
+    <!-- Hero 区域 -->
+    <section class="coupon-hero">
+      <div class="hero-bg-orbs">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
       </div>
-    </div>
+      <div class="hero-content">
+        <div class="hero-left">
+          <p class="hero-eyebrow">优惠中心</p>
+          <h1 class="hero-title">优惠券</h1>
+          <p class="hero-desc">领取专属优惠，享受更多创作服务折扣</p>
+        </div>
+        <div class="hero-right">
+          <div class="code-input-area">
+            <input
+              v-model="redeemCode"
+              class="code-input"
+              placeholder="输入优惠码兑换"
+              @keyup.enter="handleRedeem"
+            />
+            <button class="redeem-btn" @click="handleRedeem" :disabled="!redeemCode.trim()">兑换</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <div class="tab-bar">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        class="tab-item"
-        :class="{ active: activeTab === tab.value }"
-        @click="switchTab(tab.value)"
-      >
-        {{ tab.label }}
-        <span v-if="tab.count !== undefined" class="tab-count">({{ tab.count }})</span>
-      </button>
-    </div>
+    <!-- 主区域 -->
+    <div class="coupon-main">
+      <div class="tab-bar">
+        <button
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="tab-item"
+          :class="{ active: activeTab === tab.value }"
+          @click="switchTab(tab.value)"
+        >
+          {{ tab.label }}
+          <span v-if="tab.count" class="tab-count">{{ tab.count }}</span>
+        </button>
+      </div>
 
     <!-- 加载中 -->
     <div v-if="loading" class="loading-container">
@@ -146,6 +154,7 @@
           <span v-else class="badge expired">已过期</span>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -290,10 +299,87 @@ onMounted(() => {
 
 <style scoped>
 .coupon-page {
+  min-height: calc(100vh - 56px);
+  background: #f8f9fc;
+}
+
+/* ===== Hero ===== */
+.coupon-hero {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 32px 36px;
+  overflow: hidden;
+}
+
+.hero-bg-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.15;
+}
+
+.orb-a {
+  width: 200px;
+  height: 200px;
+  background: #fff;
+  top: -40px;
+  right: -30px;
+}
+
+.orb-b {
+  width: 120px;
+  height: 120px;
+  background: #fbbf24;
+  bottom: -30px;
+  left: 20%;
+}
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   max-width: 900px;
   margin: 0 auto;
-  padding: 32px 20px;
-  background: #fff;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.hero-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 6px;
+}
+
+.hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.hero-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+}
+
+/* ===== 主区域 ===== */
+.coupon-main {
+  max-width: 900px;
+  margin: -20px auto 0;
+  padding: 0 20px 40px;
+  position: relative;
+  z-index: 2;
 }
 
 .page-header {
@@ -360,10 +446,11 @@ onMounted(() => {
   gap: 8px;
   margin-bottom: 24px;
   border-bottom: none;
-  background: #f5f5f5;
+  background: #fff;
   border-radius: 999px;
   padding: 4px;
   width: fit-content;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .tab-item {

@@ -11,18 +11,21 @@
             <h1 class="discover-title">深度探索</h1>
             <span class="discover-sub">发现每一个值得被看见的创作</span>
           </div>
-          <!-- 随机漫游按钮 -->
-          <button
-            class="random-btn"
-            :class="{ spinning: randomLoading }"
-            @click="handleRandomExplore"
-            :disabled="randomLoading"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="random-icon">
-              <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-            </svg>
-            <span>{{ randomLoading ? '漫游中...' : '随机漫游' }}</span>
-          </button>
+          <div class="discover-right">
+            <span v-if="total > 0" class="discover-stat">{{ total.toLocaleString() }} 个作品</span>
+            <!-- 随机漫游按钮 -->
+            <button
+              class="random-btn"
+              :class="{ spinning: randomLoading }"
+              @click="handleRandomExplore"
+              :disabled="randomLoading"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="random-icon">
+                <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+              </svg>
+              <span>{{ randomLoading ? '漫游中...' : '随机漫游' }}</span>
+            </button>
+          </div>
         </div>
 
         <!-- 热门 Tag 胶囊导航 -->
@@ -64,6 +67,28 @@
           </button>
         </div>
 
+        <!-- 当前筛选状态栏 -->
+        <div v-if="hasActiveFilters" class="active-filters-bar">
+          <span class="afb-label">当前筛选：</span>
+          <span v-if="selectedTags.length > 0" class="afb-chip tag-chip" @click="selectedTags = []; handleFilterChange()">
+            主题「{{ selectedTags[0] }}」<span class="afb-x">×</span>
+          </span>
+          <span v-if="searchKeyword" class="afb-chip kw-chip" @click="searchKeyword = ''; handleFilterChange()">
+            关键词「{{ searchKeyword }}」<span class="afb-x">×</span>
+          </span>
+          <span v-if="isAigc !== null" class="afb-chip type-chip" @click="isAigc = null; handleFilterChange()">
+            {{ isAigc ? 'AI生成' : '人工创作' }}<span class="afb-x">×</span>
+          </span>
+          <span v-if="dateFrom || dateTo" class="afb-chip date-chip" @click="dateFrom = ''; dateTo = ''; datePreset = ''; handleFilterChange()">
+            {{ dateFrom || '...' }} ~ {{ dateTo || '...' }}<span class="afb-x">×</span>
+          </span>
+          <span v-if="minLikes > 0" class="afb-chip likes-chip" @click="minLikes = 0; handleFilterChange()">
+            ≥{{ minLikes }}赞<span class="afb-x">×</span>
+          </span>
+          <button class="afb-clear" @click="clearAllFilters">清除全部</button>
+          <span class="afb-count" v-if="total > 0">共 {{ total }} 个结果</span>
+        </div>
+
         <!-- 高级筛选面板 -->
         <transition name="slide">
           <div v-if="showAdvanced" class="advanced-panel">
@@ -78,7 +103,7 @@
             <div class="advanced-row">
               <label class="adv-label">时间范围</label>
               <div class="adv-options">
-                <button class="adv-btn" :class="{ active: !dateFrom && !dateTo }" @click="dateFrom = ''; dateTo = ''; handleFilterChange()">全部</button>
+                <button class="adv-btn" :class="{ active: !dateFrom && !dateTo }" @click="dateFrom = ''; dateTo = ''; datePreset = ''; handleFilterChange()">全部</button>
                 <button class="adv-btn" :class="{ active: datePreset === '7d' }" @click="setDatePreset('7d')">近7天</button>
                 <button class="adv-btn" :class="{ active: datePreset === '30d' }" @click="setDatePreset('30d')">近30天</button>
                 <button class="adv-btn" :class="{ active: datePreset === '90d' }" @click="setDatePreset('90d')">近3个月</button>
@@ -237,6 +262,22 @@ const activeFilterCount = computed(() => {
   return count
 })
 
+const hasActiveFilters = computed(() => {
+  return selectedTags.value.length > 0 || searchKeyword.value || isAigc.value !== null || dateFrom.value || dateTo.value || minLikes.value > 0
+})
+
+const clearAllFilters = () => {
+  selectedTags.value = []
+  searchKeyword.value = ''
+  isAigc.value = null
+  dateFrom.value = ''
+  dateTo.value = ''
+  datePreset.value = ''
+  minLikes.value = 0
+  sortBy.value = 'latest'
+  handleFilterChange()
+}
+
 const setDatePreset = (preset) => {
   datePreset.value = preset
   const now = new Date()
@@ -268,20 +309,24 @@ const sentinelRef = ref(null)
 let observer = null
 
 const toggleTag = (tag) => {
-  const idx = selectedTags.value.indexOf(tag)
-  if (idx >= 0) selectedTags.value.splice(idx, 1)
-  else selectedTags.value.push(tag)
+  if (selectedTags.value.length === 1 && selectedTags.value[0] === tag) {
+    selectedTags.value = []
+  } else {
+    selectedTags.value = [tag]
+  }
   handleFilterChange()
 }
 
-const buildParams = () => {
+const buildParams = (options = { includeTopic: true }) => {
   const params = {
     page: currentPage.value,
     size: pageSize.value,
     sortBy: sortBy.value
   }
-  if (searchKeyword.value) params.keyword = searchKeyword.value
-  if (selectedTags.value.length > 0) params.tags = selectedTags.value.join(',')
+  const topicKeyword = options.includeTopic && selectedTags.value.length > 0 ? selectedTags.value[0] : ''
+  if (searchKeyword.value && topicKeyword) params.keyword = `${searchKeyword.value} ${topicKeyword}`
+  else if (searchKeyword.value) params.keyword = searchKeyword.value
+  else if (topicKeyword) params.keyword = topicKeyword
   if (isAigc.value !== null) params.isAigc = isAigc.value
   if (dateFrom.value) params.dateFrom = dateFrom.value
   if (dateTo.value) params.dateTo = dateTo.value
@@ -297,8 +342,23 @@ const loadArtworks = async () => {
   try {
     const response = await getArtworks(buildParams())
     if (response.code === 200 && response.data) {
-      artworks.value = response.data.records || []
-      total.value = response.data.total || 0
+      let records = response.data.records || []
+      let totalCount = response.data.total || 0
+
+      // 主题词过窄时自动兜底，避免页面出现空白
+      if (records.length === 0 && selectedTags.value.length > 0 && !searchKeyword.value) {
+        const fallbackResp = await getArtworks(buildParams({ includeTopic: false }))
+        if (fallbackResp.code === 200 && fallbackResp.data) {
+          records = fallbackResp.data.records || []
+          totalCount = fallbackResp.data.total || 0
+          if (records.length > 0) {
+            ElMessage.info(`当前主题“${selectedTags.value[0]}”结果较少，已为你展示最新作品`)
+          }
+        }
+      }
+
+      artworks.value = records
+      total.value = totalCount
       noMore.value = artworks.value.length >= total.value
     } else {
       ElMessage.error(response.message || '加载作品列表失败')
@@ -417,6 +477,22 @@ onUnmounted(() => {
   font-size: 13px;
   color: var(--px-text-tertiary);
   font-weight: 400;
+}
+
+.discover-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.discover-stat {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+  background: #eef2ff;
+  padding: 6px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 /* 随机漫游按钮 */
@@ -580,6 +656,76 @@ onUnmounted(() => {
 .advanced-toggle:hover, .advanced-toggle.active {
   border-color: var(--px-blue, #0096FA);
   color: var(--px-blue, #0096FA);
+}
+
+/* 当前筛选状态栏 */
+.active-filters-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #eef2ff;
+  border-radius: 12px;
+  border: 1px solid #c7d2fe;
+}
+
+.afb-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+.afb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.afb-chip.tag-chip { background: #fef3c7; color: #92400e; }
+.afb-chip.kw-chip { background: #dbeafe; color: #1e40af; }
+.afb-chip.type-chip { background: #ede9fe; color: #5b21b6; }
+.afb-chip.date-chip { background: #d1fae5; color: #065f46; }
+.afb-chip.likes-chip { background: #fce7f3; color: #9d174d; }
+
+.afb-chip:hover {
+  opacity: 0.7;
+}
+
+.afb-x {
+  margin-left: 2px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.afb-clear {
+  padding: 3px 10px;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  background: #fff;
+  color: #6366f1;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.afb-clear:hover {
+  background: #6366f1;
+  color: #fff;
+}
+
+.afb-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #818cf8;
+  font-weight: 600;
 }
 
 .filter-badge {

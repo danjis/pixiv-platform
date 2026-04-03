@@ -354,21 +354,21 @@ async function loadMembership() {
   try {
     const res = await getMyMembership()
     if (res.code === 200) membership.value = res.data || {}
-  } catch (e) { console.error(e) }
+  } catch (e) { console.error(e); ElMessage.error('加载会员信息失败') }
 }
 
 async function loadCheckinStatus() {
   try {
     const res = await getCheckinStatus()
     if (res.code === 200) checkin.value = res.data || {}
-  } catch (e) { console.error(e) }
+  } catch (e) { console.error(e); ElMessage.error('加载签到状态失败') }
 }
 
 async function loadPoints() {
   try {
     const res = await getPoints()
     if (res.code === 200) points.value = res.data || {}
-  } catch (e) { console.error(e) }
+  } catch (e) { console.error(e); ElMessage.error('加载积分信息失败') }
 }
 
 async function loadRecords(page) {
@@ -380,7 +380,7 @@ async function loadRecords(page) {
       records.value = res.data.content || res.data.records || []
       totalRecords.value = res.data.totalElements || res.data.total || 0
     }
-  } catch (e) { console.error(e) }
+  } catch (e) { console.error(e); ElMessage.error('加载积分记录失败') }
   finally { recordsLoading.value = false }
 }
 
@@ -445,7 +445,7 @@ async function loadShopItems() {
   try {
     const res = await getPointsShop()
     if (res.code === 200) shopItems.value = res.data || []
-  } catch (e) { console.error(e) }
+  } catch (e) { console.error(e); ElMessage.error('加载商城失败') }
 }
 
 async function handleExchange(item) {

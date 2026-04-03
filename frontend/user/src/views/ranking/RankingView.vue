@@ -155,6 +155,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getRankingArtworks } from '@/api/artwork'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -197,6 +198,7 @@ async function loadRanking() {
     }
   } catch (error) {
     console.error('加载排行榜失败:', error)
+    ElMessage.error('加载排行榜失败')
   } finally {
     loading.value = false
   }

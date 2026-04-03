@@ -329,6 +329,7 @@ const loadEntries = async () => {
     entriesPagination.value.total = data.total || 0
   } catch (e) {
     console.error('加载参赛作品失败:', e)
+    ElMessage.error('加载参赛作品失败')
   } finally {
     entriesLoading.value = false
   }

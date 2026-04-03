@@ -120,7 +120,7 @@ async function loadPlans() {
   try {
     const res = await getMyPlans()
     if (res.code === 200) plans.value = res.data || []
-  } catch {}
+  } catch { ElMessage.error('加载方案失败') }
   loading.value = false
 }
 
@@ -187,7 +187,7 @@ async function handleToggle(p) {
       ElMessage.success(p.active ? '方案已关闭' : '方案已启用')
       await loadPlans()
     }
-  } catch {}
+  } catch { ElMessage.error('操作失败') }
 }
 
 async function handleDelete(p) {

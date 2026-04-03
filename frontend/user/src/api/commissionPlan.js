@@ -5,10 +5,17 @@ import request from '@/utils/request'
  * @param {Object} params - { artistId, page, size }
  */
 export function getCommissionPlans(params = {}) {
+  const { artistId } = params
+  if (artistId) {
+    return request({
+      url: `/api/commission-plans/artist/${artistId}`,
+      method: 'get'
+    })
+  }
+
   return request({
-    url: '/api/commission-plans',
-    method: 'get',
-    params
+    url: '/api/commission-plans/mine',
+    method: 'get'
   })
 }
 

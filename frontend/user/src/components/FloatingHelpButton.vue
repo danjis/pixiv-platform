@@ -69,6 +69,11 @@
             </div>
           </div>
           <div class="ai-header-actions">
+            <el-tooltip content="会话记录" placement="top">
+              <el-icon class="header-action-btn" @click="toggleSessionList">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+              </el-icon>
+            </el-tooltip>
             <el-tooltip content="新建会话" placement="top">
               <el-icon class="header-action-btn" @click="handleNewSession"><Plus /></el-icon>
             </el-tooltip>
@@ -77,6 +82,31 @@
             </el-tooltip>
           </div>
         </div>
+
+        <!-- 会话历史侧栏 -->
+        <transition name="session-slide">
+          <div v-if="showSessionList" class="session-sidebar">
+            <div class="session-sb-header">
+              <span class="session-sb-title">会话记录</span>
+              <el-icon class="session-sb-close" @click="showSessionList = false"><Close /></el-icon>
+            </div>
+            <div v-if="sessionLoading" class="session-sb-loading">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div v-else-if="sessionList.length === 0" class="session-sb-empty">暂无历史会话</div>
+            <div v-else class="session-sb-list">
+              <div v-for="s in sessionList" :key="s.id"
+                   class="session-sb-item" :class="{ active: s.id === currentSessionId }"
+                   @click="switchSession(s)">
+                <div class="session-sb-info">
+                  <span class="session-sb-name">{{ s.title || '会话 ' + String(s.id).slice(-4) }}</span>
+                  <span class="session-sb-time">{{ formatSessionTime(s.updatedAt || s.createdAt) }}</span>
+                </div>
+                <el-icon class="session-sb-del" @click="handleDeleteSession(s, $event)"><Close /></el-icon>
+              </div>
+            </div>
+          </div>
+        </transition>
 
         <!-- 消息列表 -->
         <div class="ai-messages" ref="messagesRef">
@@ -98,7 +128,7 @@
             <div v-if="msg.role === 'assistant'" class="msg-avatar">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21 10.975V8a2 2 0 00-2-2h-6V4.688c.305-.274.5-.668.5-1.11a1.5 1.5 0 00-3 0c0 .442.195.836.5 1.11V6H5a2 2 0 00-2 2v2.998l-.072.005A.999.999 0 002 12v2a1 1 0 001 1v5a2 2 0 002 2h14a2 2 0 002-2v-5a1 1 0 001-1v-2a.999.999 0 00-1-1.025zM9 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM15 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 18v-2h8v2H8z"/></svg>
             </div>
-            <div class="msg-bubble" v-html="renderMarkdown(msg.content)"></div>
+            <div class="msg-bubble" :class="{ 'typing-cursor': isTyping && msg === messages[messages.length - 1] && msg.role === 'assistant' }" v-html="renderMarkdown(msg.content)"></div>
           </div>
 
           <!-- 加载中 -->
@@ -212,11 +242,11 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { Close, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { submitFeedback, getMyFeedbacks } from '@/api/feedback'
-import { createAiChatSession, sendAiChatMessage, getAiChatMessages } from '@/api/aiChat'
+import { createAiChatSession, sendAiChatMessage, getAiChatMessages, getAiChatSessions, deleteAiChatSession } from '@/api/aiChat'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -238,6 +268,11 @@ const suggestions = ref([])
 const currentSessionId = ref(null)
 const messagesRef = ref(null)
 const inputRef = ref(null)
+const showSessionList = ref(false)
+const sessionList = ref([])
+const sessionLoading = ref(false)
+const typingText = ref('')
+const isTyping = ref(false)
 
 const defaultQuestions = [
   '平台有哪些功能？',
@@ -324,9 +359,31 @@ const handleNewSession = async () => {
   currentSessionId.value = null
   messages.value = []
   suggestions.value = []
+  showSessionList.value = false
   await createNewSession()
   nextTick(() => {
     if (inputRef.value) inputRef.value.focus()
+  })
+}
+
+// 打字机效果
+const typewriterEffect = (text, msgIndex) => {
+  return new Promise((resolve) => {
+    isTyping.value = true
+    let i = 0
+    const speed = 18 // 每字符间隔(ms)
+    const tick = () => {
+      if (i < text.length) {
+        messages.value[msgIndex].content = text.slice(0, i + 1)
+        i++
+        scrollToBottom()
+        setTimeout(tick, speed)
+      } else {
+        isTyping.value = false
+        resolve()
+      }
+    }
+    tick()
   })
 }
 
@@ -358,17 +415,23 @@ const sendMessage = async (text) => {
     if (res.code === 200 && res.data) {
       const aiMessage = res.data.message
       if (aiMessage) {
-        messages.value.push({
+        // 先添加空消息，再用打字机效果逐字显示
+        const msgObj = {
           id: aiMessage.id,
           role: 'assistant',
-          content: aiMessage.content,
+          content: '',
           createdAt: aiMessage.createdAt
-        })
+        }
+        messages.value.push(msgObj)
+        sending.value = false
+        const msgIdx = messages.value.length - 1
+        await typewriterEffect(aiMessage.content, msgIdx)
       }
       if (res.data.suggestions) {
         suggestions.value = res.data.suggestions
       }
     } else {
+      sending.value = false
       messages.value.push({
         id: Date.now() + 1,
         role: 'assistant',
@@ -378,6 +441,7 @@ const sendMessage = async (text) => {
     }
   } catch (e) {
     console.error('发送消息失败:', e)
+    sending.value = false
     messages.value.push({
       id: Date.now() + 1,
       role: 'assistant',
@@ -390,6 +454,82 @@ const sendMessage = async (text) => {
   }
 }
 
+// ========== 会话历史 ==========
+
+const toggleSessionList = async () => {
+  showSessionList.value = !showSessionList.value
+  if (showSessionList.value) {
+    await loadSessions()
+  }
+}
+
+const loadSessions = async () => {
+  sessionLoading.value = true
+  try {
+    const res = await getAiChatSessions(0, 20)
+    if (res.code === 200 && res.data) {
+      sessionList.value = (res.data.records || res.data.content || [])
+    }
+  } catch (e) {
+    console.error('加载会话列表失败:', e)
+  } finally {
+    sessionLoading.value = false
+  }
+}
+
+const switchSession = async (session) => {
+  currentSessionId.value = session.id
+  showSessionList.value = false
+  messages.value = []
+  suggestions.value = []
+  loading.value = true
+  try {
+    const res = await getAiChatMessages(session.id)
+    if (res.code === 200 && res.data) {
+      messages.value = (res.data || []).map(m => ({
+        id: m.id,
+        role: m.role === 'USER' ? 'user' : 'assistant',
+        content: m.content,
+        createdAt: m.createdAt
+      }))
+    }
+  } catch (e) {
+    console.error('加载消息失败:', e)
+  } finally {
+    loading.value = false
+    scrollToBottom()
+  }
+}
+
+const handleDeleteSession = async (session, e) => {
+  e.stopPropagation()
+  try {
+    const res = await deleteAiChatSession(session.id)
+    if (res.code === 200) {
+      sessionList.value = sessionList.value.filter(s => s.id !== session.id)
+      if (currentSessionId.value === session.id) {
+        currentSessionId.value = null
+        messages.value = []
+        suggestions.value = []
+        await createNewSession()
+      }
+    }
+  } catch (e) {
+    ElMessage.error('删除失败')
+  }
+}
+
+const formatSessionTime = (t) => {
+  if (!t) return ''
+  const d = new Date(t)
+  const now = new Date()
+  const diff = now - d
+  if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
+  if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
+  if (diff < 604800000) return Math.floor(diff / 86400000) + '天前'
+  return d.toLocaleDateString('zh-CN')
+}
+
 const scrollToBottom = () => {
   nextTick(() => {
     if (messagesRef.value) {
@@ -400,14 +540,28 @@ const scrollToBottom = () => {
 
 const renderMarkdown = (text) => {
   if (!text) return ''
-  // 简单 markdown 渲染：加粗、链接、换行
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    // 代码块 (```)
+    .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="md-code-block"><code>$2</code></pre>')
+    // 加粗
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // 斜体
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
+    // 行内代码
+    .replace(/`(.*?)`/g, '<code class="md-inline-code">$1</code>')
+    // 有序列表
+    .replace(/^\d+\.\s+(.+)/gm, '<li class="md-ol">$1</li>')
+    // 无序列表
+    .replace(/^[-•]\s+(.+)/gm, '<li class="md-ul">$1</li>')
+    // 标题
+    .replace(/^###\s+(.+)/gm, '<h4 class="md-h4">$1</h4>')
+    .replace(/^##\s+(.+)/gm, '<h3 class="md-h3">$1</h3>')
+    // 分隔线
+    .replace(/^---$/gm, '<hr class="md-hr">')
+    // 换行
     .replace(/\n/g, '<br>')
 }
 
@@ -830,6 +984,59 @@ const formatTime = (time) => {
   font-size: 12px;
 }
 
+.msg-bubble :deep(.md-inline-code) {
+  background: rgba(0,0,0,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+
+.msg-bubble :deep(.md-code-block) {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 12px;
+  overflow-x: auto;
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  line-height: 1.5;
+}
+
+.msg-bubble :deep(.md-code-block code) {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.msg-bubble :deep(.md-h3),
+.msg-bubble :deep(.md-h4) {
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+
+.msg-bubble :deep(.md-h3) { font-size: 14px; }
+.msg-bubble :deep(.md-h4) { font-size: 13px; }
+
+.msg-bubble :deep(.md-ol),
+.msg-bubble :deep(.md-ul) {
+  margin-left: 8px;
+  padding-left: 12px;
+  list-style: disc;
+  line-height: 1.8;
+}
+
+.msg-bubble :deep(.md-ol) {
+  list-style: decimal;
+}
+
+.msg-bubble :deep(.md-hr) {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 8px 0;
+}
+
 .msg-bubble :deep(strong) {
   font-weight: 600;
 }
@@ -1042,5 +1249,165 @@ const formatTime = (time) => {
 
 .empty-state {
   padding: 40px 0;
+}
+
+/* ========== 会话历史侧栏 ========== */
+.session-sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.session-sb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.session-sb-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.session-sb-close {
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.session-sb-close:hover {
+  opacity: 1;
+}
+
+.session-sb-loading {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  padding: 40px;
+}
+
+.session-sb-loading .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #999;
+  animation: typing 1.4s infinite;
+}
+
+.session-sb-loading .dot:nth-child(2) { animation-delay: 0.2s; }
+.session-sb-loading .dot:nth-child(3) { animation-delay: 0.4s; }
+
+.session-sb-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.session-sb-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.session-sb-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 4px;
+}
+
+.session-sb-item:hover {
+  background: #f5f7fa;
+}
+
+.session-sb-item.active {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.session-sb-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-sb-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-sb-time {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 2px;
+  display: block;
+}
+
+.session-sb-del {
+  font-size: 14px;
+  color: #ccc;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.session-sb-item:hover .session-sb-del {
+  opacity: 1;
+}
+
+.session-sb-del:hover {
+  color: #f56c6c;
+}
+
+.session-slide-enter-active,
+.session-slide-leave-active {
+  transition: all 0.25s ease;
+}
+
+.session-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.session-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+/* 打字机光标 */
+.msg-bubble.typing-cursor::after {
+  content: '▋';
+  animation: blink-cursor 0.8s step-end infinite;
+  color: #667eea;
+  font-size: 14px;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 </style>

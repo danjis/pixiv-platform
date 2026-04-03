@@ -664,11 +664,18 @@ def _init_llm_client():
     global llm_client
     try:
         from openai import OpenAI
+        import httpx
         api_key = os.environ.get("LLM_API_KEY", _LLM_API_KEY)
         base_url = os.environ.get("LLM_BASE_URL", _LLM_BASE_URL)
         if api_key:
-            llm_client = OpenAI(api_key=api_key, base_url=base_url)
-            logger.info(f"LLM 客户端初始化成功 (base_url={base_url})")
+            # 使用显式 httpx 客户端，避免系统代理导致连接失败
+            proxy_url = os.environ.get("LLM_PROXY", None)
+            http_client = httpx.Client(
+                proxy=proxy_url,
+                timeout=httpx.Timeout(60.0, connect=10.0)
+            )
+            llm_client = OpenAI(api_key=api_key, base_url=base_url, http_client=http_client)
+            logger.info(f"LLM 客户端初始化成功 (base_url={base_url}, proxy={proxy_url})")
         else:
             logger.warning("未设置 LLM_API_KEY，AI 客服功能将不可用")
     except Exception as e:

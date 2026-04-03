@@ -40,12 +40,12 @@ export function useWebSocketNotification() {
         }
       },
       onConnect: () => {
-        console.log('[WS] 已连接')
+        if (import.meta.env.DEV) console.log('[WS] 已连接')
         // 订阅当前用户的通知频道
         stompClient.subscribe(`/topic/notifications/${userId}`, (message) => {
           try {
             const notification = JSON.parse(message.body)
-            console.log('[WS] 收到通知:', notification)
+            if (import.meta.env.DEV) console.log('[WS] 收到通知:', notification)
             if (typeof onNotification === 'function') {
               onNotification(notification)
             }
@@ -58,7 +58,7 @@ export function useWebSocketNotification() {
         stompClient.subscribe(`/topic/chat/${userId}`, (message) => {
           try {
             const chatMsg = JSON.parse(message.body)
-            console.log('[WS] 收到私信:', chatMsg)
+            if (import.meta.env.DEV) console.log('[WS] 收到私信:', chatMsg)
             if (typeof chatCallback === 'function') {
               chatCallback(chatMsg)
             }
@@ -68,7 +68,7 @@ export function useWebSocketNotification() {
         })
       },
       onDisconnect: () => {
-        console.log('[WS] 已断开')
+        if (import.meta.env.DEV) console.log('[WS] 已断开')
       },
       onStompError: (frame) => {
         console.error('[WS] STOMP 错误:', frame.headers?.message)

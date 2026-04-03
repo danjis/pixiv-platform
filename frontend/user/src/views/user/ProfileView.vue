@@ -356,13 +356,6 @@ async function loadUserProfile() {
       
       // 始终加载关注列表（用于显示关注数量）
       await loadFollowing()
-      
-      console.log('用户资料加载完成:', {
-        role: userProfile.value.role,
-        activeTab: activeTab.value,
-        favoritesCount: favorites.value.length,
-        followingCount: following.value.length
-      })
     } else {
       ElMessage.error(res.message || '加载用户信息失败')
     }
@@ -380,7 +373,6 @@ async function loadArtworks() {
     if (res.code === 200) {
       artworks.value = res.data?.records || []
       artworkTotal.value = res.data?.total || 0
-      console.log('作品列表加载成功:', artworks.value.length, '个作品')
     } else {
       console.error('作品列表加载失败:', res.message)
     }
@@ -391,13 +383,10 @@ async function loadArtworks() {
 
 async function loadFavorites() {
   try {
-    console.log('开始加载收藏列表:', { page: favoritePage.value, size: favoritePageSize.value })
     const res = await getUserFavorites({ page: favoritePage.value, size: favoritePageSize.value })
-    console.log('收藏列表API响应:', res)
     if (res.code === 200) {
       favorites.value = res.data?.records || []
       favoriteTotal.value = res.data?.total || 0
-      console.log('收藏列表加载成功:', favorites.value.length, '个作品，总数:', favoriteTotal.value)
     } else {
       console.error('收藏列表加载失败:', res.message)
       ElMessage.error(res.message || '加载收藏列表失败')
@@ -410,13 +399,10 @@ async function loadFavorites() {
 
 async function loadFollowing() {
   try {
-    console.log('开始加载关注列表:', { page: followingPage.value, size: followingPageSize.value })
     const res = await getFollowing({ page: followingPage.value, size: followingPageSize.value })
-    console.log('关注列表API响应:', res)
     if (res.code === 200) {
       following.value = res.data?.records || []
       followingTotal.value = res.data?.total || 0
-      console.log('关注列表加载成功:', following.value.length, '个画师，总数:', followingTotal.value)
     } else {
       console.error('关注列表加载失败:', res.message)
       ElMessage.error(res.message || '加载关注列表失败')

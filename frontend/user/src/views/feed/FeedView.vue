@@ -119,6 +119,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getFeedArtworks } from '@/api/artwork'
 import { Loading } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -141,6 +142,7 @@ async function loadFeed() {
     }
   } catch (error) {
     console.error('加载关注动态失败:', error)
+    ElMessage.error('加载关注动态失败')
   } finally {
     loading.value = false
   }

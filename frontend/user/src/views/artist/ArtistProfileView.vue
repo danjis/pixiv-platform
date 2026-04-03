@@ -336,6 +336,7 @@ async function loadArtworks() {
     }
   } catch (err) {
     console.error('加载作品失败:', err)
+    ElMessage.error('加载作品失败')
   } finally {
     loadingArtworks.value = false
   }
@@ -358,6 +359,7 @@ async function loadFavorites() {
     }
   } catch (err) {
     console.error('加载收藏失败:', err)
+    ElMessage.error('加载收藏失败')
   } finally {
     loadingFavorites.value = false
   }
@@ -373,6 +375,7 @@ async function loadFollowing() {
     }
   } catch (err) {
     console.error('加载关注失败:', err)
+    ElMessage.error('加载关注列表失败')
   } finally {
     loadingFollowing.value = false
   }
