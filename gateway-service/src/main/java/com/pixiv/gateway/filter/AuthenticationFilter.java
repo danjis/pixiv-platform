@@ -58,14 +58,16 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/api/artworks/ranking", // 排行榜（游客可访问）
             "/api/artworks/suggestions", // 搜索联想补全（公开）
             "/api/artworks/search-by-image", // 以图搜图（公开）
-            "/api/artworks/*/", // 作品详情（游客可访问）
+            "/api/artworks/*", // 作品详情（游客可访问）
             "/api/tags/**", // 标签（游客可访问）
             "/api/contests", // 比赛列表（游客可访问）
-            "/api/contests/**", // 比赛详情（游客可访问）
+            "/api/contests/*", // 比赛详情（游客可访问）
+            "/api/contests/*/entries", // 比赛参赛作品列表（游客可查看）
+            "/api/contests/featured-entries", // 精选参赛作品（游客可查看）
             "/api/payments/notify", // 支付宝异步通知回调（无JWT）
             "/api/payments/status", // 支付状态查询（支付宝回跳时无JWT可能性）
             "/api/commission-plans/artist/**", // 画师约稿方案（游客可查看）
-            "/api/membership/*/", // 查看用户会员状态（VIP徽章显示）
+            "/api/membership/*", // 查看用户会员状态（VIP徽章显示）
             "/api/membership/internal/**", // 服务间内部调用（会员升级）
             "/api/payments/membership/status", // 会员支付状态查询（支付宝回跳）
             "/actuator/**", // 健康检查

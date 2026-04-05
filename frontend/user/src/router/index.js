@@ -116,6 +116,14 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
+        path: 'conversations',
+        redirect: '/chat'
+      },
+      {
+        path: 'conversations/:id',
+        redirect: to => ({ path: `/chat/${to.params.id}` })
+      },
+      {
         path: 'notifications',
         name: 'Notifications',
         component: () => import('@/views/notification/NotificationView.vue'),
@@ -167,7 +175,15 @@ const routes = [
       {
         path: 'commissions/:id',
         redirect: to => ({ path: `/commission/${to.params.id}` })
-      }
+      },
+      // 兼容通知链接 /user/artist-application → /profile
+      {
+        path: 'user/artist-application',
+        redirect: '/profile'
+      },
+      // 兼容截图指南中的路径别名
+      { path: 'feed', redirect: '/following' },
+      { path: 'checkin', redirect: '/membership' }
     ]
   },
   // 创作者中心（画师专属，独立布局）

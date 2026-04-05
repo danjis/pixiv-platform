@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -121,7 +121,7 @@ const notifications = ref([])
 const page = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
-const unreadCount = ref(0)
+const unreadCount = inject('notificationUnreadCount', ref(0))
 const filterType = ref('all')
 
 const filters = [

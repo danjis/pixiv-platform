@@ -78,6 +78,8 @@ public class ArtistApplicationService {
         application.setUserId(userId);
         application.setPortfolioUrl(request.getPortfolioUrl());
         application.setDescription(request.getDescription());
+        application.setSpecialties(toSpecialtiesJson(request.getSpecialties()));
+        application.setContactInfo(request.getContactInfo());
         application.setStatus(ApplicationStatus.PENDING);
 
         application = applicationRepository.save(application);
@@ -254,6 +256,8 @@ public class ArtistApplicationService {
         artist.setUser(user);
         artist.setPortfolioUrl(application.getPortfolioUrl());
         artist.setDescription(application.getDescription());
+        artist.setSpecialties(application.getSpecialties());
+        artist.setContactInfo(application.getContactInfo());
         artist.setFollowerCount(0);
         artist.setArtworkCount(0);
         artist.setCommissionCount(0);
@@ -276,6 +280,24 @@ public class ArtistApplicationService {
     @Transactional(readOnly = true)
     public long countPendingApplications() {
         return applicationRepository.countByStatus(ApplicationStatus.PENDING);
+    }
+
+    private String toSpecialtiesJson(java.util.List<String> specialties) {
+        java.util.List<String> sanitized = specialties == null
+                ? java.util.Collections.emptyList()
+                : specialties.stream()
+                        .filter(java.util.Objects::nonNull)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .distinct()
+                        .limit(10)
+                        .toList();
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(sanitized);
+        } catch (Exception e) {
+            logger.warn("序列化画师申请 specialties 失败", e);
+            return "[]";
+        }
     }
 
     /**

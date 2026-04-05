@@ -114,6 +114,10 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 约稿中
               </button>
+              <button v-if="userProfile.role === 'ARTIST'" class="outline-btn" @click="handleGoPlans">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                约稿方案
+              </button>
             </div>
           </div>
         </div>
@@ -272,6 +276,19 @@
         <el-form-item label="创作经历" required>
           <el-input v-model="applyForm.description" type="textarea" :rows="4" placeholder="介绍一下你的创作经历和擅长的风格" maxlength="500" show-word-limit />
         </el-form-item>
+        <el-form-item label="擅长领域" required>
+          <el-input
+            v-model="applyForm.specialtiesText"
+            type="textarea"
+            :rows="2"
+            placeholder="例如：二次元, 角色立绘, 水彩（支持逗号或换行分隔）"
+            maxlength="300"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item label="联系方式" required>
+          <el-input v-model="applyForm.contactInfo" placeholder="例如：微信/QQ/邮箱（至少填写一种）" maxlength="200" show-word-limit />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button round @click="applyDialogVisible = false">取消</el-button>
@@ -290,6 +307,7 @@ import { getCurrentUser, updateProfile, applyForArtist } from '@/api/user'
 import { getArtworks, getUserFavorites } from '@/api/artwork'
 import { getFollowing, unfollowArtist } from '@/api/follow'
 import { uploadAvatar } from '@/api/file'
+import { updateArtistSettings } from '@/api/studio'
 import SkeletonBlock from '@/components/SkeletonBlock.vue'
 
 const router = useRouter()
@@ -328,7 +346,7 @@ const saving = ref(false)
 
 // 申请画师
 const applyDialogVisible = ref(false)
-const applyForm = ref({ portfolioUrl: '', description: '' })
+const applyForm = ref({ portfolioUrl: '', description: '', specialtiesText: '', contactInfo: '' })
 const applying = ref(false)
 
 function switchTab(tab) {
@@ -438,16 +456,27 @@ async function handleSaveProfile() {
 }
 
 function handleApplyArtist() {
-  applyForm.value = { portfolioUrl: '', description: '' }
+  applyForm.value = { portfolioUrl: '', description: '', specialtiesText: '', contactInfo: '' }
   applyDialogVisible.value = true
 }
 
 async function handleSubmitApplication() {
   if (!applyForm.value.portfolioUrl) return ElMessage.warning('请输入作品集链接')
   if (!applyForm.value.description) return ElMessage.warning('请输入创作经历')
+  const specialties = (applyForm.value.specialtiesText || '')
+    .split(/[\n,，]/)
+    .map(item => item.trim())
+    .filter(Boolean)
+  if (specialties.length === 0) return ElMessage.warning('请至少填写一个擅长领域')
+  if (!applyForm.value.contactInfo?.trim()) return ElMessage.warning('请填写联系方式')
   applying.value = true
   try {
-    const res = await applyForArtist(applyForm.value)
+    const res = await applyForArtist({
+      portfolioUrl: applyForm.value.portfolioUrl,
+      description: applyForm.value.description,
+      specialties,
+      contactInfo: applyForm.value.contactInfo.trim()
+    })
     if (res.code === 200) { ElMessage.success('申请已提交，请等待审核'); applyDialogVisible.value = false }
     else ElMessage.error(res.message || '申请失败')
   } catch { ElMessage.error('申请失败') }
@@ -455,7 +484,23 @@ async function handleSubmitApplication() {
 }
 
 async function handleToggleCommissions() {
-  ElMessage.info('功能开发中')
+  if (!userProfile.value || userProfile.value.role !== 'ARTIST') return
+  try {
+    const target = !userProfile.value.acceptingCommissions
+    const res = await updateArtistSettings({ commissionOpen: target })
+    if (res.code === 200) {
+      userProfile.value.acceptingCommissions = res.data?.acceptingCommissions ?? target
+      ElMessage.success(target ? '已开启接稿，用户可发起约稿' : '已暂停接稿')
+    } else {
+      ElMessage.error(res.message || '更新接稿状态失败')
+    }
+  } catch {
+    ElMessage.error('更新接稿状态失败')
+  }
+}
+
+function handleGoPlans() {
+  router.push('/studio/plans')
 }
 
 async function handleUnfollow(artistId) {

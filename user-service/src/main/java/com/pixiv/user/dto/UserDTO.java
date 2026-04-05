@@ -29,6 +29,9 @@ public class UserDTO {
     // 会员等级
     private String membershipLevel; // NORMAL / VIP / SVIP
 
+    // 画师接稿状态
+    private Boolean acceptingCommissions;
+
     public UserDTO() {
     }
 
@@ -148,5 +151,13 @@ public class UserDTO {
 
     public void setMembershipLevel(String membershipLevel) {
         this.membershipLevel = membershipLevel;
+    }
+
+    public Boolean getAcceptingCommissions() {
+        return acceptingCommissions;
+    }
+
+    public void setAcceptingCommissions(Boolean acceptingCommissions) {
+        this.acceptingCommissions = acceptingCommissions;
     }
 }

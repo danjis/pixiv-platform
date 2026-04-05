@@ -2,8 +2,12 @@ package com.pixiv.user.dto;
 
 import com.pixiv.user.entity.ApplicationStatus;
 import com.pixiv.user.entity.ArtistApplication;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 画师申请 DTO
@@ -15,6 +19,8 @@ public class ArtistApplicationDTO {
     private String username;
     private String portfolioUrl;
     private String description;
+    private List<String> specialties;
+    private String contactInfo;
     private ApplicationStatus status;
     private Long reviewerId;
     private String reviewComment;
@@ -31,6 +37,8 @@ public class ArtistApplicationDTO {
         this.userId = application.getUserId();
         this.portfolioUrl = application.getPortfolioUrl();
         this.description = application.getDescription();
+        this.specialties = parseSpecialties(application.getSpecialties());
+        this.contactInfo = application.getContactInfo();
         this.status = application.getStatus();
         this.reviewerId = application.getReviewerId();
         this.reviewComment = application.getReviewComment();
@@ -80,6 +88,22 @@ public class ArtistApplicationDTO {
         this.description = description;
     }
 
+    public List<String> getSpecialties() {
+        return specialties;
+    }
+
+    public void setSpecialties(List<String> specialties) {
+        this.specialties = specialties;
+    }
+
+    public String getContactInfo() {
+        return contactInfo;
+    }
+
+    public void setContactInfo(String contactInfo) {
+        this.contactInfo = contactInfo;
+    }
+
     public ApplicationStatus getStatus() {
         return status;
     }
@@ -118,5 +142,17 @@ public class ArtistApplicationDTO {
 
     public void setReviewedAt(LocalDateTime reviewedAt) {
         this.reviewedAt = reviewedAt;
+    }
+
+    private List<String> parseSpecialties(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return new ArrayList<>();
+        }
+        try {
+            return new ObjectMapper().readValue(raw, new TypeReference<List<String>>() {
+            });
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 }

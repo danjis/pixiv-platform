@@ -75,7 +75,7 @@
             <span class="text-muted">{{ formatDate(row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column label="操作" width="130" fixed="right">
           <template #default="{ row }">
             <el-button
               v-if="row.status !== 'DELETED'"
@@ -84,7 +84,13 @@
               size="small"
               @click="handleDelete(row)"
             >删除</el-button>
-            <span v-else class="text-muted" style="font-size: 12px;">已删除</span>
+            <el-button
+              v-if="row.status === 'DELETED'"
+              type="success"
+              text
+              size="small"
+              @click="handleRestore(row)"
+            >恢复</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -108,7 +114,7 @@
 import { ref, onMounted } from 'vue'
 import { Search, Refresh, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getArtworks, deleteArtwork, esFullSync, esExtractFeatures, batchTranslateTags } from '@/api/artwork'
+import { getArtworks, deleteArtwork, restoreArtwork, esFullSync, esExtractFeatures, batchTranslateTags } from '@/api/artwork'
 
 const loading = ref(false)
 const syncLoading = ref(false)
@@ -168,6 +174,23 @@ async function handleDelete(row) {
       loadArtworks()
     } else {
       ElMessage.error(res.message || '删除失败')
+    }
+  } catch { /* cancelled */ }
+}
+
+async function handleRestore(row) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要恢复作品「${row.title}」吗？恢复后状态将变为"已发布"。`,
+      '恢复作品',
+      { confirmButtonText: '恢复', cancelButtonText: '取消', type: 'info' }
+    )
+    const res = await restoreArtwork(row.id)
+    if (res.code === 200) {
+      ElMessage.success('作品已恢复')
+      loadArtworks()
+    } else {
+      ElMessage.error(res.message || '恢复失败')
     }
   } catch { /* cancelled */ }
 }

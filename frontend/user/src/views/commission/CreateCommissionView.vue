@@ -305,12 +305,19 @@ async function submitCommission() {
 
 onMounted(async () => {
   const artistId = route.query.artistId
+  const planIdFromQuery = route.query.planId ? Number(route.query.planId) : null
   if (artistId) {
     try { const r = await getUserProfile(artistId); if (r.code === 200) artist.value = r.data } catch {}
     try {
       const r = await getCommissionPlans({ artistId, page: 1, size: 20 })
       if (r.code === 200) {
         plans.value = Array.isArray(r.data) ? r.data : (r.data?.records || [])
+        if (planIdFromQuery) {
+          const targetPlan = plans.value.find(p => Number(p.id) === planIdFromQuery)
+          if (targetPlan) {
+            selectPlan(targetPlan)
+          }
+        }
       }
     } catch {}
   }

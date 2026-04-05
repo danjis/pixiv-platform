@@ -318,6 +318,14 @@ public class UserService {
             long followerCount = followRepository.countByFollowingId(userId);
             userDTO.setFollowerCount(followerCount);
 
+            // 接稿状态
+            try {
+                artistRepository.findByUserId(userId)
+                        .ifPresent(artist -> userDTO.setAcceptingCommissions(artist.getAcceptingCommissions()));
+            } catch (Exception e) {
+                logger.warn("获取画师接稿状态失败: userId={}", userId, e);
+            }
+
             // 作品数：调用 artwork-service 获取
             try {
                 Result<Long> artworkCountResult = artworkServiceClient.getArtworkCount(userId);
@@ -356,8 +364,8 @@ public class UserService {
      * @return 更新后的用户信息 DTO
      */
     @Caching(evict = {
-            @CacheEvict(value = "userProfile", key = "#userId"),
-            @CacheEvict(value = "artistProfile", key = "#userId")
+            @CacheEvict(value = "userProfile", key = "#p0"),
+            @CacheEvict(value = "artistProfile", key = "#p0")
     })
     @Transactional
     public UserDTO updateProfile(Long userId, String avatarUrl, String bio) {
@@ -389,7 +397,7 @@ public class UserService {
      * @param userId 用户 ID
      * @return 画师信息 DTO
      */
-    @Cacheable(value = "artistProfile", key = "#userId")
+    @Cacheable(value = "artistProfile", key = "#p0")
     @Transactional(readOnly = true)
     public ArtistDTO getArtistByUserId(Long userId) {
         logger.info("获取画师信息: userId={}", userId);
@@ -408,7 +416,7 @@ public class UserService {
     /**
      * 更新用户隐私设置
      */
-    @CacheEvict(value = "userProfile", key = "#userId")
+    @CacheEvict(value = "userProfile", key = "#p0")
     @Transactional
     public UserDTO updatePrivacySettings(Long userId, java.util.Map<String, Boolean> settings) {
         logger.info("更新隐私设置: userId={}", userId);
@@ -436,8 +444,8 @@ public class UserService {
      * @return 更新后的画师信息
      */
     @Caching(evict = {
-            @CacheEvict(value = "userProfile", key = "#userId"),
-            @CacheEvict(value = "artistProfile", key = "#userId")
+            @CacheEvict(value = "userProfile", key = "#p0"),
+            @CacheEvict(value = "artistProfile", key = "#p0")
     })
     @Transactional
     public ArtistDTO updateArtistSettings(Long userId, java.util.Map<String, Object> settings) {

@@ -63,3 +63,14 @@ export function batchTranslateTags() {
     timeout: 60000
   })
 }
+
+/**
+ * 恢复已删除的作品
+ * @param {number} id - 作品 ID
+ */
+export function restoreArtwork(id) {
+  return request({
+    url: `/api/admin/artworks/${id}/restore`,
+    method: 'put'
+  })
+}

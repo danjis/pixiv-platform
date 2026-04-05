@@ -68,6 +68,9 @@
                 <el-icon size="13"><User /></el-icon>
                 ID: {{ app.userId }}
               </span>
+              <span class="meta-item" v-if="app.specialties?.length">
+                擅长：{{ app.specialties.join(' / ') }}
+              </span>
               <span class="meta-item">
                 <el-icon size="13"><Clock /></el-icon>
                 {{ formatDate(app.createdAt) }}
@@ -142,6 +145,14 @@
                 {{ currentApp.portfolioUrl }}
               </a>
             </div>
+            <div class="detail-field" v-if="currentApp.specialties?.length">
+              <span class="detail-label">擅长领域</span>
+              <span class="detail-value">{{ currentApp.specialties.join(' / ') }}</span>
+            </div>
+            <div class="detail-field" v-if="currentApp.contactInfo">
+              <span class="detail-label">联系方式</span>
+              <span class="detail-value">{{ currentApp.contactInfo }}</span>
+            </div>
           </div>
         </div>
 
@@ -203,7 +214,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, User, Clock, Link, Check, Close, WarningFilled } from '@element-plus/icons-vue'
 import { getApplications, getPendingApplications, reviewApplication } from '../api/artist'
@@ -221,7 +232,10 @@ const rejectReason = ref('')
 const currentReviewApp = ref(null)
 const detailDialogVisible = ref(false)
 const currentApp = ref(null)
-const pendingCount = ref(0)
+
+// 从 AdminLayout 注入共享的待审数量
+const pendingCount = inject('pendingApplicationCount', ref(0))
+const refreshParentPendingCount = inject('refreshPendingCount', () => {})
 
 const statusTabs = computed(() => [
   { label: '全部', value: '' },
@@ -250,11 +264,8 @@ const loadApplications = async () => {
 }
 
 const loadPendingCount = async () => {
-  try {
-    const res = await getPendingApplications()
-    const data = res.data
-    pendingCount.value = Array.isArray(data) ? data.length : (data?.total || 0)
-  } catch { pendingCount.value = 0 }
+  // 刷新共享的待审数量（更新侧栏 badge）
+  await refreshParentPendingCount()
 }
 
 const handleReview = async (app, status) => {

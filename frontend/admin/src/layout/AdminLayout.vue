@@ -131,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import {
@@ -141,12 +141,16 @@ import {
 } from '@element-plus/icons-vue'
 import { useAdminStore } from '@/stores/admin'
 import { getPendingApplications } from '@/api/artist'
+import { getCurrentAdmin } from '@/api/auth'
 
 const router = useRouter()
 const route = useRoute()
 const adminStore = useAdminStore()
 const isCollapsed = ref(false)
 const pendingCount = ref(0)
+
+// 提供给子页面（如 ApplicationsView）共享待审数量
+provide('pendingApplicationCount', pendingCount)
 
 const adminName = computed(() => adminStore.adminInfo?.username || '')
 
@@ -177,6 +181,9 @@ const loadPendingCount = async () => {
   } catch { /* ignore */ }
 }
 
+// provide loadPendingCount after definition
+provide('refreshPendingCount', loadPendingCount)
+
 const handleLogout = async () => {
   try {
     await ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
@@ -185,7 +192,7 @@ const handleLogout = async () => {
       type: 'warning'
     })
     localStorage.removeItem('admin_token')
-    adminStore.clearAdminInfo()
+    adminStore.logout()
     router.push('/login')
     ElMessage.success('已退出登录')
   } catch { /* cancelled */ }
@@ -193,6 +200,14 @@ const handleLogout = async () => {
 
 onMounted(() => {
   loadPendingCount()
+  // 刷新后恢复管理员信息
+  if (!adminStore.adminInfo && localStorage.getItem('admin_token')) {
+    getCurrentAdmin().then(res => {
+      if (res.code === 200 && res.data) {
+        adminStore.setAdminInfo(res.data)
+      }
+    }).catch(() => { /* ignore */ })
+  }
 })
 </script>
 

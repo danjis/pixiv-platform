@@ -58,8 +58,8 @@ public class FollowService {
      * @param artistId   画师ID（用户ID）
      */
     @Caching(evict = {
-            @CacheEvict(value = "followCount", key = "'following:' + #followerId"),
-            @CacheEvict(value = "followCount", key = "'follower:' + #artistId")
+            @CacheEvict(value = "followCount", key = "'following:' + #p0"),
+            @CacheEvict(value = "followCount", key = "'follower:' + #p1")
     })
     @Transactional
     public void followUser(Long followerId, Long artistId) {
@@ -103,8 +103,8 @@ public class FollowService {
      * @param artistId   画师ID（用户ID）
      */
     @Caching(evict = {
-            @CacheEvict(value = "followCount", key = "'following:' + #followerId"),
-            @CacheEvict(value = "followCount", key = "'follower:' + #artistId")
+            @CacheEvict(value = "followCount", key = "'following:' + #p0"),
+            @CacheEvict(value = "followCount", key = "'follower:' + #p1")
     })
     @Transactional
     public void unfollowUser(Long followerId, Long artistId) {
@@ -307,7 +307,7 @@ public class FollowService {
      * @param userId 用户ID
      * @return 关注数量
      */
-    @Cacheable(value = "followCount", key = "'following:' + #userId")
+    @Cacheable(value = "followCount", key = "'following:' + #p0")
     @Transactional(readOnly = true)
     public long getFollowingCount(Long userId) {
         return followRepository.countByFollowerId(userId);
@@ -319,7 +319,7 @@ public class FollowService {
      * @param userId 用户ID
      * @return 粉丝数量
      */
-    @Cacheable(value = "followCount", key = "'follower:' + #userId")
+    @Cacheable(value = "followCount", key = "'follower:' + #p0")
     @Transactional(readOnly = true)
     public long getFollowerCount(Long userId) {
         return followRepository.countByFollowingId(userId);

@@ -158,6 +158,37 @@ public class AdminArtworkController {
     }
 
     /**
+     * 恢复作品（管理员）- 将已删除的作品恢复为已发布状态
+     */
+    @Operation(summary = "恢复作品（管理员）", description = "管理员恢复已删除的作品")
+    @PutMapping("/{artworkId}/restore")
+    public ResponseEntity<Result<Void>> restoreArtwork(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
+            @RequestHeader(value = "X-User-Id", required = false) String adminId,
+            @PathVariable("artworkId") Long artworkId) {
+
+        if (!isAdmin(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限访问"));
+        }
+
+        Optional<Artwork> artworkOpt = artworkRepository.findById(artworkId);
+        if (artworkOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Result.error(404, "作品不存在"));
+        }
+
+        Artwork artwork = artworkOpt.get();
+        if (artwork.getStatus() != ArtworkStatus.DELETED) {
+            return ResponseEntity.badRequest().body(Result.error(400, "该作品未被删除，无需恢复"));
+        }
+
+        artwork.setStatus(ArtworkStatus.PUBLISHED);
+        artworkRepository.save(artwork);
+
+        logger.info("管理员[{}]恢复了作品[{}]: {}", adminId, artworkId, artwork.getTitle());
+        return ResponseEntity.ok(Result.success(null));
+    }
+
+    /**
      * 获取作品统计信息（管理员）
      */
     @Operation(summary = "获取作品统计", description = "获取作品相关的统计数据")
@@ -181,6 +212,10 @@ public class AdminArtworkController {
         stats.put("publishedCount", publishedCount);
         stats.put("deletedCount", deletedCount);
         stats.put("draftCount", draftCount);
+        stats.put("totalViews", artworkRepository.sumViewCount());
+        stats.put("totalLikes", artworkRepository.sumLikeCount());
+        stats.put("totalFavorites", artworkRepository.sumFavoriteCount());
+        stats.put("totalComments", artworkRepository.sumCommentCount());
 
         return ResponseEntity.ok(Result.success(stats));
     }

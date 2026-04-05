@@ -4,10 +4,12 @@ import com.pixiv.common.constant.ErrorCode;
 import com.pixiv.common.dto.Result;
 import com.pixiv.common.exception.BusinessException;
 import com.pixiv.user.dto.MembershipDTO;
+import com.pixiv.user.entity.User;
 import com.pixiv.user.entity.UserMembership;
 import com.pixiv.user.entity.MembershipLevel;
 import com.pixiv.user.feign.CommissionServiceClient;
 import com.pixiv.user.repository.UserMembershipRepository;
+import com.pixiv.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -32,11 +34,14 @@ public class MembershipService {
     private static final Logger logger = LoggerFactory.getLogger(MembershipService.class);
 
     private final UserMembershipRepository userMembershipRepository;
+    private final UserRepository userRepository;
     private final CommissionServiceClient commissionServiceClient;
 
     public MembershipService(UserMembershipRepository userMembershipRepository,
+            UserRepository userRepository,
             CommissionServiceClient commissionServiceClient) {
         this.userMembershipRepository = userMembershipRepository;
+        this.userRepository = userRepository;
         this.commissionServiceClient = commissionServiceClient;
     }
 
@@ -166,6 +171,12 @@ public class MembershipService {
         List<MembershipDTO> dtos = pageResult.getContent().stream()
                 .map(MembershipDTO::new)
                 .collect(Collectors.toList());
+
+        // 批量查询用户名
+        List<Long> userIds = dtos.stream().map(MembershipDTO::getUserId).collect(Collectors.toList());
+        Map<Long, String> usernameMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+        dtos.forEach(dto -> dto.setUsername(usernameMap.getOrDefault(dto.getUserId(), null)));
 
         Map<String, Object> result = new HashMap<>();
         result.put("records", dtos);

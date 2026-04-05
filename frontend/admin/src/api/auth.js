@@ -32,7 +32,7 @@ export function logout() {
  */
 export function getCurrentAdmin() {
   return request({
-    url: '/api/admin/me',
+    url: '/api/admin/auth/me',
     method: 'get'
   })
 }

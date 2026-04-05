@@ -67,6 +67,11 @@
               </div>
             </div>
 
+            <div v-if="artist.role === 'ARTIST'" class="commission-state" :class="artist.acceptingCommissions ? 'open' : 'closed'">
+              <span class="state-dot"></span>
+              {{ artist.acceptingCommissions ? '当前可约稿' : '当前暂停接稿' }}
+            </div>
+
             <!-- 操作按钮（非本人才显示） -->
             <div class="action-row" v-if="!isSelf">
               <button
@@ -97,11 +102,12 @@
                 class="commission-btn"
                 @click="$router.push({ name: 'CreateCommission', query: { artistId: artist.id } })"
                 v-if="userStore.isAuthenticated && artist.role === 'ARTIST'"
+                :disabled="artist.acceptingCommissions === false"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
-                发起约稿
+                {{ artist.acceptingCommissions === false ? '暂不接稿' : '发起约稿' }}
               </button>
             </div>
             <!-- 自己的主页 -->
@@ -112,6 +118,38 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <div v-if="artist.role === 'ARTIST'" class="plans-section">
+          <div class="plans-header">
+            <h3>约稿方案</h3>
+            <span class="plans-hint">{{ artist.acceptingCommissions === false ? '画师当前暂停接稿' : '可选择方案快速发起约稿' }}</span>
+          </div>
+          <div v-if="loadingPlans" class="plans-loading">
+            <div class="spinner small"></div>
+          </div>
+          <div v-else-if="commissionPlans.length > 0" class="plans-grid">
+            <div v-for="plan in commissionPlans" :key="plan.id" class="plan-card" :class="{ inactive: !plan.active }">
+              <div class="plan-row">
+                <span class="plan-title">{{ plan.title }}</span>
+                <span class="plan-price">¥{{ plan.priceStart }}<span v-if="plan.priceEnd"> ~ ¥{{ plan.priceEnd }}</span></span>
+              </div>
+              <p class="plan-desc">{{ plan.description || '暂无描述' }}</p>
+              <div class="plan-tags">
+                <span v-if="plan.estimatedDays">{{ plan.estimatedDays }}天交付</span>
+                <span v-if="plan.revisionsIncluded">{{ plan.revisionsIncluded }}次修改</span>
+                <span v-if="plan.category">{{ plan.category }}</span>
+              </div>
+              <button
+                class="plan-commission-btn"
+                :disabled="artist.acceptingCommissions === false || !plan.active"
+                @click="$router.push({ name: 'CreateCommission', query: { artistId: artist.id, planId: plan.id } })"
+              >
+                {{ artist.acceptingCommissions === false ? '暂停接稿' : (plan.active ? '按此方案约稿' : '方案已停用') }}
+              </button>
+            </div>
+          </div>
+          <div v-else class="plans-empty">该画师暂未设置约稿方案</div>
         </div>
 
         <!-- Tab 区域 -->
@@ -252,6 +290,7 @@ import { getUserProfile } from '@/api/user'
 import { getArtworks, getUserFavorites } from '@/api/artwork'
 import { followArtist, unfollowArtist, checkFollowStatus, getUserFollowing } from '@/api/follow'
 import { createOrGetConversation } from '@/api/chat'
+import { getCommissionPlans } from '@/api/commissionPlan'
 import { ElMessage } from 'element-plus'
 import ArtworkCard from '@/components/ArtworkCard.vue'
 
@@ -278,6 +317,8 @@ const artworkPage = ref(1)
 const artworkPageSize = ref(20)
 const artworkTotal = ref(0)
 const loadingArtworks = ref(false)
+const commissionPlans = ref([])
+const loadingPlans = ref(false)
 
 // 收藏 tab
 const favorites = ref([])
@@ -298,6 +339,7 @@ async function loadArtistProfile() {
       if (artist.value.role === 'ARTIST') {
         activeTab.value = 'artworks'
         loadArtworks()
+        loadCommissionPlans()
       } else if (!artist.value.hideFavorites || isSelf.value) {
         activeTab.value = 'favorites'
         loadFavorites()
@@ -317,6 +359,23 @@ async function loadArtistProfile() {
     artist.value = null
   } finally {
     loading.value = false
+  }
+}
+
+async function loadCommissionPlans() {
+  if (!route.params.id) return
+  loadingPlans.value = true
+  try {
+    const res = await getCommissionPlans({ artistId: route.params.id })
+    if (res.code === 200) {
+      commissionPlans.value = Array.isArray(res.data) ? res.data : (res.data?.records || [])
+    } else {
+      commissionPlans.value = []
+    }
+  } catch {
+    commissionPlans.value = []
+  } finally {
+    loadingPlans.value = false
   }
 }
 
@@ -626,6 +685,36 @@ onMounted(() => {
   gap: 24px;
   margin-bottom: 16px;
 }
+
+.commission-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.commission-state .state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.commission-state.open {
+  background: #ecfdf5;
+  color: #15803d;
+}
+.commission-state.open .state-dot {
+  background: #22c55e;
+}
+.commission-state.closed {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.commission-state.closed .state-dot {
+  background: #ef4444;
+}
 .stat-chip {
   display: flex;
   flex-direction: column;
@@ -645,6 +734,110 @@ onMounted(() => {
 .action-row {
   display: flex;
   gap: 12px;
+}
+
+.commission-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.plans-section {
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  margin-bottom: 24px;
+}
+.plans-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.plans-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1a1a1a;
+}
+.plans-hint {
+  font-size: 12px;
+  color: #888;
+}
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.plan-card {
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  padding: 14px;
+  background: #fff;
+}
+.plan-card.inactive {
+  opacity: 0.65;
+}
+.plan-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.plan-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+.plan-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b78d1;
+}
+.plan-desc {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #777;
+  line-height: 1.5;
+}
+.plan-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.plan-tags span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #666;
+  font-size: 11px;
+}
+.plan-commission-btn {
+  width: 100%;
+  border: 1px solid #0096fa;
+  background: #fff;
+  color: #0096fa;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.plan-commission-btn:disabled {
+  border-color: #ddd;
+  color: #aaa;
+  cursor: not-allowed;
+}
+.plans-empty {
+  font-size: 13px;
+  color: #999;
+  padding: 8px 2px;
+}
+.plans-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
 }
 .follow-btn {
   display: inline-flex;
