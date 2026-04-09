@@ -6,9 +6,8 @@ openai
 httpx==0.104.1          # 高性能 Web 框架
 uvicorn[standard]==0.24.0 # ASGI 服务器
 
-# 深度学习
-tensorflow==2.14.0        # TensorFlow 深度学习框架
-# 如果有 NVIDIA GPU，可以使用 tensorflow-gpu==2.14.0
+# 深度学习（容器环境使用 CPU 版本）
+tensorflow-cpu==2.14.0        # TensorFlow 深度学习框架
 
 # 图像处理
 Pillow==10.1.0           # Python 图像处理库
