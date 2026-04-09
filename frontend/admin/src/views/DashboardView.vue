@@ -152,7 +152,7 @@ const artworkStats = reactive({
 })
 
 const recentLogs = ref([])
-const kibanaUrl = ref('http://8.155.175.105:5601')
+const kibanaUrl = ref(import.meta.env.VITE_KIBANA_URL || 'http://47.120.43.236:5601')
 
 const statCards = [
   { key: 'totalUsers', label: '总用户', icon: markRaw(User), color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
