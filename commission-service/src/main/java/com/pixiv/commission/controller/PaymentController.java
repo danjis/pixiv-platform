@@ -159,22 +159,19 @@ public class PaymentController {
     }
 
     /**
-     * 申请退款
+     * 用户直退已废弃，统一改为提交售后/申诉后由管理员审核处理
      */
-    @Operation(summary = "申请退款", description = "对已支付的约稿申请退款")
+    @Operation(summary = "申请退款（已废弃）", description = "用户端不再支持直接退款，需提交售后/申诉后由管理员审核")
     @PostMapping("/refund")
     public ResponseEntity<Result<Void>> refund(
             @RequestBody Map<String, Object> body,
             @RequestHeader(value = "X-User-Id") Long userId) {
-        try {
-            Long commissionId = Long.valueOf(body.get("commissionId").toString());
-            String reason = body.get("reason") != null ? body.get("reason").toString() : "用户申请退款";
-            paymentService.refundPayment(commissionId, reason);
-            return ResponseEntity.ok(Result.success());
-        } catch (Exception e) {
-            logger.error("退款失败", e);
-            return ResponseEntity.ok(Result.error("退款失败: " + e.getMessage()));
-        }
+        Long commissionId = body.get("commissionId") != null
+                ? Long.valueOf(body.get("commissionId").toString())
+                : null;
+        logger.warn("拦截用户直退请求: userId={}, commissionId={}", userId, commissionId);
+        return ResponseEntity.badRequest()
+                .body(Result.error("用户端不支持直接退款，请先提交售后/申诉申请，由管理员审核后处理"));
     }
 
     // =========== 会员支付接口 ===========

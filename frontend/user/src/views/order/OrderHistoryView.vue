@@ -76,7 +76,13 @@
     <!-- 订单列表 -->
     <div class="orders-list" v-loading="loading">
       <template v-if="orders.length > 0">
-        <div class="order-item" v-for="order in orders" :key="order.id">
+        <div
+          class="order-item"
+          :class="{ clickable: !!order.commissionId }"
+          v-for="order in orders"
+          :key="order.id"
+          @click="openOrderDetail(order)"
+        >
           <!-- 左侧图标 -->
           <div class="order-type-icon" :class="typeClass(order.paymentType)">
             <svg v-if="order.paymentType === 'MEMBERSHIP'" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -120,13 +126,23 @@
 
           <!-- 操作按钮 -->
           <div class="order-actions">
-            <button v-if="order.status === 'PENDING'" class="order-action-btn pay" @click="handleContinuePay(order)">
+            <button v-if="order.commissionId" class="order-action-btn detail" @click.stop="openOrderDetail(order)">
+              查看详情
+            </button>
+            <button
+              v-if="canRequestAfterSale(order)"
+              class="order-action-btn support"
+              @click.stop="handleAfterSale(order)"
+            >
+              申请售后
+            </button>
+            <button v-if="order.status === 'PENDING'" class="order-action-btn pay" @click.stop="handleContinuePay(order)">
               继续支付
             </button>
-            <button v-if="order.status === 'PENDING'" class="order-action-btn cancel" @click="handleCancelOrder(order)">
+            <button v-if="order.status === 'PENDING'" class="order-action-btn cancel" @click.stop="handleCancelOrder(order)">
               取消订单
             </button>
-            <button v-if="order.status !== 'PENDING'" class="order-action-btn delete" @click="handleDeleteOrder(order)">
+            <button v-if="order.status !== 'PENDING'" class="order-action-btn delete" @click.stop="handleDeleteOrder(order)">
               删除
             </button>
           </div>
@@ -167,9 +183,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { getMyOrders, continuePay, cancelOrder, deleteOrder } from '@/api/payment'
+import { submitFeedback } from '@/api/feedback'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+const router = useRouter()
+const userStore = useUserStore()
 const orders = ref([])
 const loading = ref(false)
 const currentPage = ref(1)
@@ -205,6 +226,10 @@ const statusClass = (s) => {
 const typeClass = (t) => {
   const map = { MEMBERSHIP: 'membership', DEPOSIT: 'deposit', FINAL_PAYMENT: 'final' }
   return map[t] || ''
+}
+
+const canRequestAfterSale = (order) => {
+  return !!order?.commissionId && order.status === 'PAID'
 }
 
 const setStatusFilter = (val) => {
@@ -251,6 +276,67 @@ const loadOrders = async () => {
 const handleFilter = () => {
   currentPage.value = 1
   loadOrders()
+}
+
+const openOrderDetail = (order) => {
+  if (!order?.commissionId) return
+  router.push({ name: 'CommissionDetail', params: { id: order.commissionId } })
+}
+
+const buildAfterSaleNotice = (order) => {
+  if (order.paymentType === 'DEPOSIT') {
+    return [
+      '定金默认不退。',
+      '只有在画师失联、拒不创作、长期拖延或其它明显画师违约情形下，平台才会审核是否退还定金。',
+      '提交后不会自动退款，而是进入管理端人工审核。'
+    ].join('\n')
+  }
+
+  return [
+    '尾款支付通常代表你已确认收货。',
+    '用户端不会直接退尾款；如存在抄袭、欺诈、严重不符或其它重大违约，可提交售后申请。',
+    '提交后由平台人工审核，再决定是否退款。'
+  ].join('\n')
+}
+
+const handleAfterSale = async (order) => {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `${buildAfterSaleNotice(order)}\n\n请填写详细原因：`,
+      order.paymentType === 'DEPOSIT' ? '申请平台介入' : '申请售后/退款审核',
+      {
+        confirmButtonText: '提交申请',
+        cancelButtonText: '取消',
+        inputType: 'textarea',
+        inputPlaceholder: '请尽量写清楚问题经过、证据线索、你的诉求',
+        inputValidator: (val) => val && val.trim().length >= 10 ? true : '请至少填写 10 个字的申请说明'
+      }
+    )
+
+    const content = [
+      `约稿ID：${order.commissionId}`,
+      `订单号：${order.orderNo}`,
+      `支付类型：${typeLabel(order.paymentType)}`,
+      `支付金额：¥${order.amount}`,
+      `订单标题：${order.subject || '—'}`,
+      `申请原因：${value.trim()}`
+    ].join('\n')
+
+    const res = await submitFeedback({
+      type: 'COMPLAINT',
+      title: `约稿售后申请 #${order.commissionId} - ${typeLabel(order.paymentType)}`,
+      content,
+      contactInfo: userStore.user?.email || userStore.user?.username || ''
+    })
+
+    if (res.code === 200) {
+      ElMessage.success('售后申请已提交，管理员审核后会处理')
+    } else {
+      ElMessage.error(res.message || '提交售后申请失败')
+    }
+  } catch {
+    // user cancelled
+  }
 }
 
 const handleContinuePay = async (order) => {
@@ -492,6 +578,9 @@ onMounted(loadOrders)
   border: 1.5px solid #f0f0f3;
   box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
+.order-item.clickable {
+  cursor: pointer;
+}
 .order-item:hover {
   border-color: #e0e0ee;
   box-shadow: 0 6px 20px rgba(0,0,0,0.07);
@@ -662,6 +751,22 @@ onMounted(loadOrders)
 .order-action-btn.pay {
   background: #6366f1;
   color: #fff;
+}
+.order-action-btn.detail {
+  background: #eef6ff;
+  color: #2563eb;
+  border-color: #cfe2ff;
+}
+.order-action-btn.detail:hover {
+  background: #dbeafe;
+}
+.order-action-btn.support {
+  background: #fff7ed;
+  color: #ea580c;
+  border-color: #fed7aa;
+}
+.order-action-btn.support:hover {
+  background: #ffedd5;
 }
 .order-action-btn.pay:hover {
   background: #4f46e5;
