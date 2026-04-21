@@ -337,6 +337,8 @@ public class PaymentController {
                     .status(order.getStatus())
                     .subject(order.getSubject())
                     .paidAt(order.getPaidAt())
+                    .refundedAt(order.getRefundedAt())
+                    .refundReason(order.getRefundReason())
                     .createdAt(order.getCreatedAt())
                     .originalAmount(order.getOriginalAmount())
                     .discountAmount(order.getDiscountAmount())
@@ -369,6 +371,9 @@ public class PaymentController {
             @RequestHeader(value = "X-User-Role", required = false) String role,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
         try {
             List<PaymentOrderDTO> payments = paymentService.getAllPayments(page, size);
             return ResponseEntity.ok(Result.success(payments));
@@ -384,9 +389,15 @@ public class PaymentController {
     @Operation(summary = "管理员手动退款")
     @PostMapping("/admin/refund")
     public ResponseEntity<Result<Void>> adminRefund(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
+            @RequestHeader(value = "X-User-Id", required = false) Long adminId,
             @RequestBody Map<String, Object> body) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
         try {
             String reason = body.get("reason") != null ? body.get("reason").toString() : "管理员操作退款";
+            logger.info("管理员退款操作: adminId={}, reason={}", adminId, reason);
 
             // 支持两种模式：按paymentId退单笔，或按commissionId退全部
             if (body.containsKey("paymentId")) {
@@ -415,8 +426,12 @@ public class PaymentController {
     @Operation(summary = "获取所有约稿（管理端）")
     @GetMapping("/admin/commissions")
     public ResponseEntity<Result<List<Map<String, Object>>>> adminListCommissions(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
         try {
             List<Map<String, Object>> list = paymentService.getAllCommissions(page, size);
             return ResponseEntity.ok(Result.success(list));
@@ -434,7 +449,11 @@ public class PaymentController {
      */
     @Operation(summary = "财务概览（管理端）", description = "获取平台收入统计概览数据")
     @GetMapping("/admin/finance/overview")
-    public ResponseEntity<Result<Map<String, Object>>> getFinanceOverview() {
+    public ResponseEntity<Result<Map<String, Object>>> getFinanceOverview(
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
         try {
             Map<String, Object> overview = new HashMap<>();
 
@@ -526,8 +545,12 @@ public class PaymentController {
     @Operation(summary = "收入趋势（管理端）", description = "获取指定时间段的收入趋势数据")
     @GetMapping("/admin/finance/trend")
     public ResponseEntity<Result<List<Map<String, Object>>>> getFinanceTrend(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
             @RequestParam(value = "period", defaultValue = "day") String period,
             @RequestParam(value = "days", defaultValue = "30") int days) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
         try {
             List<Map<String, Object>> trend = new ArrayList<>();
             LocalDate today = LocalDate.now();
@@ -575,7 +598,11 @@ public class PaymentController {
     @Operation(summary = "最近交易明细（管理端）")
     @GetMapping("/admin/finance/recent")
     public ResponseEntity<Result<List<PaymentOrderDTO>>> getRecentTransactions(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
             @RequestParam(value = "size", defaultValue = "20") int size) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Result.error(403, "无权限操作"));
+        }
         try {
             var pageable = PageRequest.of(0, size);
             List<PaymentOrder> orders = paymentOrderRepository.findPaidCommissionOrders(pageable);
@@ -591,6 +618,8 @@ public class PaymentController {
                     .status(order.getStatus())
                     .subject(order.getSubject())
                     .paidAt(order.getPaidAt())
+                    .refundedAt(order.getRefundedAt())
+                    .refundReason(order.getRefundReason())
                     .createdAt(order.getCreatedAt())
                     .originalAmount(order.getOriginalAmount())
                     .discountAmount(order.getDiscountAmount())

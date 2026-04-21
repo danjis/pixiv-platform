@@ -22,6 +22,8 @@ public class PaymentOrderDTO {
     private PaymentStatus status;
     private String subject;
     private LocalDateTime paidAt;
+    private LocalDateTime refundedAt;
+    private String refundReason;
     private LocalDateTime createdAt;
     /** 待支付订单的过期时间 */
     private LocalDateTime expireAt;

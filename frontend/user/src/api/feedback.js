@@ -12,6 +12,14 @@ export function submitFeedback(data) {
   })
 }
 
+export function submitAfterSale(data) {
+  return request({
+    url: '/api/feedback/after-sales',
+    method: 'post',
+    data
+  })
+}
+
 /**
  * 获取我的反馈列表
  * @param {Object} params - { page, size }

@@ -24,3 +24,11 @@ export function replyFeedback(feedbackId, data) {
     data
   })
 }
+
+export function processAfterSale(feedbackId, data) {
+  return request({
+    url: `/api/feedback/admin/${feedbackId}/after-sale`,
+    method: 'put',
+    data
+  })
+}

@@ -182,7 +182,7 @@
           </div>
 
           <!-- 操作按钮 -->
-          <div class="card" v-if="showActions">
+          <div class="card" v-if="showActionPanel">
             <h3 class="card-title">操作</h3>
             <div class="action-list">
               <!-- 用户端：QUOTED → 接受报价并支付定金 -->
@@ -195,6 +195,14 @@
                 </button>
                 <button v-if="commission.status === 'DELIVERED'" class="action-btn outline" @click="doRevision">
                   请求修改
+                </button>
+                <button
+                  v-if="afterSaleActionConfig"
+                  class="action-btn outline"
+                  :disabled="hasOpenAfterSale"
+                  @click="handleAfterSaleRequest"
+                >
+                  {{ afterSaleActionConfig.buttonText }}
                 </button>
               </template>
 
@@ -373,6 +381,7 @@ import {
   getCommissionMessages, sendCommissionMessage
 } from '@/api/commission'
 import { createPayment, getCommissionPayments, continuePay, getAvailableCouponsForOrder } from '@/api/payment'
+import { getMyFeedbacks, submitAfterSale } from '@/api/feedback'
 import { getMyMembership } from '@/api/membership'
 import request from '@/utils/request'
 
@@ -389,6 +398,25 @@ const messages = ref([])
 const otherUser = ref(null)
 const loadError = ref('')
 const msgText = ref('')
+const afterSales = ref([])
+const afterSaleLoading = ref(false)
+
+const OPEN_AFTER_SALE_STATUSES = ['PENDING', 'PROCESSING']
+const afterSaleStatusLabelMap = {
+  PENDING: '待审核',
+  PROCESSING: '处理中',
+  RESOLVED: '已处理',
+  CLOSED: '已关闭'
+}
+const afterSaleResolutionLabelMap = {
+  REFUND_EXECUTED: '已执行退款',
+  REFUND_REJECTED: '未通过退款审核',
+  INTERVENTION_CLOSED: '售后已关闭'
+}
+const afterSaleActionLabelMap = {
+  PLATFORM_INTERVENTION: '平台介入',
+  REFUND_REVIEW: '退款审核'
+}
 
 // 优惠券相关
 const showCouponDialog = ref(false)
@@ -433,6 +461,65 @@ const canSendMessage = computed(() => {
 const showActions = computed(() => {
   const s = commission.value?.status
   return s && !['COMPLETED', 'CANCELLED', 'REJECTED'].includes(s)
+})
+
+const latestPaidPayment = computed(() => {
+  return [...payments.value]
+    .filter((item) => item.status === 'PAID')
+    .sort((a, b) => new Date(b.paidAt || b.createdAt || 0) - new Date(a.paidAt || a.createdAt || 0))[0] || null
+})
+
+const latestFinalPayment = computed(() => {
+  return [...payments.value]
+    .filter((item) => item.status === 'PAID' && item.paymentType === 'FINAL_PAYMENT')
+    .sort((a, b) => new Date(b.paidAt || b.createdAt || 0) - new Date(a.paidAt || a.createdAt || 0))[0] || null
+})
+
+const hasOpenAfterSale = computed(() => {
+  return afterSales.value.some((item) => OPEN_AFTER_SALE_STATUSES.includes(item.status))
+})
+
+const afterSaleActionConfig = computed(() => {
+  if (isArtist.value || !commission.value) {
+    return null
+  }
+
+  const status = commission.value.status
+  if (['DEPOSIT_PAID', 'IN_PROGRESS', 'DELIVERED'].includes(status) && latestPaidPayment.value) {
+    return {
+      requestedAction: 'PLATFORM_INTERVENTION',
+      buttonText: hasOpenAfterSale.value ? '售后处理中' : '申请平台介入',
+      dialogTitle: '申请平台介入',
+      title: `约稿平台介入申请 #${commission.value.id}`,
+      payment: latestPaidPayment.value,
+      notice: [
+        '当前阶段更适合先申请平台介入，而不是直接退款。',
+        '请说明画师违约、交付争议或沟通卡点，并尽量补充证据线索。',
+        '平台审核后会决定是否继续协调，或进入取消约稿与退款处理。'
+      ].join('\n')
+    }
+  }
+
+  if (status === 'COMPLETED' && latestFinalPayment.value) {
+    return {
+      requestedAction: 'REFUND_REVIEW',
+      buttonText: hasOpenAfterSale.value ? '售后处理中' : '申请售后/申诉',
+      dialogTitle: '申请售后/申诉',
+      title: `约稿售后申请 #${commission.value.id} - 尾款审核`,
+      payment: latestFinalPayment.value,
+      notice: [
+        '尾款支付通常代表你已经确认交付结果。',
+        '如存在抄袭、欺诈、严重不符或其他重大违约情形，可在此提交售后申诉。',
+        '平台不会自动退款，需由管理员审核后决定处理方式。'
+      ].join('\n')
+    }
+  }
+
+  return null
+})
+
+const showActionPanel = computed(() => {
+  return !!afterSaleActionConfig.value || showActions.value
 })
 
 const refUrlList = computed(() => {
@@ -494,6 +581,48 @@ async function loadData() {
     const mr = await getCommissionMessages(commissionId)
     if (mr.code === 200) messages.value = mr.data || []
   } catch {}
+
+  await loadAfterSales()
+}
+
+async function loadAfterSales() {
+  if (!commission.value) {
+    afterSales.value = []
+    return
+  }
+
+  afterSaleLoading.value = true
+  try {
+    const res = await getMyFeedbacks({ page: 0, size: 20, type: 'AFTER_SALE', commissionId })
+    afterSales.value = res.code === 200 ? (res.data?.records || []) : []
+  } catch {
+    afterSales.value = []
+  } finally {
+    afterSaleLoading.value = false
+  }
+}
+
+function getAfterSaleStatusLabel(item) {
+  return afterSaleStatusLabelMap[item?.status] || item?.status || ''
+}
+
+function getAfterSaleResolutionLabel(item) {
+  return afterSaleResolutionLabelMap[item?.resolution] || ''
+}
+
+function getAfterSaleActionLabel(item) {
+  return afterSaleActionLabelMap[item?.requestedAction] || '售后申请'
+}
+
+function getAfterSaleSummary(item) {
+  const resolution = getAfterSaleResolutionLabel(item)
+  return resolution || getAfterSaleStatusLabel(item)
+}
+
+function formatPaymentType(type) {
+  if (type === 'DEPOSIT') return '定金'
+  if (type === 'FINAL_PAYMENT') return '尾款'
+  return type || '支付记录'
 }
 
 function formatTime(t) {
@@ -506,6 +635,52 @@ function formatDate(t) {
 }
 
 // ---- Actions ----
+async function handleAfterSaleRequest() {
+  if (!afterSaleActionConfig.value) {
+    ElMessage.info('当前阶段暂不支持发起售后申请')
+    return
+  }
+
+  if (hasOpenAfterSale.value) {
+    ElMessage.info('当前约稿已有处理中售后，请等待管理员审核')
+    return
+  }
+
+  const config = afterSaleActionConfig.value
+
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `${config.notice}\n\n请尽量详细说明问题经过、证据线索和你的诉求：`,
+      config.dialogTitle,
+      {
+        confirmButtonText: '提交申请',
+        cancelButtonText: '取消',
+        inputType: 'textarea',
+        inputPlaceholder: '至少填写 10 个字，便于平台判断事实经过',
+        inputValidator: (input) => input && input.trim().length >= 10 ? true : '请至少填写 10 个字的申请说明'
+      }
+    )
+
+    const res = await submitAfterSale({
+      commissionId,
+      paymentId: config.payment?.id || null,
+      requestedAction: config.requestedAction,
+      title: config.title,
+      content: value.trim(),
+      contactInfo: userStore.user?.email || userStore.user?.phone || userStore.user?.username || ''
+    })
+
+    if (res.code === 200) {
+      ElMessage.success('售后申请已提交，平台审核后会通过站内通知反馈结果')
+      await loadAfterSales()
+    } else {
+      ElMessage.error(res.message || '提交售后申请失败')
+    }
+  } catch {
+    // user cancelled
+  }
+}
+
 async function payDeposit() {
   await openCouponSelector('DEPOSIT')
 }

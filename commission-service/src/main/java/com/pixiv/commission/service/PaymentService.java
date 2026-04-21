@@ -711,6 +711,8 @@ public class PaymentService {
                 .status(order.getStatus())
                 .subject(order.getSubject())
                 .paidAt(order.getPaidAt())
+                .refundedAt(order.getRefundedAt())
+                .refundReason(order.getRefundReason())
                 .createdAt(order.getCreatedAt())
                 .expireAt(expireAt)
                 .userCouponId(order.getUserCouponId())

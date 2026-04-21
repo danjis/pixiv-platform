@@ -122,6 +122,9 @@
               </span>
             </div>
             <div class="order-no">{{ order.orderNo }}</div>
+            <div v-if="getAfterSaleSummary(order)" class="after-sale-note">
+              {{ getAfterSaleSummary(order) }}
+            </div>
           </div>
 
           <!-- 操作按钮 -->
@@ -132,7 +135,8 @@
             <button
               v-if="canRequestAfterSale(order)"
               class="order-action-btn support"
-              @click.stop="handleAfterSale(order)"
+              :disabled="hasOpenAfterSale(order)"
+              @click.stop="handleAfterSaleRequest(order)"
             >
               申请售后
             </button>
@@ -186,7 +190,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getMyOrders, continuePay, cancelOrder, deleteOrder } from '@/api/payment'
-import { submitFeedback } from '@/api/feedback'
+import { getMyFeedbacks, submitAfterSale, submitFeedback } from '@/api/feedback'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -198,6 +202,24 @@ const pageSize = 10
 const total = ref(0)
 const statusFilter = ref('')
 const typeFilter = ref('')
+const afterSaleMap = ref({})
+
+const OPEN_AFTER_SALE_STATUSES = ['PENDING', 'PROCESSING']
+const afterSaleStatusLabelMap = {
+  PENDING: '待审核',
+  PROCESSING: '处理中',
+  RESOLVED: '已处理',
+  CLOSED: '已关闭'
+}
+const afterSaleResolutionLabelMap = {
+  REFUND_EXECUTED: '已执行退款',
+  REFUND_REJECTED: '未通过退款审核',
+  INTERVENTION_CLOSED: '售后已关闭'
+}
+const afterSaleActionLabelMap = {
+  PLATFORM_INTERVENTION: '平台介入',
+  REFUND_REVIEW: '退款审核'
+}
 
 const orderStats = computed(() => {
   const all = orders.value
@@ -232,6 +254,33 @@ const canRequestAfterSale = (order) => {
   return !!order?.commissionId && order.status === 'PAID'
 }
 
+const getOrderAfterSale = (order) => {
+  return afterSaleMap.value[`payment:${order.id}`] || null
+}
+
+const hasOpenAfterSale = (order) => {
+  const record = getOrderAfterSale(order)
+  return !!record && OPEN_AFTER_SALE_STATUSES.includes(record.status)
+}
+
+const getAfterSaleButtonText = (order) => {
+  if (hasOpenAfterSale(order)) {
+    return '售后处理中'
+  }
+  return order.paymentType === 'DEPOSIT' ? '申请平台介入' : '申请售后'
+}
+
+const getAfterSaleSummary = (order) => {
+  const record = getOrderAfterSale(order)
+  if (!record) {
+    return ''
+  }
+  const actionLabel = afterSaleActionLabelMap[record.requestedAction] || '售后申请'
+  const resolutionLabel = afterSaleResolutionLabelMap[record.resolution]
+  const statusLabel = afterSaleStatusLabelMap[record.status] || record.status
+  return resolutionLabel ? `${actionLabel}：${resolutionLabel}` : `${actionLabel}：${statusLabel}`
+}
+
 const setStatusFilter = (val) => {
   statusFilter.value = val
   handleFilter()
@@ -255,6 +304,37 @@ const formatTime = (t) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+const loadAfterSales = async () => {
+  const paidOrderIds = orders.value
+    .filter((item) => item.status === 'PAID' && item.commissionId)
+    .map((item) => item.id)
+
+  if (!paidOrderIds.length) {
+    afterSaleMap.value = {}
+    return
+  }
+
+  try {
+    const res = await getMyFeedbacks({ page: 0, size: 100, type: 'AFTER_SALE' })
+    const records = res.code === 200 ? (res.data?.records || []) : []
+    const nextMap = {}
+
+    for (const item of records) {
+      if (!item?.paymentId || !paidOrderIds.includes(item.paymentId)) {
+        continue
+      }
+      const key = `payment:${item.paymentId}`
+      if (!nextMap[key]) {
+        nextMap[key] = item
+      }
+    }
+
+    afterSaleMap.value = nextMap
+  } catch {
+    afterSaleMap.value = {}
+  }
+}
+
 const loadOrders = async () => {
   loading.value = true
   try {
@@ -266,8 +346,12 @@ const loadOrders = async () => {
       orders.value = res.data.records || []
       total.value = res.data.total || 0
     }
+    await loadAfterSales()
   } catch (e) {
     console.error('加载订单失败', e)
+    orders.value = []
+    total.value = 0
+    afterSaleMap.value = {}
   } finally {
     loading.value = false
   }
@@ -331,6 +415,73 @@ const handleAfterSale = async (order) => {
 
     if (res.code === 200) {
       ElMessage.success('售后申请已提交，管理员审核后会处理')
+    } else {
+      ElMessage.error(res.message || '提交售后申请失败')
+    }
+  } catch {
+    // user cancelled
+  }
+}
+
+const buildAfterSaleConfig = (order) => {
+  if (order.paymentType === 'DEPOSIT') {
+    return {
+      requestedAction: 'PLATFORM_INTERVENTION',
+      dialogTitle: '申请平台介入',
+      title: `约稿平台介入申请 #${order.commissionId}`,
+      notice: [
+        '定金阶段默认不支持用户直接退款。',
+        '如画师存在失联、长期不推进、拒绝创作或明显违约等情况，可提交平台介入申请。',
+        '提交后会由管理员人工审核，并决定是否取消约稿及处理退款。'
+      ].join('\n')
+    }
+  }
+
+  return {
+    requestedAction: 'REFUND_REVIEW',
+    dialogTitle: '申请售后/申诉',
+    title: `约稿售后申请 #${order.commissionId} - 尾款审核`,
+    notice: [
+      '尾款支付通常代表你已确认交付结果。',
+      '如存在抄袭、欺诈、严重不符或其他重大违约情形，可提交售后申诉。',
+      '平台不会自动退款，需由管理员审核后处理。'
+    ].join('\n')
+  }
+}
+
+const handleAfterSaleRequest = async (order) => {
+  if (hasOpenAfterSale(order)) {
+    ElMessage.info('该订单已有处理中售后，请等待管理员审核')
+    return
+  }
+
+  const config = buildAfterSaleConfig(order)
+
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `${config.notice}\n\n请尽量详细说明问题经过、证据线索和你的诉求：`,
+      config.dialogTitle,
+      {
+        confirmButtonText: '提交申请',
+        cancelButtonText: '取消',
+        inputType: 'textarea',
+        inputPlaceholder: '至少填写 10 个字，便于管理员判断事实经过',
+        inputValidator: (input) => input && input.trim().length >= 10 ? true : '请至少填写 10 个字的申请说明'
+      }
+    )
+
+    const res = await submitAfterSale({
+      commissionId: order.commissionId,
+      paymentId: order.id,
+      requestedAction: config.requestedAction,
+      title: config.title,
+      content: value.trim(),
+      contactInfo: userStore.user?.email || userStore.user?.phone || userStore.user?.username || ''
+    })
+
+    if (res.code === 200) {
+      ElMessage.success('售后申请已提交，平台审核后会通过站内通知反馈结果')
+      await loadAfterSales()
     } else {
       ElMessage.error(res.message || '提交售后申请失败')
     }
@@ -727,6 +878,12 @@ onMounted(loadOrders)
   user-select: all;
 }
 
+.after-sale-note {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ea580c;
+}
+
 /* 操作按钮 */
 .order-actions {
   display: flex;
@@ -747,6 +904,10 @@ onMounted(loadOrders)
   border: 1px solid transparent;
   white-space: nowrap;
   transition: all 0.2s;
+}
+.order-action-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 .order-action-btn.pay {
   background: #6366f1;

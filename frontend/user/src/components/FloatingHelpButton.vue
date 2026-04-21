@@ -297,6 +297,7 @@ const rules = {
 }
 
 const typeTagMap = {
+  AFTER_SALE: { label: '售后', type: 'warning' },
   CONSULTATION: { label: '咨询', type: '' },
   BUG_REPORT: { label: 'Bug', type: 'danger' },
   FEATURE_REQUEST: { label: '建议', type: 'success' },
