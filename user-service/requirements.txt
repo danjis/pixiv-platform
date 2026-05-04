@@ -3,7 +3,7 @@
 # Web 框架
 fastapi
 openai
-httpx==0.25.0          # 高性能 Web 框架
+httpx==0.104.1          # 高性能 Web 框架
 uvicorn[standard]==0.24.0 # ASGI 服务器
 
 # 深度学习（容器环境使用 CPU 版本）
