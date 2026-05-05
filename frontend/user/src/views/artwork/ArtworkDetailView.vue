@@ -219,7 +219,7 @@
               class="tag-chip"
               @click="searchByTag(tag.name)"
             >
-              #{{ tag.name }}
+              #{{ tag.nameZh || tag.name_zh || tag.name }}
               <span v-if="tag.source === 'AUTO'" class="ai-badge">AI</span>
             </span>
           </template>

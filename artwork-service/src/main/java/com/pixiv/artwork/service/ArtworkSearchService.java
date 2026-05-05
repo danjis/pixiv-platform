@@ -369,6 +369,7 @@ public class ArtworkSearchService {
                     TagDTO tagDTO = new TagDTO();
                     tagDTO.setId(tag.getId());
                     tagDTO.setName(tag.getName());
+                    tagDTO.setNameZh(tag.getNameZh());
                     tagDTO.setSource(at.getSource() != null ? at.getSource() : TagSource.MANUAL);
                     return tagDTO;
                 })

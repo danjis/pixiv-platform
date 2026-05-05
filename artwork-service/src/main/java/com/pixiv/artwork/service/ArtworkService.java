@@ -842,6 +842,7 @@ public class ArtworkService {
                                     TagDTO dto = new TagDTO();
                                     dto.setId(tag.getId());
                                     dto.setName(tag.getName());
+                                    dto.setNameZh(tag.getNameZh());
                                     dto.setSource(artworkTag.getSource());
                                     dto.setConfidence(artworkTag.getConfidence());
                                     return dto;
@@ -1058,6 +1059,7 @@ public class ArtworkService {
         TagDTO dto = new TagDTO();
         dto.setId(tag.getId());
         dto.setName(tag.getName());
+        dto.setNameZh(tag.getNameZh());
         dto.setSource(artworkTag.getSource());
         dto.setConfidence(artworkTag.getConfidence());
 
