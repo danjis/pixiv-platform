@@ -12,6 +12,9 @@ import os
 from typing import Dict, Optional
 import logging
 import re
+import requests
+import hashlib
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -1023,14 +1026,20 @@ class TagTranslator:
     
     def __init__(self, 
                  translation_file: str = "models/deepdanbooru/tag_translations.json",
-                 cache_file: str = "models/deepdanbooru/tag_cache.json"):
+                 cache_file: str = "models/deepdanbooru/tag_cache.json",
+                 use_online_api: bool = False,
+                 baidu_appid: str = None,
+                 baidu_secret: str = None):
         """
         初始化标签翻译器
         
-        翻译优先级：内建字典 > 外部翻译文件 > 缓存 > 规则推导 > 保留原文
+        翻译优先级：内建字典 > 外部翻译文件 > 缓存 > 规则推导 > 在线翻译 > 保留原文
         """
         self.translation_file = translation_file
         self.cache_file = cache_file
+        self.use_online_api = use_online_api
+        self.baidu_appid = baidu_appid
+        self.baidu_secret = baidu_secret
 
         # 外部翻译文件
         self.ext_translations: Dict[str, str] = {}
@@ -1065,6 +1074,10 @@ class TagTranslator:
             except Exception as e:
                 logger.error(f"加载缓存失败: {e}")
     
+    def save_cache(self):
+        """保存缓存（对外公开接口）"""
+        self._save_cache()
+
     def _save_cache(self):
         """保存缓存"""
         try:
@@ -1073,6 +1086,13 @@ class TagTranslator:
                 json.dump(self.cache, f, ensure_ascii=False, indent=2)
         except Exception as e:
             logger.error(f"保存缓存失败: {e}")
+
+    @property
+    def translations(self):
+        """兼容老版本的属性访问，合并字典和外部翻译"""
+        merged = BUILTIN_TRANSLATIONS.copy()
+        merged.update(self.ext_translations)
+        return merged
 
     @staticmethod
     def _is_garbage(text: str) -> bool:
@@ -1118,7 +1138,16 @@ class TagTranslator:
             self._save_cache()
             return rule_result
         
-        # 5. 保留原文
+        # 5. 在线翻译 API（如果启用）
+        # 将下划线替换为空格，以获得更好的机器翻译效果
+        online_result = self._translate_online(tag.replace('_', ' '))
+        if online_result != tag.replace('_', ' ') and online_result.strip() and not self._is_garbage(online_result):
+            # 存入缓存
+            self.cache[tag] = online_result
+            self._save_cache()
+            return online_result
+        
+        # 6. 保留原文
         return english_tag
 
     def _apply_rules(self, tag: str) -> str:
@@ -1167,6 +1196,40 @@ class TagTranslator:
         
         return tag
 
+    def _translate_online(self, text: str) -> str:
+        """调用百度翻译 API 进行在线翻译"""
+        if not self.use_online_api or not self.baidu_appid or not self.baidu_secret:
+            return text
+            
+        try:
+            salt = str(random.randint(32768, 65536))
+            sign_str = f"{self.baidu_appid}{text}{salt}{self.baidu_secret}"
+            sign = hashlib.md5(sign_str.encode('utf-8')).hexdigest()
+            
+            url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+            params = {
+                'q': text,
+                'from': 'en',
+                'to': 'zh',
+                'appid': self.baidu_appid,
+                'salt': salt,
+                'sign': sign
+            }
+            
+            response = requests.get(url, params=params, timeout=5)
+            result = response.json()
+            
+            if 'trans_result' in result:
+                translated = result['trans_result'][0]['dst']
+                if not self._is_garbage(translated):
+                    return translated
+            else:
+                logger.warning(f"百度翻译 API 响应异常: {result}")
+        except Exception as e:
+            logger.error(f"在线翻译失败 ({text}): {e}")
+            
+        return text
+
     def translate_batch(self, tags: list) -> list:
         """批量翻译标签"""
         return [self.translate(tag) for tag in tags]
@@ -1189,6 +1252,14 @@ def get_translator() -> TagTranslator:
     """获取全局翻译器实例"""
     global _translator
     if _translator is None:
-        _translator = TagTranslator()
+        use_online_api = os.getenv('USE_ONLINE_TRANSLATION', 'false').lower() == 'true'
+        baidu_appid = os.getenv('BAIDU_APPID')
+        baidu_secret = os.getenv('BAIDU_SECRET')
+        
+        _translator = TagTranslator(
+            use_online_api=use_online_api,
+            baidu_appid=baidu_appid,
+            baidu_secret=baidu_secret
+        )
     return _translator
 
