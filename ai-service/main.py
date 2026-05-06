@@ -670,10 +670,16 @@ def _init_llm_client():
         if api_key:
             # 使用显式 httpx 客户端，避免系统代理导致连接失败
             proxy_url = os.environ.get("LLM_PROXY", None)
-            http_client = httpx.Client(
-                proxy=proxy_url,
-                timeout=httpx.Timeout(60.0, connect=10.0)
-            )
+            try:
+                http_client = httpx.Client(
+                    proxies=proxy_url,
+                    timeout=httpx.Timeout(60.0, connect=10.0)
+                )
+            except TypeError:
+                http_client = httpx.Client(
+                    proxy=proxy_url,
+                    timeout=httpx.Timeout(60.0, connect=10.0)
+                )
             llm_client = OpenAI(api_key=api_key, base_url=base_url, http_client=http_client)
             logger.info(f"LLM 客户端初始化成功 (base_url={base_url}, proxy={proxy_url})")
         else:
