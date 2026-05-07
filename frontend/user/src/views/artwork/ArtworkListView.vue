@@ -279,7 +279,9 @@ const buildParams = (options = { includeTopic: true }) => {
     sortBy: sortBy.value
   }
   if (searchKeyword.value) params.keyword = searchKeyword.value
-  if (options.includeTopic && selectedTags.value.length > 0) params.tags = selectedTags.value
+  if (options.includeTopic && selectedTags.value.length > 0) {
+    params.tags = selectedTags.value.join(',')
+  }
   if (isAigc.value !== null) params.isAigc = isAigc.value
   if (dateFrom.value) params.dateFrom = dateFrom.value
   if (dateTo.value) params.dateTo = dateTo.value
