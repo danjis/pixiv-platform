@@ -52,7 +52,7 @@
         <div v-if="hasActiveFilters" class="active-filters-bar">
           <span class="afb-label">当前筛选：</span>
           <span v-if="selectedTags.length > 0" class="afb-chip tag-chip" @click="selectedTags = []; handleFilterChange()">
-            主题「{{ selectedTags[0] }}」<span class="afb-x">×</span>
+            主题「{{ route.query.tagLabel || selectedTags[0] }}」<span class="afb-x">×</span>
           </span>
           <span v-if="searchKeyword" class="afb-chip kw-chip" @click="searchKeyword = ''; handleFilterChange()">
             关键词「{{ searchKeyword }}」<span class="afb-x">×</span>

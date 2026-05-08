@@ -683,7 +683,7 @@ public class ArtworkService {
      */
     private Page<Artwork> getArtworksByTags(List<String> tagNames, String keyword, Pageable pageable) {
         // 1. 批量查询标签 ID（单次 DB 调用替代循环）
-        List<Tag> foundTags = tagRepository.findByNameIn(tagNames);
+        List<Tag> foundTags = tagRepository.findByNameOrNameZhIn(tagNames);
         List<Long> tagIds = foundTags.stream().map(Tag::getId).collect(Collectors.toList());
 
         if (tagIds.isEmpty()) {
@@ -710,7 +710,7 @@ public class ArtworkService {
      * 根据标签获取作品ID列表（用于 Specification 高级搜索）
      */
     private List<Long> getArtworkIdsByTags(List<String> tagNames) {
-        List<Tag> foundTags = tagRepository.findByNameIn(tagNames);
+        List<Tag> foundTags = tagRepository.findByNameOrNameZhIn(tagNames);
         List<Long> tagIds = foundTags.stream().map(Tag::getId).collect(Collectors.toList());
         if (tagIds.isEmpty()) {
             return Collections.emptyList();
@@ -1258,7 +1258,7 @@ public class ArtworkService {
                 String displayName = (tag.getNameZh() != null && !tag.getNameZh().isEmpty())
                         ? tag.getNameZh()
                         : tag.getName();
-                suggestions.add(new SearchSuggestionDTO("tag", displayName, tag.getUsageCount()));
+                suggestions.add(new SearchSuggestionDTO("tag", displayName, tag.getUsageCount(), tag.getName()));
             }
         } catch (Exception e) {
             logger.warn("搜索标签建议失败: {}", e.getMessage());
@@ -1268,7 +1268,7 @@ public class ArtworkService {
         try {
             List<String> titles = artworkRepository.findTitleSuggestions(trimmed, ArtworkStatus.PUBLISHED, pageable);
             for (String title : titles) {
-                suggestions.add(new SearchSuggestionDTO("artwork", title, null));
+                suggestions.add(new SearchSuggestionDTO("artwork", title, null, title));
             }
         } catch (Exception e) {
             logger.warn("搜索标题建议失败: {}", e.getMessage());
@@ -1328,11 +1328,13 @@ public class ArtworkService {
         private String type;
         private String text;
         private Integer count;
+        private String value;
 
-        public SearchSuggestionDTO(String type, String text, Integer count) {
+        public SearchSuggestionDTO(String type, String text, Integer count, String value) {
             this.type = type;
             this.text = text;
             this.count = count;
+            this.value = value;
         }
 
         public String getType() {
@@ -1357,6 +1359,14 @@ public class ArtworkService {
 
         public void setCount(Integer count) {
             this.count = count;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
         }
     }
 

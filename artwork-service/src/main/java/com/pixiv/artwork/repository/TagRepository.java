@@ -29,6 +29,12 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
     List<Tag> findByNameIn(List<String> names);
 
     /**
+     * 根据标签主名称或中文名称列表查询标签
+     */
+    @Query("SELECT t FROM Tag t WHERE t.name IN :names OR t.nameZh IN :names")
+    List<Tag> findByNameOrNameZhIn(@Param("names") List<String> names);
+
+    /**
      * 检查标签名称是否存在
      */
     boolean existsByName(String name);

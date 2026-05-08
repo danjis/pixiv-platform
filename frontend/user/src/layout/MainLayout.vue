@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, provide } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, provide, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getUnreadCount } from '@/api/notification'
@@ -206,12 +206,21 @@ const handleSearchInput = () => {
 const selectSuggestion = (item) => {
   showSuggestions.value = false
   if (item.type === 'tag') {
-    router.push({ name: 'Artworks', query: { tag: item.text } })
+    keyword.value = item.text || item.value || ''
+    router.push({ name: 'Artworks', query: { tag: item.value || item.text, tagLabel: item.text || item.value } })
   } else {
-    keyword.value = item.text
-    router.push({ name: 'Artworks', query: { keyword: item.text } })
+    keyword.value = item.text || item.value || ''
+    router.push({ name: 'Artworks', query: { keyword: item.value || item.text } })
   }
 }
+
+watch(
+  () => [route.query.keyword, route.query.tag],
+  ([routeKeyword, routeTag]) => {
+    keyword.value = routeTag || routeKeyword || ''
+  },
+  { immediate: true }
+)
 
 // 点击外部关闭下拉
 const handleClickOutside = (e) => {
