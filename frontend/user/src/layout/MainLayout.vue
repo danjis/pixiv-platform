@@ -215,9 +215,9 @@ const selectSuggestion = (item) => {
 }
 
 watch(
-  () => [route.query.keyword, route.query.tag],
-  ([routeKeyword, routeTag]) => {
-    keyword.value = routeTag || routeKeyword || ''
+  () => [route.query.keyword, route.query.tag, route.query.tagLabel],
+  ([routeKeyword, routeTag, routeTagLabel]) => {
+    keyword.value = routeTagLabel || routeTag || routeKeyword || ''
   },
   { immediate: true }
 )
