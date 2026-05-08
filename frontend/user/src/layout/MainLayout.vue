@@ -158,7 +158,6 @@ const keyword = ref('')
 const unreadCount = ref(0)
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
-// 提供给子组件（如 NotificationView）共享未读数
 provide('notificationUnreadCount', unreadCount)
 
 // 其他已保存的账号
